@@ -10,9 +10,9 @@ AI-Powered Technical Project Evaluation, Diagnosis, Improvement, and Jury Readin
 
 **Status:** Development
 
-**Current Stage:** Checkpoint 1 - Application Foundation
+**Current Stage:** Checkpoint 2 - Project Creation & Artifact Uploads
 
-**MVP Status:** In Progress (Foundation established)
+**MVP Status:** In Progress (Project creation, database, & artifact storage completed)
 
 **Last Updated:** 2026-09-17
 
@@ -908,6 +908,12 @@ Tasks:
 
 Project creation and uploads.
 
+Status:
+
+```text
+COMPLETED
+```
+
 Tasks:
 
 * project creation
@@ -1049,8 +1055,33 @@ Tasks:
 - Frontend ↔ Backend communication implemented: UI fetches real-time health from `/api/health` and displays live connection state (`Frontend: Running`, `Backend: Connected` / `Backend: Disconnected`) with graceful error handling and retry mechanism.
 - Backend automated unit test implemented in `backend/tests/test_health.py` and passing 100%.
 
+### Checkpoint 2 - Project Creation & Artifact Uploads (Completed)
+- Relational database foundation initialized with SQLAlchemy 2.0 and Alembic migrations.
+- Created ORM models: `Project` (metadata, UUID primary key, indexed title and creation date) and `Artifact` (file metadata, project foreign key, ON DELETE CASCADE, unique stored filename) in `backend/app/models/`.
+- Dual-mode database session engine configured in `backend/app/db/session.py` supporting PostgreSQL (via `psycopg` v3 binary driver) for production/Docker and SQLite fallback for local development/testing with automated `PRAGMA foreign_keys=ON;` enforcement.
+- Initial Alembic migration `1f5a7e40f7fe_create_projects_and_artifacts_tables.py` generated and applied successfully.
+- Hardened cross-platform filename sanitization and canonical boundary verification implemented in `backend/app/core/security.py` (stripping Windows/POSIX path traversal sequences, null bytes, double extensions).
+- Local storage service implemented in `backend/app/services/storage_service.py` with bounded 1MB chunked streaming directly to disk, strict 25 MB size quota enforcement, zero-byte rejection, and transactional cleanup of orphaned files upon database failure.
+- Business service layer created in `backend/app/services/project_service.py` handling project CRUD, pagination, artifact counts, and cross-project download ownership enforcement.
+- REST endpoints implemented and mounted in `backend/app/api/routes/projects.py`:
+  - `POST /api/projects` (201 Created with UUID, 422 validation)
+  - `GET /api/projects` (200 OK with pagination `skip`, `limit`, and `artifact_count`)
+  - `GET /api/projects/{project_id}` (200 OK, 404 not found, returns project metadata and attached artifacts list)
+  - `POST /api/projects/{project_id}/artifacts` (201 Created, 400 empty file, 404 project missing, 413 file too large, 415 unsupported media type)
+  - `GET /api/projects/{project_id}/artifacts` (200 OK, lists project artifacts)
+  - `GET /api/projects/{project_id}/artifacts/{artifact_id}/download` (200 OK file stream with original filename, 404 cross-project access rejection)
+- Frontend UI implemented (0 new npm dependencies added):
+  - Added UI primitives (`Input`, `Textarea`, `Label`) matching shadcn/ui design tokens in `frontend/src/components/ui/`.
+  - Added `ProjectCard`, `ProjectForm`, `ArtifactUploadSection`, and `ArtifactList` in `frontend/src/components/projects/`.
+  - Created `CreateProjectPage` (`/projects/new`) with client-side validation and loading states.
+  - Created `ProjectDetailPage` (`/projects/:projectId`) rendering project metadata, drag-and-drop artifact upload with progress indicators, and artifact list with direct file downloads.
+  - Updated `HomePage` (`/`) with an evaluated projects grid and "New Project" call-to-action alongside real-time system health checks.
+  - Updated global layout navigation in `frontend/src/components/layout/AppLayout.tsx`.
+- Test suite expanded to 25 automated unit/integration tests passing 100% across projects, storage security, artifacts, and health regression.
+- Frontend production build (`npm run build`) passing with 0 TypeScript or bundler errors.
+
 ### Dependencies Installed
-- **Frontend Dependencies:**
+- **Frontend Dependencies (0 new dependencies added in Checkpoint 2):**
   - `react`: ^19.0.0
   - `react-dom`: ^19.0.0
   - `react-router-dom`: ^7.2.0
@@ -1077,13 +1108,15 @@ Tasks:
   - `starlette`: 1.6.0
   - `httpx`: 0.28.1
   - `pytest`: 9.1.1
+  - `sqlalchemy`: 2.0.54 (Added in Checkpoint 2)
+  - `alembic`: 1.20.0 (Added in Checkpoint 2)
+  - `psycopg`: 3.3.5 / `psycopg-binary`: 3.3.5 (Added in Checkpoint 2)
+  - `python-multipart`: 0.0.32 (Added in Checkpoint 2)
 
 ### Tests Executed & Results
-- Backend unit test: `$env:PYTHONPATH="backend"; .venv\Scripts\pytest.exe backend\tests -v` -> 1 passed in 0.45s (`test_health_endpoint` passed: verified status code 200, JSON dict structure, and `{"status": "ok"}`).
-- Frontend production build: `npm.cmd run build` -> passed with 0 errors (built in 22.62s).
-- Backend live HTTP check: `Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/health"` -> `status: ok`.
-- Live connection check: `node -e "fetch('http://127.0.0.1:8000/api/health')"` -> `{ status: 'ok' }`.
-- Disconnection resilience check: `node -e "fetch('http://127.0.0.1:8001/api/health')"` -> caught gracefully, setting status to disconnected.
+- Backend test suite: `$env:PYTHONPATH="backend"; .venv\Scripts\pytest.exe backend\tests -v` -> 25 passed in 0.69s (100% pass rate: 1 health test, 8 project API/persistence tests, 6 storage security/sanitization tests, 10 artifact upload/download/isolation tests).
+- Frontend production build: `npm.cmd run build` -> passed with 0 errors (built in 4.76s).
+- Full live round-trip check via TestClient (health check -> create project -> upload artifact -> list projects with artifact count -> fetch details -> stream download artifact) -> 100% verified.
 
 ### Known Issues
 - None unresolved.
@@ -1095,21 +1128,20 @@ Tasks:
 At this checkpoint, the following are not yet implemented unless verified in the repository:
 
 * authentication
-* project CRUD
-* document processing
-* database models
-* GitHub integration
-* AI integration
-* LangGraph workflows
-* requirement extraction
-* requirement traceability
-* code analysis
-* security analysis
-* evaluation engine
+* document text extraction & OCR
+* document chunking & vector embeddings
+* pgvector integration
+* Gemini / LLM analysis integration
+* LangGraph agent workflows
+* requirement AI extraction
+* requirement traceability matrix
+* GitHub repository cloning & analysis
+* code quality & static analysis (Semgrep, Bandit, Trivy)
+* evaluation engine & scoring formulas
 * evidence graph
 * improvement planner
 * jury simulator
-* final dashboard
+* final readiness report dashboard
 
 ---
 
@@ -1147,12 +1179,29 @@ Status:
 
 Accepted.
 
+## Decision 5
+
+Dual-mode relational database architecture (SQLAlchemy 2.0 + Alembic) with synchronous threadpool execution, supporting PostgreSQL in production and SQLite in testing with automated foreign key enforcement.
+
+Status:
+
+Accepted (Implemented in Checkpoint 2).
+
+## Decision 6
+
+Strict storage boundary enforcement with canonical path validation, cross-platform filename sanitization, 25 MB chunked upload limits, and transactional cleanup of orphaned disk files.
+
+Status:
+
+Accepted (Implemented in Checkpoint 2).
+
 ---
 
 # 33. KNOWN LIMITATIONS
 
 At this stage:
 
+* Starlette's multipart parser buffers uploads exceeding 1MB to OS temporary files before the route handler receives the stream; application-level chunking and size limits are actively enforced from that point.
 * innovation cannot always be objectively verified
 * Git activity does not represent total team contribution
 * missing project artifacts limit evaluation accuracy
@@ -1170,18 +1219,17 @@ These limitations must remain visible in the system design.
 Current next action:
 
 ```text
-CHECKPOINT 1 (COMPLETED)
+CHECKPOINT 2 (COMPLETED)
 ↓
-CHECKPOINT 2
-Project creation + artifact/document uploads:
-- Project creation API & schema
-- Project metadata
-- Document upload handling
-- Artifact storage
-- Database schema foundation
+CHECKPOINT 3
+Document Understanding:
+- Document text extraction (PDF, DOCX, MD, TXT)
+- Text processing & normalization
+- Project understanding representation
+- Initial structured project representation
 ```
 
-Do not skip checkpoints. Checkpoint 2 has NOT started.
+Do not skip checkpoints. Checkpoint 3 has NOT started.
 
 ---
 

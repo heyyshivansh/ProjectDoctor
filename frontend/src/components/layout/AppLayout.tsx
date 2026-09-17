@@ -11,8 +11,22 @@ export const AppLayout: React.FC = () => {
             <Activity className="h-6 w-6 text-blue-600" />
             <span>Project Doctor</span>
           </Link>
-          <div className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
-            Checkpoint 1: Application Foundation
+          <div className="flex items-center gap-4">
+            <Link
+              to="/"
+              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              Dashboard
+            </Link>
+            <Link
+              to="/projects/new"
+              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+            >
+              New Project
+            </Link>
+            <div className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+              Checkpoint 2: Project Upload + DB
+            </div>
           </div>
         </div>
       </header>

@@ -46,6 +46,11 @@ coverage.xml
 *.py,cover
 .hypothesis/
 
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
 # JavaScript / Node / React
 node_modules/
 npm-debug.log*

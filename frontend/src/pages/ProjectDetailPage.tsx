@@ -6,12 +6,21 @@ import {
   batchExtractDocuments,
   getProjectUnderstanding,
 } from "@/services/documents";
+import {
+  listRequirements,
+  extractRequirements,
+  getRequirementMetrics,
+} from "@/services/requirements";
 import { ProjectDetail, Artifact } from "@/types/project";
 import { DocumentExtractionSummary } from "@/types/document";
 import { ProjectUnderstanding } from "@/types/understanding";
+import { Requirement, RequirementMetrics } from "@/types/requirement";
 import { ArtifactUploadSection } from "@/components/projects/ArtifactUploadSection";
 import { ArtifactList } from "@/components/projects/ArtifactList";
 import { ProjectUnderstandingCard } from "@/components/understanding/ProjectUnderstandingCard";
+import { RequirementSummaryHeader } from "@/components/requirements/RequirementSummaryHeader";
+import { RequirementList } from "@/components/requirements/RequirementList";
+import { RequirementEvidenceDrawer } from "@/components/requirements/RequirementEvidenceDrawer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -37,11 +46,16 @@ export const ProjectDetailPage: React.FC = () => {
   const [project, setProject] = useState<ProjectDetail | null>(null);
   const [extractions, setExtractions] = useState<Record<string, DocumentExtractionSummary>>({});
   const [understanding, setUnderstanding] = useState<ProjectUnderstanding | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "understanding">("overview");
+  const [requirements, setRequirements] = useState<Requirement[]>([]);
+  const [requirementMetrics, setRequirementMetrics] = useState<RequirementMetrics | null>(null);
+  const [isExtractingRequirements, setIsExtractingRequirements] = useState<boolean>(false);
+  const [selectedRequirementId, setSelectedRequirementId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"overview" | "understanding" | "requirements">("overview");
   const [isLoading, setIsLoading] = useState(true);
   const [isBatchExtracting, setIsBatchExtracting] = useState(false);
   const [batchMessage, setBatchMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
 
   const fetchProjectData = useCallback(async () => {
     if (!projectId) return;
@@ -49,10 +63,18 @@ export const ProjectDetailPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const [projectData, extractionList, understandingData] = await Promise.all([
+      const [
+        projectData,
+        extractionList,
+        understandingData,
+        requirementsList,
+        metricsData,
+      ] = await Promise.all([
         getProject(projectId),
         listDocumentExtractions(projectId).catch(() => [] as DocumentExtractionSummary[]),
         getProjectUnderstanding(projectId).catch(() => null),
+        listRequirements(projectId).catch(() => [] as Requirement[]),
+        getRequirementMetrics(projectId).catch(() => null),
       ]);
 
       setProject(projectData);
@@ -63,6 +85,8 @@ export const ProjectDetailPage: React.FC = () => {
       });
       setExtractions(extractionMap);
       setUnderstanding(understandingData);
+      setRequirements(requirementsList);
+      setRequirementMetrics(metricsData);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load project details."
@@ -71,6 +95,24 @@ export const ProjectDetailPage: React.FC = () => {
       setIsLoading(false);
     }
   }, [projectId]);
+
+  const handleExtractRequirements = async (forceRegenerate: boolean = false) => {
+    if (!projectId) return;
+    setIsExtractingRequirements(true);
+    try {
+      const summary = await extractRequirements(projectId, forceRegenerate);
+      setRequirements(summary.requirements);
+      const metrics = await getRequirementMetrics(projectId).catch(() => null);
+      if (metrics) setRequirementMetrics(metrics);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to extract requirements."
+      );
+    } finally {
+      setIsExtractingRequirements(false);
+    }
+  };
+
 
   useEffect(() => {
     fetchProjectData();
@@ -248,8 +290,27 @@ export const ProjectDetailPage: React.FC = () => {
               </span>
             )}
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("requirements")}
+            className={cn(
+              "py-3 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 transition-colors",
+              activeTab === "requirements"
+                ? "border-blue-600 text-blue-600 font-semibold"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+            )}
+          >
+            <Layers className="h-4 w-4" />
+            Requirements & Traceability
+            {requirements.length > 0 && (
+              <span className="ml-1.5 py-0.5 px-2 rounded-full text-xs bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200">
+                {requirements.length}
+              </span>
+            )}
+          </button>
         </nav>
       </div>
+
 
       {/* Tab 1: Overview & Artifacts */}
       {activeTab === "overview" && (
@@ -403,6 +464,29 @@ export const ProjectDetailPage: React.FC = () => {
           />
         </div>
       )}
+
+      {/* Tab 3: Requirements & Traceability */}
+      {activeTab === "requirements" && (
+        <div className="space-y-6">
+          <RequirementSummaryHeader
+            metrics={requirementMetrics}
+            isExtracting={isExtractingRequirements}
+            onExtract={handleExtractRequirements}
+          />
+          <RequirementList
+            requirements={requirements}
+            onSelectRequirement={(reqId) => setSelectedRequirementId(reqId)}
+          />
+        </div>
+      )}
+
+      {/* Evidence Provenance Modal / Drawer */}
+      <RequirementEvidenceDrawer
+        projectId={project.id}
+        requirementId={selectedRequirementId}
+        onClose={() => setSelectedRequirementId(null)}
+      />
     </div>
   );
 };
+

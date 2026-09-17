@@ -10,11 +10,12 @@ AI-Powered Technical Project Evaluation, Diagnosis, Improvement, and Jury Readin
 
 **Status:** Development
 
-**Current Stage:** Checkpoint 3 - Document Understanding & Deterministic Project Representation
+**Current Stage:** Checkpoint 4 - Requirement Extraction & Requirement Traceability
 
-**MVP Status:** In Progress (Project creation, artifact storage, deterministic text extraction, outline detection, and deterministic project understanding completed)
+**MVP Status:** In Progress (Project creation, artifact storage, deterministic text extraction, outline detection, structured project understanding, and deterministic requirement extraction & traceability completed)
 
 **Last Updated:** 2026-09-17
+
 
 ---
 
@@ -1274,18 +1275,63 @@ These limitations must remain visible in the system design.
   * TypeScript & Vite production build passed (`tsc -b && vite build`) with 0 errors.
 * **Known Issues / Limitations**:
   * Remote repository has not been updated (commit pending user approval).
+### Checkpoint 4 Record:
+* **Current Stage**: Checkpoint 4 - Requirement Extraction & Requirement Traceability
+* **Completed Features**:
+  * Relational database models `Requirement` and `RequirementEvidence` with UUID primary keys, cascade behavior, and Alembic migration `7d91c33b40c7`.
+  * Deterministic requirement extraction engine (`RequirementService`) implementing 3-pass extraction:
+    - Pass 1: Project declared metadata requirements parsing.
+    - Pass 2: Section-scoped outline matching under requirement headings.
+    - Pass 3: RFC 2119 modal verb scanning ("shall", "must", "needs to") in prose documents.
+  * Deterministic two-tier requirement identity:
+    - Normalized SHA-256 content hashing (`content_hash`).
+    - Stable human-readable sequential code assignment (`REQ-001`, `REQ-002`, ...).
+    - Re-extraction state preservation: existing IDs remain stable without churn across re-runs.
+  * Fine-grained M:N provenance tracking via `requirement_evidence` preserving source type, artifact ID, filename, section heading, page number, verbatim quote snippet, and confidence score without duplicating document bodies.
+  * Strict "No Invention" rule: priority and actor remain strictly `None` unless explicitly supported in source evidence.
+  * Deterministic categorization (`functional`, `non_functional`, `security`, `performance`, `interface`).
+  * Exact duplicate consolidation and near-duplicate Jaccard similarity grouping.
+  * Inter-document technical contradiction detection flagging conflicting specifications with `status="conflicted"`, `is_ambiguous=True`, and explanatory conflict summary.
+  * 4 REST API endpoints mounted under `/api/projects/{project_id}/requirements`:
+    - `POST /extract` (triggers deterministic extraction and returns summary)
+    - `GET /` (lists requirements with category, status, ambiguity, and search filters)
+    - `GET /{requirement_id}` (retrieves single requirement by UUID or REQ code with full provenance evidence)
+    - `GET /summary` (calculates KPI distribution across categories, priorities, and conflicts)
+  * React frontend integration:
+    - Tab 3: `Requirements & Traceability` with live count badge.
+    - `RequirementSummaryHeader` KPI cards and extraction trigger.
+    - Filterable, searchable `RequirementList` with status badges and evidence links.
+    - Interactive `RequirementEvidenceDrawer` modal displaying verbatim source citations and metadata.
+* **Files/Systems Added**:
+  * `backend/app/models/requirement.py`
+  * `backend/alembic/versions/7d91c33b40c7_create_requirements_and_requirement_.py`
+  * `backend/app/schemas/requirement.py`
+  * `backend/app/services/analysis/requirement_service.py`
+  * `backend/app/api/routes/requirements.py`
+  * `backend/tests/test_requirements.py`
+  * `frontend/src/types/requirement.ts`
+  * `frontend/src/services/requirements.ts`
+  * `frontend/src/components/requirements/RequirementSummaryHeader.tsx`
+  * `frontend/src/components/requirements/RequirementList.tsx`
+  * `frontend/src/components/requirements/RequirementEvidenceDrawer.tsx`
+* **Tests**:
+  * 56 passed backend tests (`pytest backend/tests -v`, 100% pass rate) covering metadata parsing, section parsing, modal verbs, determinism, stable identity, deduplication, conflict detection, isolation, cascade delete, and API endpoints.
+  * TypeScript & Vite production build passed (`tsc -b && vite build`) with 0 errors.
 * **Next Checkpoint**:
-  * Checkpoint 4: Requirement Analysis & Atomic Decomposition (Extracting R1..RN atomic requirements, categorizing functional vs non-functional, mapping initial implementation status, and building traceability matrix).
+  * Checkpoint 5: GitHub Integration (Repository connection, repository metadata, file inspection, commit history, contributor activity).
 
 ```text
 CHECKPOINT 3 (COMPLETED)
 ↓
-CHECKPOINT 4
-Requirement Analysis & Traceability:
-- Atomic requirement extraction (R1..RN)
-- Requirement categorization (functional, security, performance)
-- Requirement traceability & implementation coverage
+CHECKPOINT 4 (COMPLETED)
+↓
+CHECKPOINT 5
+GitHub Integration:
+- Repository connection & authentication
+- Repository metadata & file structure inspection
+- Commit history & contributor activity analysis
 ```
+
 
 ---
 

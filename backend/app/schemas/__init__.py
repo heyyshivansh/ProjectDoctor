@@ -16,6 +16,13 @@ from app.schemas.document import (
     BatchExtractionResponse,
 )
 from app.schemas.understanding import ProjectUnderstandingResponse
+from app.schemas.requirement import (
+    RequirementResponse,
+    RequirementDetailResponse,
+    RequirementEvidenceResponse,
+    RequirementExtractionSummaryResponse,
+    RequirementMetricsResponse,
+)
 
 __all__ = [
     "HealthResponse",
@@ -30,4 +37,10 @@ __all__ = [
     "DocumentExtractionResponse",
     "BatchExtractionResponse",
     "ProjectUnderstandingResponse",
+    "RequirementResponse",
+    "RequirementDetailResponse",
+    "RequirementEvidenceResponse",
+    "RequirementExtractionSummaryResponse",
+    "RequirementMetricsResponse",
 ]
+

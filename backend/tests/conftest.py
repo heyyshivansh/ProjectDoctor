@@ -69,6 +69,7 @@ def temp_storage(tmp_path, monkeypatch) -> LocalStorageService:
     monkeypatch.setattr("app.services.project_service.storage_service", custom_storage)
     monkeypatch.setattr("app.services.documents.extraction_service.storage_service", custom_storage)
     monkeypatch.setattr("app.services.analysis.understanding_service.storage_service", custom_storage)
+    monkeypatch.setattr("app.services.analysis.requirement_service.storage_service", custom_storage)
     monkeypatch.setattr("app.api.routes.projects.storage_service", custom_storage)
     monkeypatch.setattr("app.api.routes.documents.storage_service", custom_storage)
     monkeypatch.setattr(settings, "STORAGE_LOCAL_DIR", str(storage_dir))

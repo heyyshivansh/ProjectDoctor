@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from app.models.artifact import Artifact
     from app.models.document_extraction import DocumentExtraction
     from app.models.project_understanding import ProjectUnderstanding
+    from app.models.requirement import Requirement
 
 
 class Project(Base):
@@ -89,3 +90,10 @@ class Project(Base):
         uselist=False,
         lazy="selectin",
     )
+    extracted_requirements: Mapped[List["Requirement"]] = relationship(
+        "Requirement",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+

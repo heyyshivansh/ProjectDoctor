@@ -10,11 +10,11 @@ AI-Powered Technical Project Evaluation, Diagnosis, Improvement, and Jury Readin
 
 **Status:** Development
 
-**Current Stage:** Checkpoint 0 - Project Foundation
+**Current Stage:** Checkpoint 1 - Application Foundation
 
-**MVP Status:** Not started
+**MVP Status:** In Progress (Foundation established)
 
-**Last Updated:** 2026-09-16
+**Last Updated:** 2026-09-17
 
 ---
 
@@ -869,7 +869,7 @@ Project foundation.
 Status:
 
 ```text
-IN PROGRESS
+COMPLETED
 ```
 
 Tasks:
@@ -886,6 +886,12 @@ Tasks:
 ## Checkpoint 1
 
 Application skeleton.
+
+Status:
+
+```text
+COMPLETED
+```
 
 Tasks:
 
@@ -1027,19 +1033,66 @@ Tasks:
 
 # 30. CURRENTLY IMPLEMENTED
 
+### Checkpoint 0 - Project Foundation
 - Basic repository folder structure established and verified.
 - Git repository initialized locally.
 - Core configuration and guidelines established (`PROJECT_CONTEXT.md`, `AI_INSTRUCTIONS.md`, `.gitignore`).
 
-Checkpoint 0 (Project Foundation) is in progress.
+### Checkpoint 1 - Application Foundation (Completed)
+- React/Vite frontend initialized with TypeScript.
+- Tailwind CSS configured and verified working.
+- shadcn/ui initialized correctly (`components.json`, `cn` helper, `Card`, `Badge`, `Button` UI primitives).
+- React Router initialized with layout and root route (`/`).
+- Recharts foundation installed and available for future dashboard work.
+- FastAPI backend initialized with separated modular routing (`app/main.py`, `app/api/router.py`, `app/api/routes/health.py`, `app/schemas/health.py`, `app/core/config.py`).
+- `/api/health` endpoint implemented, response typed with Pydantic (`{"status": "ok"}`).
+- Frontend ↔ Backend communication implemented: UI fetches real-time health from `/api/health` and displays live connection state (`Frontend: Running`, `Backend: Connected` / `Backend: Disconnected`) with graceful error handling and retry mechanism.
+- Backend automated unit test implemented in `backend/tests/test_health.py` and passing 100%.
 
-Do not assume features listed in this document are implemented.
+### Dependencies Installed
+- **Frontend Dependencies:**
+  - `react`: ^19.0.0
+  - `react-dom`: ^19.0.0
+  - `react-router-dom`: ^7.2.0
+  - `recharts`: ^2.15.1
+  - `clsx`: ^2.1.1
+  - `tailwind-merge`: ^3.0.1
+  - `class-variance-authority`: ^0.7.1
+  - `lucide-react`: ^0.475.0
+  - `tailwindcss-animate`: ^1.0.7
+- **Frontend Dev Dependencies:**
+  - `vite`: ^6.1.0
+  - `@vitejs/plugin-react`: ^4.3.4
+  - `typescript`: ~5.7.3
+  - `@types/react`: ^19.0.10
+  - `@types/react-dom`: ^19.0.4
+  - `@types/node`: ^22.13.4
+  - `tailwindcss`: ^3.4.17
+  - `postcss`: ^8.5.2
+  - `autoprefixer`: ^10.4.20
+- **Backend Dependencies (in `.venv` / `backend/requirements.txt`):**
+  - `fastapi`: 0.141.1
+  - `uvicorn`: 0.53.0
+  - `pydantic`: 2.13.5
+  - `starlette`: 1.6.0
+  - `httpx`: 0.28.1
+  - `pytest`: 9.1.1
+
+### Tests Executed & Results
+- Backend unit test: `$env:PYTHONPATH="backend"; .venv\Scripts\pytest.exe backend\tests -v` -> 1 passed in 0.45s (`test_health_endpoint` passed: verified status code 200, JSON dict structure, and `{"status": "ok"}`).
+- Frontend production build: `npm.cmd run build` -> passed with 0 errors (built in 22.62s).
+- Backend live HTTP check: `Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/health"` -> `status: ok`.
+- Live connection check: `node -e "fetch('http://127.0.0.1:8000/api/health')"` -> `{ status: 'ok' }`.
+- Disconnection resilience check: `node -e "fetch('http://127.0.0.1:8001/api/health')"` -> caught gracefully, setting status to disconnected.
+
+### Known Issues
+- None unresolved.
 
 ---
 
 # 31. CURRENTLY NOT IMPLEMENTED
 
-At project initialization, the following are not yet implemented unless verified in the repository:
+At this checkpoint, the following are not yet implemented unless verified in the repository:
 
 * authentication
 * project CRUD
@@ -1117,16 +1170,18 @@ These limitations must remain visible in the system design.
 Current next action:
 
 ```text
-CHECKPOINT 0
+CHECKPOINT 1 (COMPLETED)
 ↓
-Verify repository structure
-↓
-Initialize frontend/backend project
-↓
-Move to CHECKPOINT 1
+CHECKPOINT 2
+Project creation + artifact/document uploads:
+- Project creation API & schema
+- Project metadata
+- Document upload handling
+- Artifact storage
+- Database schema foundation
 ```
 
-Do not skip checkpoints.
+Do not skip checkpoints. Checkpoint 2 has NOT started.
 
 ---
 

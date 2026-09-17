@@ -56,12 +56,23 @@ def temp_storage(tmp_path, monkeypatch) -> LocalStorageService:
     """Create a temporary isolated storage directory for tests."""
     storage_dir = tmp_path / "uploads"
     storage_dir.mkdir(parents=True, exist_ok=True)
-    custom_storage = LocalStorageService(base_storage_dir=str(storage_dir))
+    processed_dir = tmp_path / "processed"
+    processed_dir.mkdir(parents=True, exist_ok=True)
 
-    # Monkeypatch the global storage_service and settings
-    monkeypatch.setattr("app.api.routes.projects.storage_service", custom_storage)
+    custom_storage = LocalStorageService(
+        base_storage_dir=str(storage_dir),
+        processed_storage_dir=str(processed_dir),
+    )
+
+    # Monkeypatch the global storage_service and settings across all modules
     monkeypatch.setattr("app.services.storage_service.storage_service", custom_storage)
+    monkeypatch.setattr("app.services.project_service.storage_service", custom_storage)
+    monkeypatch.setattr("app.services.documents.extraction_service.storage_service", custom_storage)
+    monkeypatch.setattr("app.services.analysis.understanding_service.storage_service", custom_storage)
+    monkeypatch.setattr("app.api.routes.projects.storage_service", custom_storage)
+    monkeypatch.setattr("app.api.routes.documents.storage_service", custom_storage)
     monkeypatch.setattr(settings, "STORAGE_LOCAL_DIR", str(storage_dir))
+    monkeypatch.setattr(settings, "STORAGE_PROCESSED_DIR", str(processed_dir))
 
     return custom_storage
 

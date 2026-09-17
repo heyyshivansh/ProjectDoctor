@@ -1,12 +1,13 @@
 import uuid
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.project import Project
+    from app.models.document_extraction import DocumentExtraction
 
 
 class Artifact(Base):
@@ -67,4 +68,10 @@ class Artifact(Base):
     project: Mapped["Project"] = relationship(
         "Project",
         back_populates="artifacts",
+    )
+    extraction: Mapped[Optional["DocumentExtraction"]] = relationship(
+        "DocumentExtraction",
+        back_populates="artifact",
+        cascade="all, delete-orphan",
+        uselist=False,
     )

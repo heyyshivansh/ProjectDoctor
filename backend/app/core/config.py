@@ -15,6 +15,9 @@ class Settings(BaseModel):
     STORAGE_LOCAL_DIR: str = Field(
         default_factory=lambda: os.getenv("STORAGE_LOCAL_DIR", "storage/uploads")
     )
+    STORAGE_PROCESSED_DIR: str = Field(
+        default_factory=lambda: os.getenv("STORAGE_PROCESSED_DIR", "storage/processed")
+    )
     MAX_UPLOAD_SIZE_MB: int = Field(
         default_factory=lambda: int(os.getenv("MAX_UPLOAD_SIZE_MB", "25"))
     )

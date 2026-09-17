@@ -7,7 +7,7 @@ from sqlalchemy import func
 from app.models.project import Project
 from app.models.artifact import Artifact
 from app.schemas.project import ProjectCreate
-from app.services.storage_service import StoredFileInfo
+from app.services.storage_service import storage_service, StoredFileInfo
 
 
 class ProjectService:
@@ -138,3 +138,47 @@ class ProjectService:
             .order_by(Artifact.created_at.desc())
         )
         return list(db.scalars(stmt).all())
+
+    @staticmethod
+    def delete_artifact(
+        db: Session, project_id: uuid.UUID, artifact_id: uuid.UUID
+    ) -> bool:
+        """Delete an artifact from database and remove its raw & processed disk files."""
+        artifact = ProjectService.get_artifact(db, project_id, artifact_id)
+        if not artifact:
+            return False
+
+        # 1. Clean up physical disk files (raw upload and any processed text)
+        storage_service.delete_artifact_files(
+            project_id=project_id,
+            stored_filename=artifact.stored_filename,
+            artifact_id=artifact.id,
+        )
+
+        # 2. Delete artifact record (DB cascade deletes document_extractions)
+        db.delete(artifact)
+        try:
+            db.commit()
+            return True
+        except Exception:
+            db.rollback()
+            raise
+
+    @staticmethod
+    def delete_project(db: Session, project_id: uuid.UUID) -> bool:
+        """Delete a project from database and remove its entire physical storage directory."""
+        project = ProjectService.get_project(db, project_id)
+        if not project:
+            return False
+
+        # 1. Clean up all physical storage (raw uploads and processed texts)
+        storage_service.delete_project_storage(project_id)
+
+        # 2. Delete project from DB (cascade deletes artifacts, extractions, understanding)
+        db.delete(project)
+        try:
+            db.commit()
+            return True
+        except Exception:
+            db.rollback()
+            raise

@@ -65,8 +65,15 @@ class LocalStorageService:
     quota, deleting any partial file immediately if the threshold is breached.
     """
 
-    def __init__(self, base_storage_dir: Optional[str] = None):
+    def __init__(
+        self,
+        base_storage_dir: Optional[str] = None,
+        processed_storage_dir: Optional[str] = None,
+    ):
         self.base_dir = Path(base_storage_dir or settings.STORAGE_LOCAL_DIR).resolve()
+        self.processed_base_dir = Path(
+            processed_storage_dir or settings.STORAGE_PROCESSED_DIR
+        ).resolve()
         self.max_bytes = settings.MAX_UPLOAD_SIZE_MB * 1024 * 1024
 
     def get_project_dir(self, project_id: uuid.UUID) -> Path:
@@ -182,6 +189,88 @@ class LocalStorageService:
                 path.unlink()
         except OSError:
             pass
+
+    def get_processed_project_dir(self, project_id: uuid.UUID) -> Path:
+        """Get or create the dedicated processed directory for a specific project."""
+        project_dir = self.processed_base_dir / str(project_id)
+        validate_path_boundary(self.processed_base_dir, project_dir)
+        project_dir.mkdir(parents=True, exist_ok=True)
+        return project_dir
+
+    def save_processed_text(
+        self,
+        project_id: uuid.UUID,
+        artifact_id: uuid.UUID,
+        text: str,
+    ) -> str:
+        """Securely write processed extracted text to disk.
+
+        Returns relative storage path for database reference.
+        """
+        project_dir = self.get_processed_project_dir(project_id)
+        filename = f"{artifact_id}_extracted.txt"
+        target_path = project_dir / filename
+        validate_path_boundary(project_dir, target_path)
+
+        try:
+            with open(target_path, "w", encoding="utf-8") as f:
+                f.write(text)
+        except Exception:
+            self._safe_remove(target_path)
+            raise
+
+        relative_path = str(target_path.relative_to(self.processed_base_dir.parent)).replace("\\", "/")
+        return relative_path
+
+    def get_processed_text_path(
+        self,
+        project_id: uuid.UUID,
+        artifact_id: uuid.UUID,
+    ) -> Path:
+        """Resolve and validate the canonical path to an extracted text file."""
+        project_dir = self.get_processed_project_dir(project_id)
+        filename = f"{artifact_id}_extracted.txt"
+        target_path = project_dir / filename
+        validated_path = validate_path_boundary(project_dir, target_path)
+
+        if not validated_path.is_file():
+            raise FileNotFoundError(f"Extracted text file for artifact '{artifact_id}' not found.")
+
+        return validated_path
+
+    def delete_processed_text(
+        self,
+        project_id: uuid.UUID,
+        artifact_id: uuid.UUID,
+    ) -> bool:
+        """Delete an extracted text file from disk."""
+        try:
+            file_path = self.get_processed_text_path(project_id, artifact_id)
+            file_path.unlink(missing_ok=True)
+            return True
+        except (FileNotFoundError, PathTraversalError):
+            return False
+
+    def delete_artifact_files(
+        self,
+        project_id: uuid.UUID,
+        stored_filename: str,
+        artifact_id: Optional[uuid.UUID] = None,
+    ) -> None:
+        """Delete both the raw upload file and any processed extracted text file."""
+        self.delete_file(project_id, stored_filename)
+        if artifact_id:
+            self.delete_processed_text(project_id, artifact_id)
+
+    def delete_project_storage(self, project_id: uuid.UUID) -> None:
+        """Delete all physical storage directories (uploads and processed) for a project."""
+        raw_dir = self.base_dir / str(project_id)
+        if raw_dir.exists() and raw_dir.is_dir():
+            shutil.rmtree(raw_dir, ignore_errors=True)
+
+        proc_dir = self.processed_base_dir / str(project_id)
+        if proc_dir.exists() and proc_dir.is_dir():
+            shutil.rmtree(proc_dir, ignore_errors=True)
 
 
 # Global singleton storage service

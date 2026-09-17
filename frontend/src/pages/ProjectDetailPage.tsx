@@ -1,9 +1,17 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getProject } from "@/services/projects";
+import {
+  listDocumentExtractions,
+  batchExtractDocuments,
+  getProjectUnderstanding,
+} from "@/services/documents";
 import { ProjectDetail, Artifact } from "@/types/project";
+import { DocumentExtractionSummary } from "@/types/document";
+import { ProjectUnderstanding } from "@/types/understanding";
 import { ArtifactUploadSection } from "@/components/projects/ArtifactUploadSection";
 import { ArtifactList } from "@/components/projects/ArtifactList";
+import { ProjectUnderstandingCard } from "@/components/understanding/ProjectUnderstandingCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -18,13 +26,21 @@ import {
   AlertCircle,
   RefreshCw,
   Cpu,
+  FileText,
+  Sparkles,
+  CheckCircle2,
 } from "lucide-react";
 
 export const ProjectDetailPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
 
   const [project, setProject] = useState<ProjectDetail | null>(null);
+  const [extractions, setExtractions] = useState<Record<string, DocumentExtractionSummary>>({});
+  const [understanding, setUnderstanding] = useState<ProjectUnderstanding | null>(null);
+  const [activeTab, setActiveTab] = useState<"overview" | "understanding">("overview");
   const [isLoading, setIsLoading] = useState(true);
+  const [isBatchExtracting, setIsBatchExtracting] = useState(false);
+  const [batchMessage, setBatchMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProjectData = useCallback(async () => {
@@ -33,8 +49,20 @@ export const ProjectDetailPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getProject(projectId);
-      setProject(data);
+      const [projectData, extractionList, understandingData] = await Promise.all([
+        getProject(projectId),
+        listDocumentExtractions(projectId).catch(() => [] as DocumentExtractionSummary[]),
+        getProjectUnderstanding(projectId).catch(() => null),
+      ]);
+
+      setProject(projectData);
+
+      const extractionMap: Record<string, DocumentExtractionSummary> = {};
+      extractionList.forEach((item) => {
+        extractionMap[item.artifact_id] = item;
+      });
+      setExtractions(extractionMap);
+      setUnderstanding(understandingData);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load project details."
@@ -54,6 +82,46 @@ export const ProjectDetailPage: React.FC = () => {
       ...project,
       artifacts: [newArtifact, ...project.artifacts],
     });
+  };
+
+  const handleExtractionUpdated = (updated: DocumentExtractionSummary) => {
+    setExtractions((prev) => ({
+      ...prev,
+      [updated.artifact_id]: updated,
+    }));
+  };
+
+  const handleBatchExtract = async () => {
+    if (!projectId) return;
+    setIsBatchExtracting(true);
+    setBatchMessage(null);
+    try {
+      const result = await batchExtractDocuments(projectId);
+      setBatchMessage(
+        `Batch extraction finished: ${result.completed_count} completed, ${result.skipped_count} skipped, ${result.failed_count} failed.`
+      );
+
+      // Refresh extractions list and understanding
+      const [newExtractions, newUnderstanding] = await Promise.all([
+        listDocumentExtractions(projectId).catch(() => [] as DocumentExtractionSummary[]),
+        getProjectUnderstanding(projectId).catch(() => null),
+      ]);
+
+      const map: Record<string, DocumentExtractionSummary> = {};
+      newExtractions.forEach((item) => {
+        map[item.artifact_id] = item;
+      });
+      setExtractions(map);
+      if (newUnderstanding) {
+        setUnderstanding(newUnderstanding);
+      }
+    } catch (err) {
+      setBatchMessage(
+        err instanceof Error ? err.message : "Failed to execute batch extraction."
+      );
+    } finally {
+      setIsBatchExtracting(false);
+    }
   };
 
   if (isLoading) {
@@ -141,91 +209,200 @@ export const ProjectDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Project Metadata Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Problem Statement Card */}
-        <Card className="border border-slate-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-slate-900">
-              Problem Statement
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-            {project.problem_statement}
-          </CardContent>
-        </Card>
-
-        {/* Project Description Card */}
-        <Card className="border border-slate-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-slate-900">
-              Project Description
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-            {project.description}
-          </CardContent>
-        </Card>
+      {/* Tabs Navigation */}
+      <div className="border-b border-slate-200">
+        <nav className="flex space-x-6" aria-label="Tabs">
+          <button
+            type="button"
+            onClick={() => setActiveTab("overview")}
+            className={cn(
+              "py-3 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 transition-colors",
+              activeTab === "overview"
+                ? "border-blue-600 text-blue-600 font-semibold"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+            )}
+          >
+            <FileText className="h-4 w-4" />
+            Overview & Artifacts
+            {project.artifacts.length > 0 && (
+              <span className="ml-1.5 py-0.5 px-2 rounded-full text-xs bg-slate-100 text-slate-600 font-semibold">
+                {project.artifacts.length}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("understanding")}
+            className={cn(
+              "py-3 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 transition-colors",
+              activeTab === "understanding"
+                ? "border-blue-600 text-blue-600 font-semibold"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+            )}
+          >
+            <Sparkles className="h-4 w-4" />
+            Structured Understanding
+            {understanding && (
+              <span className="ml-1.5 py-0.5 px-2 rounded-full text-xs bg-blue-50 text-blue-600 font-medium border border-blue-200">
+                Ready
+              </span>
+            )}
+          </button>
+        </nav>
       </div>
 
-      {/* Requirements & Architecture & Tech Stack Details */}
-      {(project.requirements || project.architecture_summary || (project.tech_stack && project.tech_stack.length > 0)) && (
-        <Card className="border border-slate-200">
-          <CardContent className="pt-6 space-y-6">
-            {project.tech_stack && project.tech_stack.length > 0 && (
-              <div className="space-y-2">
-                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                  <Cpu className="h-3.5 w-3.5" />
-                  Technology Stack
+      {/* Tab 1: Overview & Artifacts */}
+      {activeTab === "overview" && (
+        <div className="space-y-8">
+          {/* Project Metadata Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Problem Statement Card */}
+            <Card className="border border-slate-200">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-semibold text-slate-900">
+                  Problem Statement
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                {project.problem_statement}
+              </CardContent>
+            </Card>
+
+            {/* Project Description Card */}
+            <Card className="border border-slate-200">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-semibold text-slate-900">
+                  Project Description
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                {project.description}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Requirements & Architecture & Tech Stack Details */}
+          {(project.requirements || project.architecture_summary || (project.tech_stack && project.tech_stack.length > 0)) && (
+            <Card className="border border-slate-200">
+              <CardContent className="pt-6 space-y-6">
+                {project.tech_stack && project.tech_stack.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                      <Cpu className="h-3.5 w-3.5" />
+                      Technology Stack
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {project.tech_stack.map((tech) => (
+                        <Badge key={tech} variant="outline" className="bg-slate-50 text-slate-800">
+                          {tech}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {project.requirements && (
+                  <div className="space-y-1.5 border-t border-slate-100 pt-4">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                      <Layers className="h-3.5 w-3.5" />
+                      Initial Requirements
+                    </div>
+                    <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                      {project.requirements}
+                    </p>
+                  </div>
+                )}
+
+                {project.architecture_summary && (
+                  <div className="space-y-1.5 border-t border-slate-100 pt-4">
+                    <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                      Architecture Overview
+                    </div>
+                    <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                      {project.architecture_summary}
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Artifacts Management Section */}
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                  Project Artifacts & Documents
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Upload, inspect, and extract text and outline structure from project specifications.
+                </p>
+              </div>
+
+              {project.artifacts.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleBatchExtract}
+                  disabled={isBatchExtracting}
+                  className="gap-2 text-xs font-medium shrink-0 self-start sm:self-auto"
+                >
+                  {isBatchExtracting ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+                      Extracting All...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3.5 w-3.5 text-blue-600" />
+                      Batch Extract All
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+
+            {batchMessage && (
+              <div className="p-3 text-xs bg-slate-50 border border-slate-200 rounded-md text-slate-700 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span>{batchMessage}</span>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {project.tech_stack.map((tech) => (
-                    <Badge key={tech} variant="outline" className="bg-slate-50 text-slate-800">
-                      {tech}
-                    </Badge>
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setBatchMessage(null)}
+                  className="text-slate-400 hover:text-slate-600 text-xs font-semibold ml-2"
+                >
+                  Dismiss
+                </button>
               </div>
             )}
 
-            {project.requirements && (
-              <div className="space-y-1.5 border-t border-slate-100 pt-4">
-                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                  <Layers className="h-3.5 w-3.5" />
-                  Initial Requirements
-                </div>
-                <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
-                  {project.requirements}
-                </p>
-              </div>
-            )}
+            <ArtifactUploadSection
+              projectId={project.id}
+              onUploadSuccess={handleArtifactUploaded}
+            />
 
-            {project.architecture_summary && (
-              <div className="space-y-1.5 border-t border-slate-100 pt-4">
-                <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                  Architecture Overview
-                </div>
-                <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
-                  {project.architecture_summary}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            <ArtifactList
+              projectId={project.id}
+              artifacts={project.artifacts}
+              extractions={extractions}
+              onExtractionUpdated={handleExtractionUpdated}
+            />
+          </div>
+        </div>
       )}
 
-      {/* Artifacts Management Section */}
-      <div className="space-y-6">
-        <ArtifactUploadSection
-          projectId={project.id}
-          onUploadSuccess={handleArtifactUploaded}
-        />
-
-        <ArtifactList
-          projectId={project.id}
-          artifacts={project.artifacts}
-        />
-      </div>
+      {/* Tab 2: Structured Project Understanding */}
+      {activeTab === "understanding" && (
+        <div className="space-y-6">
+          <ProjectUnderstandingCard
+            projectId={project.id}
+            initialUnderstanding={understanding}
+            onUnderstandingUpdated={(updated) => setUnderstanding(updated)}
+          />
+        </div>
+      )}
     </div>
   );
 };

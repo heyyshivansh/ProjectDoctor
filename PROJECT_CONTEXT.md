@@ -10,9 +10,9 @@ AI-Powered Technical Project Evaluation, Diagnosis, Improvement, and Jury Readin
 
 **Status:** Development
 
-**Current Stage:** Checkpoint 2 - Project Creation & Artifact Uploads
+**Current Stage:** Checkpoint 3 - Document Understanding & Deterministic Project Representation
 
-**MVP Status:** In Progress (Project creation, database, & artifact storage completed)
+**MVP Status:** In Progress (Project creation, artifact storage, deterministic text extraction, outline detection, and deterministic project understanding completed)
 
 **Last Updated:** 2026-09-17
 
@@ -1195,6 +1195,30 @@ Status:
 
 Accepted (Implemented in Checkpoint 2).
 
+## Decision 7
+
+Deterministic pure-Python document extraction (pypdf, python-docx, UTF-8/latin-1 plain text & markdown) with non-extractable types gracefully marked as `skipped_unsupported_type` without server errors.
+
+Status:
+
+Accepted (Implemented in Checkpoint 3).
+
+## Decision 8
+
+Single-copy raw text storage on disk (`storage/processed/{project_id}/{artifact_id}_extracted.txt`) with relational persistence of metadata, metrics, and outline sections; physical disk cleanup on artifact/project deletion.
+
+Status:
+
+Accepted (Implemented in Checkpoint 3).
+
+## Decision 9
+
+Strict "No Invention" rule for initial structured project understanding representation: fields default to `null` or `[]` unless explicitly backed by declared metadata or extracted document evidence, with explicit field-level provenance tracking.
+
+Status:
+
+Accepted (Implemented in Checkpoint 3).
+
 ---
 
 # 33. KNOWN LIMITATIONS
@@ -1202,6 +1226,8 @@ Accepted (Implemented in Checkpoint 2).
 At this stage:
 
 * Starlette's multipart parser buffers uploads exceeding 1MB to OS temporary files before the route handler receives the stream; application-level chunking and size limits are actively enforced from that point.
+* OCR is not implemented; scanned image-only PDFs yield empty text or skipped status as per Checkpoint 3 specification.
+* ZIP archive decompression is intentionally out-of-scope for Checkpoint 3; archives are marked as `skipped_unsupported_type`.
 * innovation cannot always be objectively verified
 * Git activity does not represent total team contribution
 * missing project artifacts limit evaluation accuracy
@@ -1214,22 +1240,52 @@ These limitations must remain visible in the system design.
 
 ---
 
-# 34. NEXT ACTION
+# 34. CHECKPOINT 3 COMPLETION RECORD & NEXT ACTION
 
-Current next action:
+### Checkpoint 3 Record:
+* **Current Stage**: Checkpoint 3 - Document Understanding & Deterministic Project Representation
+* **Completed Features**:
+  * Pure-Python deterministic document text extractors (`pypdf`, `python-docx`, UTF-8/latin-1 plain text / markdown reader).
+  * Safe handling of unsupported artifact types (`.png`, `.jpg`, `.jpeg`, `.zip`) as `skipped_unsupported_type`.
+  * Text normalization (CRLF -> LF, control character stripping, whitespace trimming, 5M character ceiling).
+  * Structural heading and outline detection (`DocumentSection`).
+  * Deterministic document metrics computation (character count, word count, line count, page count, SHA-256 hash).
+  * Single-copy authoritative text storage on disk (`storage/processed/{project_id}/{artifact_id}_extracted.txt`).
+  * Physical filesystem cleanup on artifact and project deletion (removing both raw uploads and processed texts).
+  * Relational database models (`DocumentExtraction`, `ProjectUnderstanding`) and Alembic migration `20a05a1dd259`.
+  * Deterministic structured project understanding synthesizer implementing the 11 dimensions defined in Section 11 (`problem`, `target_users`, `objectives`, `requirements_summary`, `modules`, `tech_stack`, `architecture_overview`, `dependencies`, `expected_scale`, `deployment`, `team`).
+  * Strict "No Invention" rule: missing fields remain strictly `null` or `[]`.
+  * Field-level provenance tracking referencing project metadata or source artifact sections.
+  * 7 Resource-oriented REST APIs for single extraction, batch extraction, extractions listing, extraction details, raw text streaming, understanding generation, and understanding retrieval.
+  * React frontend integration: Tabbed navigation (`Overview & Artifacts` vs `Structured Understanding`), extraction status badges, batch extraction trigger, raw text viewer modal with outline navigator, and full 11-dimension understanding card with provenance badges.
+* **Files/Systems Added**:
+  * `backend/app/models/document_extraction.py`, `backend/app/models/project_understanding.py`
+  * `backend/alembic/versions/20a05a1dd259_create_document_extractions_and_project_.py`
+  * `backend/app/services/documents/base.py`, `pdf_extractor.py`, `docx_extractor.py`, `text_extractor.py`, `fallback_extractor.py`, `normalizer.py`, `extraction_service.py`
+  * `backend/app/services/analysis/understanding_service.py`
+  * `backend/app/schemas/document.py`, `backend/app/schemas/understanding.py`
+  * `backend/app/api/routes/documents.py`, `backend/app/api/routes/understanding.py`
+  * `frontend/src/types/document.ts`, `frontend/src/types/understanding.ts`
+  * `frontend/src/services/documents.ts`
+  * `frontend/src/components/documents/DocumentExtractionBadge.tsx`, `ExtractedTextViewerModal.tsx`
+  * `frontend/src/components/understanding/ProjectUnderstandingCard.tsx`
+* **Tests**:
+  * 45 passed backend tests (`pytest backend/tests -v`) covering all extractors, normalizer, API routes, permissions, isolation, and filesystem lifecycle cleanup.
+  * TypeScript & Vite production build passed (`tsc -b && vite build`) with 0 errors.
+* **Known Issues / Limitations**:
+  * Remote repository has not been updated (commit pending user approval).
+* **Next Checkpoint**:
+  * Checkpoint 4: Requirement Analysis & Atomic Decomposition (Extracting R1..RN atomic requirements, categorizing functional vs non-functional, mapping initial implementation status, and building traceability matrix).
 
 ```text
-CHECKPOINT 2 (COMPLETED)
+CHECKPOINT 3 (COMPLETED)
 ↓
-CHECKPOINT 3
-Document Understanding:
-- Document text extraction (PDF, DOCX, MD, TXT)
-- Text processing & normalization
-- Project understanding representation
-- Initial structured project representation
+CHECKPOINT 4
+Requirement Analysis & Traceability:
+- Atomic requirement extraction (R1..RN)
+- Requirement categorization (functional, security, performance)
+- Requirement traceability & implementation coverage
 ```
-
-Do not skip checkpoints. Checkpoint 3 has NOT started.
 
 ---
 

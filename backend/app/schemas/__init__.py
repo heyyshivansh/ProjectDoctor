@@ -9,6 +9,13 @@ from app.schemas.project import (
     ProjectDetailResponse,
 )
 from app.schemas.artifact import ArtifactResponse
+from app.schemas.document import (
+    DocumentSectionSchema,
+    DocumentExtractionSummary,
+    DocumentExtractionResponse,
+    BatchExtractionResponse,
+)
+from app.schemas.understanding import ProjectUnderstandingResponse
 
 __all__ = [
     "HealthResponse",
@@ -18,4 +25,9 @@ __all__ = [
     "ProjectListResponse",
     "ProjectDetailResponse",
     "ArtifactResponse",
+    "DocumentSectionSchema",
+    "DocumentExtractionSummary",
+    "DocumentExtractionResponse",
+    "BatchExtractionResponse",
+    "ProjectUnderstandingResponse",
 ]

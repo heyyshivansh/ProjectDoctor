@@ -1,9 +1,14 @@
 import uuid
 from datetime import datetime
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.artifact import Artifact
+    from app.models.document_extraction import DocumentExtraction
+    from app.models.project_understanding import ProjectUnderstanding
 
 
 class Project(Base):
@@ -69,5 +74,18 @@ class Project(Base):
         "Artifact",
         back_populates="project",
         cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    extractions: Mapped[List["DocumentExtraction"]] = relationship(
+        "DocumentExtraction",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    understanding: Mapped[Optional["ProjectUnderstanding"]] = relationship(
+        "ProjectUnderstanding",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        uselist=False,
         lazy="selectin",
     )

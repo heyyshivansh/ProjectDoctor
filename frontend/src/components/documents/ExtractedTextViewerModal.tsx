@@ -67,6 +67,30 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
     };
   }, [isOpen, projectId, artifactId, extraction.status]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.paddingRight = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleCopy = () => {
@@ -88,8 +112,21 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="extracted-text-title"
+    >
+      <div
+        className="relative w-full max-w-4xl h-[85vh] max-h-[85vh] bg-white rounded-xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden overscroll-contain"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
           <div className="flex items-center gap-3">
@@ -97,7 +134,7 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
               <FileText className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-slate-900 leading-tight">
+              <h2 id="extracted-text-title" className="text-lg font-semibold text-slate-900 leading-tight">
                 {artifactName}
               </h2>
               <p className="text-xs text-slate-500">
@@ -163,10 +200,10 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
         </div>
 
         {/* Modal Body: Split view (Sections outline + Full text) */}
-        <div className="flex-1 flex overflow-hidden min-h-[350px]">
+        <div className="flex-1 flex overflow-hidden min-h-0">
           {/* Outline Sidebar (if sections exist) */}
           {extraction.sections.length > 0 && (
-            <div className="w-64 border-r border-slate-200 p-4 bg-slate-50/50 overflow-y-auto hidden md:block">
+            <div className="w-64 border-r border-slate-200 p-4 bg-slate-50/50 overflow-y-auto overscroll-contain min-h-0 hidden md:block">
               <h3 className="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2 flex items-center gap-1.5">
                 <BookOpen className="h-3.5 w-3.5" />
                 Outline & Headings
@@ -188,7 +225,7 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
           )}
 
           {/* Text Content Pane */}
-          <div className="flex-1 p-6 overflow-y-auto bg-white font-mono text-xs leading-relaxed text-slate-800 whitespace-pre-wrap selection:bg-blue-100">
+          <div className="flex-1 p-6 overflow-y-auto overscroll-contain min-h-0 bg-white font-mono text-xs leading-relaxed text-slate-800 whitespace-pre-wrap selection:bg-blue-100">
             {isLoadingText ? (
               <div className="flex flex-col items-center justify-center h-full py-16 text-slate-400 space-y-2">
                 <Loader2 className="h-6 w-6 animate-spin text-blue-600" />

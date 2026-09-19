@@ -1,175 +1,160 @@
-# PROJECT CONTEXT
+Below is a **master project context** you can give to another AI at the
+beginning of a coding session. It is written so that an AI with zero
+previous conversation can understand the project.
 
-# Project Doctor
+------------------------------------------------------------------------
 
-AI-Powered Technical Project Evaluation, Diagnosis, Improvement, and Jury Readiness Platform.
+# Project Specification
 
----
+# **Project Doctor**
 
-# 1. PROJECT STATUS
+### AI-Powered Technical Project Evaluation, Diagnosis, Improvement, and Jury Readiness Platform
 
-**Status:** Development
+------------------------------------------------------------------------
 
-**Current Stage:** Checkpoint 5 - GitHub Repository Integration & Repository Evidence
+# 1. Problem Statement
 
-**MVP Status:** In Progress (Project creation, artifact storage, deterministic text extraction, outline detection, structured project understanding, deterministic requirement extraction, and GitHub repository integration & repository evidence completed)
+Students frequently develop software, AI, hardware, and
+interdisciplinary projects for college evaluations, technical expos,
+hackathons, Smart India Hackathon-style competitions, semester projects,
+and final-year projects.
 
-**Last Updated:** 2026-09-19
+However, most student teams do not have access to a reliable technical
+evaluation process before presenting their projects.
 
+A project may appear complete while containing problems such as:
 
+-   poorly defined or weakly justified problem statements
+-   unrealistic technical requirements
+-   architecture that does not match the proposed system
+-   missing functionality
+-   mismatch between documentation and actual implementation
+-   insecure code or exposed credentials
+-   scalability claims unsupported by the architecture
+-   insufficient testing
+-   weak technical novelty
+-   poor requirement coverage
+-   uneven or unclear team contribution
+-   inability to explain technical decisions during evaluation
+-   inability to answer likely jury questions
 
----
+Faculty members and competition judges face the opposite problem. They
+may need to evaluate a large number of projects within limited time,
+making detailed technical inspection of every project difficult.
 
-# 2. PROJECT VISION
+Existing AI tools can generate code, summarize repositories, or answer
+questions, but they generally do not provide a **structured,
+evidence-backed evaluation of an entire technical project from proposal
+through implementation**.
 
-Project Doctor is an AI-assisted platform that evaluates technical projects using their available artifacts, implementation evidence, and configurable evaluation criteria.
+Therefore, the proposed system, **Project Doctor**, will act as an
+AI-assisted technical project evaluator and improvement platform.
 
-The system is intended to help:
+It will analyze a project's proposal, requirements, architecture,
+documentation, and source repository; evaluate the project against a
+configurable rubric; identify inconsistencies and risks; provide
+evidence supporting its findings; generate an improvement plan; and
+simulate technical jury questioning based on the project's actual
+weaknesses.
 
-* students
-* project teams
-* faculty/project guides
-* hackathon and competition organizers
+The system is intended to **assist students and evaluators, not replace
+human judges**.
 
-The platform should identify:
+------------------------------------------------------------------------
 
-* weaknesses
-* missing requirements
-* architecture/implementation inconsistencies
-* security issues
-* unsupported technical claims
-* documentation gaps
-* implementation gaps
-* scalability concerns
-* project risks
+# 2. Core Objective
 
-It should then provide:
+The goal is not simply to give a project a score.
 
-* evidence-backed findings
-* improvement recommendations
-* prioritized action plans
-* project-specific jury questions
-* final project readiness information
+The primary objective is:
 
-Project Doctor is a decision-support system.
+> **To determine whether a technical project is coherent, feasible,
+> sufficiently implemented, technically sound, well documented, and
+> ready to be presented or evaluated, while identifying concrete
+> weaknesses and explaining the evidence behind each finding.**
 
-It must not claim to replace human evaluators or judges.
+The system should answer five questions:
 
----
+### 1. What is good about the project?
 
-# 3. CORE PRINCIPLE
+### 2. What is wrong or incomplete?
 
-The central product principle is:
+### 3. Why does the system believe something is wrong?
 
-> Analyze → Explain → Improve → Defend
+### 4. How should the team improve it?
 
-The system should help a project team understand:
+### 5. Can the team defend the project when questioned?
 
-1. What is working?
-2. What is weak?
-3. Why is it weak?
-4. What evidence supports that conclusion?
-5. What should be improved?
-6. Can the team defend the technical decisions during evaluation?
+------------------------------------------------------------------------
 
----
+# 3. Target Users
 
-# 4. PROBLEM
+## A. Student / Project Team
 
-Students often complete projects without a rigorous technical evaluation process.
+Primary user.
 
-Typical problems include:
+Use cases:
 
-* weak problem definition
-* unrealistic requirements
-* architecture/implementation mismatch
-* incomplete functionality
-* insufficient testing
-* security vulnerabilities
-* exposed credentials
-* unsupported scalability claims
-* weak technical documentation
-* unclear team contribution
-* weak technical justification
-* inability to answer jury questions
+-   semester projects
+-   mini projects
+-   major/final-year projects
+-   Tech Expo
+-   hackathons
+-   SIH-style competitions
+-   startup prototypes
+-   research prototypes
 
-Faculty and competition evaluators may not have sufficient time to deeply inspect every project.
+Typical question:
 
-Project Doctor aims to provide structured technical analysis before human evaluation.
+> "Is our project actually ready?"
 
----
+------------------------------------------------------------------------
 
-# 5. TARGET USERS
+## B. Faculty / Project Guide
 
-## Students / Project Teams
+Faculty can use the system to:
 
-Use Project Doctor to determine whether their project is technically ready.
+-   evaluate project proposals
+-   identify technically weak projects
+-   monitor project progress
+-   compare projects against a common rubric
+-   identify missing requirements
+-   review evidence before project presentations
 
-## Faculty / Project Guides
+------------------------------------------------------------------------
 
-Use it to identify weaknesses and monitor project progress.
+## C. Hackathon / Competition Organizer
 
-## Hackathon / Competition Organizers
+Organizers can use the system for:
 
-Use it to assist with standardized preliminary evaluation and judge preparation.
+-   large-scale preliminary screening
+-   standardized evaluation
+-   identifying incomplete submissions
+-   generating evaluation reports for judges
+-   preparing judges with project-specific questions
 
-The system should assist evaluators, not automatically replace them.
+The AI should **not make the final competition decision automatically**.
 
----
+------------------------------------------------------------------------
 
-# 6. INPUTS
+# 4. Core Concept
 
-The platform may accept:
+The system follows this lifecycle:
 
-## Core MVP Inputs
-
-* project title
-* problem statement
-* project description
-* project requirements
-* technology stack
-* architecture diagram
-* GitHub repository
-
-## Optional Inputs
-
-* README
-* source code
-* database schema
-* API documentation
-* project report
-* presentation
-* screenshots
-* deployment information
-* test reports
-* team information
-* hardware information
-* demo video/transcript
-
-The system must handle missing artifacts.
-
-If implementation evidence is unavailable, the system must not pretend implementation was verified.
-
----
-
-# 7. MVP
-
-The MVP must support this workflow:
-
-```text
-Project Upload
+``` text
+Project Submission
         ↓
-Document Analysis
+Project Understanding
         ↓
-Requirement Extraction
+Evidence Collection
         ↓
-GitHub Analysis
+Technical Evaluation
         ↓
 Requirement Traceability
         ↓
-Evidence-Based Findings
+Inconsistency Detection
         ↓
-Project Evaluation
+Risk & Weakness Diagnosis
         ↓
 Improvement Plan
         ↓
@@ -178,46 +163,164 @@ Jury Simulation
 Final Readiness Report
 ```
 
-The MVP should not attempt to solve every possible project-evaluation problem.
+------------------------------------------------------------------------
 
----
+# 5. Inputs
 
-# 8. EVALUATION CRITERIA
+A project may provide some or all of the following:
 
-Default evaluation criteria:
+### Required for MVP
 
-| Criterion                | Weight |
-| ------------------------ | -----: |
-| Problem Definition       |    15% |
-| Technical Feasibility    |    15% |
-| Technical Depth          |    15% |
-| Architecture & Design    |    15% |
-| Implementation Quality   |    15% |
-| Innovation / Originality |    10% |
-| Scalability              |     5% |
-| Security & Reliability   |     5% |
-| Completeness             |     5% |
+-   Project title
+-   Problem statement
+-   Project description
+-   Project requirements
+-   Technology stack
+-   Architecture diagram
 
-Weights should eventually be configurable.
+### Optional
 
-Scores must not be presented as absolute truth.
+-   GitHub repository
+-   README
+-   source code
+-   database schema
+-   API documentation
+-   project report
+-   presentation/PPT
+-   screenshots
+-   deployment information
+-   test reports
+-   team member information
+-   hardware requirements
+-   demo video/transcript
 
-Important evaluations should contain:
+The system must handle projects where some artifacts are unavailable.
 
-* explanation
-* evidence
-* confidence
-* limitations
+For example:
 
----
+> A student may upload only a proposal before implementation.
 
-# 9. REQUIREMENT TRACEABILITY
+The system should then perform a **proposal-stage evaluation**, rather
+than falsely judging implementation quality.
 
-Requirements should become structured entities.
+------------------------------------------------------------------------
+
+# 6. Major Features
+
+# Feature 1: Project Understanding Engine
+
+The system first builds a structured representation of the project.
+
+It extracts:
+
+``` text
+Problem
+Target users
+Objectives
+Requirements
+Modules
+Technologies
+Architecture
+Expected scale
+Dependencies
+Team structure
+```
+
+It should identify contradictions between different inputs.
 
 Example:
 
-```text
+> Proposal claims PostgreSQL.
+
+But repository uses:
+
+> SQLite.
+
+The system reports:
+
+> **Implementation mismatch detected.**
+
+------------------------------------------------------------------------
+
+# Feature 2: Multi-Criterion Project Evaluation
+
+The project is evaluated against a configurable rubric.
+
+### Default rubric
+
+  Criterion                    Weight
+  -------------------------- --------
+  Problem Definition              15%
+  Technical Feasibility           15%
+  Technical Depth                 15%
+  Architecture & Design           15%
+  Implementation Quality          15%
+  Innovation / Originality        10%
+  Scalability                      5%
+  Security & Reliability           5%
+  Completeness                     5%
+
+The weights must be configurable by the administrator.
+
+### Important requirement
+
+The AI must **never treat the score as absolute truth**.
+
+Every score must be accompanied by:
+
+-   explanation
+-   evidence
+-   detected limitations
+-   confidence level
+
+------------------------------------------------------------------------
+
+# Feature 3: Evidence-Based Diagnosis
+
+This is a core differentiating feature.
+
+Every important AI finding should be traceable to evidence.
+
+Example:
+
+### Finding
+
+> **Scalability concern**
+
+### Evidence
+
+``` text
+Project documentation:
+"Supports 10,000 concurrent users."
+
+Detected architecture:
+Single backend instance
+SQLite database
+No caching
+No load-balancing strategy
+```
+
+### Diagnosis
+
+> The current architecture does not provide sufficient evidence for the
+> stated scalability claim.
+
+### Recommendation
+
+> Introduce a production-grade database, define horizontal scaling
+> strategy, and benchmark expected concurrency.
+
+The user should be able to click the evidence and inspect its source.
+
+------------------------------------------------------------------------
+
+# Feature 4: Requirement Traceability
+
+Requirements should be transformed into structured entities.
+
+Example:
+
+``` text
 R1 → User authentication
 R2 → AI recommendation engine
 R3 → Admin dashboard
@@ -225,1184 +328,1512 @@ R4 → Real-time notification
 R5 → Analytics
 ```
 
-Each requirement should be classified using available evidence.
+The system then searches available project artifacts for implementation
+evidence.
 
-Possible statuses:
+Output:
 
-```text
-implemented
-partially_implemented
-missing
-unable_to_verify
-```
+  Requirement   Evidence                  Status
+  ------------- ------------------------- ----------------
+  R1            `auth/`                   ✅ Implemented
+  R2            `recommendation.py`       ✅ Implemented
+  R3            `dashboard/`              ✅ Implemented
+  R4            No implementation found   ❌ Missing
+  R5            Partial evidence          ⚠️ Partial
 
-Example:
+This feature should calculate:
 
-| Requirement | Evidence                   | Status                |
-| ----------- | -------------------------- | --------------------- |
-| R1          | auth module                | Implemented           |
-| R2          | recommendation service     | Implemented           |
-| R3          | dashboard components       | Implemented           |
-| R4          | no implementation evidence | Missing               |
-| R5          | partial implementation     | Partially Implemented |
+> **Requirement Coverage = implemented requirements / total
+> requirements**
 
-Requirement coverage should be explainable.
+The system must explain how each status was determined.
 
----
+------------------------------------------------------------------------
 
-# 10. EVIDENCE SYSTEM
+# Feature 5: Architecture Analysis
 
-Evidence is a core differentiating feature.
+The system analyzes:
 
-Major findings should point to their source.
+-   architecture diagrams
+-   module relationships
+-   APIs
+-   databases
+-   services
+-   infrastructure
+-   technology choices
 
-Possible evidence sources:
+It should identify:
 
-* proposal
-* PDF page
-* document section
-* README
-* source file
-* source-code line
-* GitHub commit
-* GitHub issue
-* architecture diagram
-* test result
-* security scanner result
-* dependency scanner result
+-   missing components
+-   unnecessary components
+-   bottlenecks
+-   single points of failure
+-   architectural inconsistencies
+-   mismatches between architecture and implementation
 
 Example:
 
-```text
-Finding:
-Scalability claim is insufficiently supported.
+> Documentation shows a microservice architecture.
 
-Evidence:
-Proposal claims 10,000 concurrent users.
+But repository contains:
 
-Repository evidence:
-Single backend process.
-No documented load-balancing strategy.
-SQLite database detected.
+> One monolithic Flask application.
 
-Limitation:
-No production benchmark has been performed.
+The system reports:
+
+> **Architecture/implementation inconsistency.**
+
+------------------------------------------------------------------------
+
+# Feature 6: Code & Repository Analysis
+
+When GitHub or a repository is available, the system analyzes:
+
+### Code quality
+
+-   structure
+-   complexity
+-   duplication
+-   error handling
+-   maintainability
+
+### Engineering practices
+
+-   tests
+-   documentation
+-   dependency management
+-   version control activity
+-   code organization
+
+### Security
+
+-   exposed API keys
+-   secrets
+-   insecure configurations
+-   dependency vulnerabilities
+-   authentication weaknesses
+-   authorization weaknesses
+-   risky endpoints
+
+Important architectural principle:
+
+> **Use deterministic tools for deterministic checks and AI for
+> interpretation.**
+
+For example:
+
+``` text
+Static Analyzer
+Security Scanner
+Test Framework
+        ↓
+Structured Results
+        ↓
+AI Interpretation
 ```
 
-The system must distinguish observed evidence from AI interpretation.
+Do not ask an LLM to guess whether an API key exists when a scanner can
+check it directly.
 
----
+------------------------------------------------------------------------
 
-# 11. PROJECT ANALYSIS
+# Feature 7: Feasibility Analysis
 
-The project understanding layer should extract:
+The system evaluates whether the proposed project is realistic.
 
-```text
-Problem
-Target Users
-Objectives
-Requirements
-Modules
-Technology Stack
-Architecture
-Dependencies
-Expected Scale
-Deployment
-Team
-```
+It considers:
 
-The system should compare information across artifacts.
+-   hardware
+-   software requirements
+-   computing requirements
+-   APIs
+-   budget
+-   expected users
+-   deployment environment
+-   development time
+-   team size
+-   technical complexity
 
 Example:
 
-```text
-Proposal:
-PostgreSQL
+> Team: 3 students Deadline: 30 days Proposed system: distributed AI +
+> IoT + blockchain + mobile application + real-time analytics
 
-Repository:
-SQLite
+The system may flag:
+
+> **High implementation risk due to project scope relative to available
+> development time.**
+
+This should be presented as an **estimated risk**, not an objective
+fact.
+
+------------------------------------------------------------------------
+
+# Feature 8: Team / Work Distribution Analysis
+
+When GitHub and team information are available, the system can analyze
+contribution patterns.
+
+Example:
+
+``` text
+Member A → 63 commits
+Member B → 48 commits
+Member C → 6 commits
+Member D → 2 commits
 ```
 
 Potential finding:
 
-```text
-Documentation/implementation mismatch.
+> **Git activity appears highly concentrated among two members.**
+
+Important:
+
+The system must explicitly state:
+
+> Git activity alone cannot establish actual contribution.
+
+Students may contribute through:
+
+-   research
+-   hardware
+-   design
+-   testing
+-   documentation
+-   presentations
+
+Therefore the system should **flag this for review rather than accuse a
+team member of under-contributing**.
+
+------------------------------------------------------------------------
+
+# Feature 9: Innovation Analysis
+
+This is one of the hardest components.
+
+The system should NOT ask:
+
+> "Is this innovative?"
+
+and blindly output 9/10.
+
+Instead it should analyze:
+
+1.  Existing approaches
+2.  Existing products/systems if supplied or discoverable
+3.  Proposed approach
+4.  Differences
+5.  Technical significance of differences
+
+Output:
+
+> **Innovation assessment: Moderate**
+
+With:
+
+``` text
+Existing approach:
+X
+
+Your approach:
+Y
+
+Difference:
+Z
+
+Technical significance:
+Moderate
+
+Limitation:
+The core method is established, while the novelty primarily lies in integration.
 ```
 
----
+This is much more defensible.
 
-# 12. ARCHITECTURE ANALYSIS
+------------------------------------------------------------------------
 
-Analyze:
+# Feature 10: Risk Engine
 
-* architecture diagrams
-* modules
-* APIs
-* databases
-* services
-* infrastructure
-* dependencies
+The system categorizes findings:
 
-Identify:
-
-* missing components
-* unnecessary complexity
-* bottlenecks
-* single points of failure
-* architectural inconsistencies
-* implementation mismatches
-
-The system should not infer architectural facts without evidence.
-
----
-
-# 13. CODE ANALYSIS
-
-When a repository is available, analyze:
-
-## Code Quality
-
-* structure
-* complexity
-* duplication
-* error handling
-* maintainability
-
-## Engineering Practices
-
-* testing
-* documentation
-* dependency management
-* version control
-* code organization
-
-## Security
-
-* exposed credentials
-* insecure configuration
-* dependency vulnerabilities
-* authentication weaknesses
-* authorization weaknesses
-* risky endpoints
-
-Deterministic tools should be used whenever possible.
-
----
-
-# 14. DETERMINISTIC ANALYSIS
-
-Project Doctor follows:
-
-> Deterministic tools establish facts. AI interprets facts.
-
-Potential tools:
-
-### Python
-
-* Ruff
-* Bandit
-* pytest
-* coverage.py
-
-### JavaScript / TypeScript
-
-* ESLint
-* npm audit
-* Vitest or Jest
-
-### General
-
-* Semgrep
-* Trivy
-
-Example:
-
-```text
-Semgrep
-   ↓
-Finding
-   ↓
-Evidence
-   ↓
-AI Interpretation
-```
-
----
-
-# 15. FEASIBILITY ANALYSIS
-
-Consider:
-
-* team size
-* development time
-* project scope
-* hardware
-* APIs
-* compute requirements
-* deployment environment
-* expected users
-* technical complexity
-* budget where relevant
-
-Feasibility outputs should be framed as risk assessments supported by evidence.
-
----
-
-# 16. TEAM CONTRIBUTION ANALYSIS
-
-If team information and GitHub history are available, the system may analyze:
-
-* commits
-* pull requests
-* issues
-* code ownership
-* activity distribution
-
-However:
-
-> Git activity alone cannot establish total individual contribution.
-
-Non-code contributions may include:
-
-* research
-* hardware
-* design
-* documentation
-* testing
-* presentations
-* project management
-
-The system should flag patterns for human review rather than make accusations.
-
----
-
-# 17. INNOVATION ANALYSIS
-
-Innovation should not be reduced to a blind numerical score.
-
-The system should analyze:
-
-1. Existing approach
-2. Proposed approach
-3. Difference
-4. Technical significance
-5. Evidence
-6. Limitations
-
-If external research is used, the sources must be identified.
-
-If external comparison is unavailable:
-
-```text
-Innovation could not be fully verified from the available evidence.
-```
-
----
-
-# 18. RISK ENGINE
-
-Findings can use:
-
-### Critical
+### 🔴 Critical
 
 Potentially blocks project readiness.
 
-### Major
+### 🟠 Major
 
-Significant weakness requiring attention.
+Significant weakness that should be addressed.
 
-### Minor
+### 🟡 Minor
 
-Recommended improvement.
+Improvement recommended.
 
-### Strength
+### 🟢 Strength
 
 Positive evidence.
 
-Severity must be justified.
+Example:
 
----
-
-# 19. IMPROVEMENT PLANNER
-
-Convert findings into actionable tasks.
-
-Each improvement may contain:
-
-```text
-Title
-Description
-Priority
-Severity
-Dependencies
-Estimated Effort
-Reason
-Expected Outcome
+``` text
+🔴 API credentials exposed
+🟠 Missing requirement R7
+🟠 Scalability claim unsupported
+🟡 Documentation incomplete
+🟢 Strong modular architecture
 ```
 
-Priority should consider:
+------------------------------------------------------------------------
 
-* severity
-* dependencies
-* effort
-* deadline
+# Feature 11: Improvement Planner
 
----
-
-# 20. JURY SIMULATOR
-
-Jury simulation should be generated from the actual project.
-
-Jury categories:
-
-### Technical
-
-Focus on:
-
-* architecture
-* implementation
-* algorithms
-* scalability
-
-### Security
-
-Focus on:
-
-* authentication
-* authorization
-* privacy
-* threats
-
-### Innovation
-
-Focus on:
-
-* novelty
-* differentiation
-* technical significance
-
-### Industry
-
-Focus on:
-
-* deployment
-* cost
-* users
-* scalability
-* operational concerns
-
-Questions should be connected to detected project weaknesses.
-
----
-
-# 21. JURY ANSWER EVALUATION
-
-Evaluate answers using:
-
-* relevance
-* technical correctness
-* completeness
-* evidence
-* clarity
+The system converts findings into an actionable roadmap.
 
 Example:
 
-Weak answer:
+``` text
+Priority 1
+Fix exposed credentials
+Estimated effort: Low
 
-> We use FastAPI because it is fast.
+Priority 2
+Implement missing notification module
+Estimated effort: Medium
 
-Possible feedback:
+Priority 3
+Add automated tests
+Estimated effort: Medium
 
-```text
-Relevant: Yes
-Technical depth: Low
-Evidence: Missing
-Completeness: Low
+Priority 4
+Improve scalability documentation
+Estimated effort: Low
 ```
 
-The system should explain what a stronger answer would need.
+The roadmap should be sorted based on:
 
----
+-   severity
+-   dependency
+-   estimated effort
+-   project deadline
 
-# 22. FINAL READINESS REPORT
+------------------------------------------------------------------------
 
-A final report may contain:
+# Feature 12: Jury Simulator
 
-```text
-Project Overview
+This feature makes the project significantly more interesting.
 
-Strengths
+The AI simulates different evaluator profiles.
 
-Critical Findings
+### Technical Jury
 
-Major Findings
+Focus:
 
-Requirement Coverage
+-   architecture
+-   algorithms
+-   implementation
+-   scalability
 
-Architecture Assessment
+### Security Jury
 
-Implementation Assessment
+Focus:
 
-Security Assessment
+-   authentication
+-   authorization
+-   privacy
+-   threats
 
-Documentation Assessment
+### Innovation Jury
 
-Innovation Assessment
+Focus:
 
-Improvement Plan
+-   novelty
+-   differentiation
+-   problem relevance
 
-Jury Readiness
+### Industry Jury
 
-Remaining Risks
+Focus:
 
-Evidence
+-   deployment
+-   cost
+-   users
+-   scalability
+-   business value
+
+------------------------------------------------------------------------
+
+# Feature 13: Weakness-Aware Question Generation
+
+The jury simulator should not ask random generic questions.
+
+It should use the **actual diagnosis**.
+
+For example, if the system detects:
+
+> Weak scalability justification
+
+the jury asks:
+
+> "How will your system handle 10,000 concurrent users?"
+
+If the student answers:
+
+> "We use FastAPI because it is fast."
+
+the AI evaluates:
+
+``` text
+Relevance:  ✓
+Technical depth: ❌
+Evidence: ❌
+Completeness: ❌
 ```
 
-Readiness must be explained rather than treated as unquestionable truth.
+Then explains:
 
----
+> Your answer mentions the framework but does not explain the database,
+> concurrency model, caching, infrastructure, or scaling strategy.
 
-# 23. TECH STACK
+This connects **Doctor → Diagnosis → Jury Simulation**.
+
+------------------------------------------------------------------------
+
+# Feature 14: Final Readiness Assessment
+
+After improvements and jury simulation, the system generates:
+
+``` text
+PROJECT READINESS
+
+Problem                 Ready
+Requirements            Ready
+Architecture            Ready
+Implementation          Needs improvement
+Security                Needs improvement
+Documentation           Ready
+Jury Preparation        Moderate
+
+Overall status:
+NOT READY
+
+Critical actions remaining:
+1. Fix authentication vulnerability
+2. Implement R4
+3. Add tests
+```
+
+Again, this is a **decision-support assessment**, not certification.
+
+------------------------------------------------------------------------
+
+# 7. What Makes It Agentic?
+
+This is crucial because otherwise this becomes an LLM wrapper.
+
+The system should behave as an **investigative workflow** rather than
+simply responding to a prompt.
+
+Example:
+
+``` text
+User uploads project
+        ↓
+Manager Agent
+        ↓
+"What information do I need?"
+        ↓
+Read proposal
+        ↓
+Inspect requirements
+        ↓
+Inspect architecture
+        ↓
+Inspect repository
+        ↓
+Detect inconsistency
+        ↓
+Investigate inconsistency
+        ↓
+Call security scanner
+        ↓
+Call code analyzer
+        ↓
+Correlate findings
+        ↓
+Generate diagnosis
+        ↓
+Create improvement plan
+        ↓
+Generate targeted jury questions
+```
+
+The agent should be capable of choosing **which investigation to perform
+next based on what it discovers**.
+
+------------------------------------------------------------------------
+
+# 8. Proposed Agent Architecture
+
+For the MVP:
+
+``` text
+                 Manager Agent
+                       │
+       ┌───────────────┼────────────────┐
+       ↓               ↓                ↓
+Project Analyst   Code Analyst     Requirement Analyst
+       │               │                │
+       ↓               ↓                ↓
+Architecture     Security Tools    Traceability
+Analyzer          + AI              Engine
+       └───────────────┼────────────────┘
+                       ↓
+                  Risk Engine
+                       ↓
+             Improvement Planner
+                       ↓
+                Jury Simulator
+```
+
+You don't need every component to be an independent LLM agent.
+
+Some should be deterministic services.
+
+------------------------------------------------------------------------
+
+# 9. MVP Scope
+
+Given your **one-month timeframe**, the MVP should contain only:
+
+### Inputs
+
+-   project proposal
+-   requirements
+-   architecture
+-   GitHub repository
+
+### Evaluation
+
+-   problem definition
+-   feasibility
+-   architecture
+-   implementation
+-   requirement coverage
+-   security basics
+-   documentation
+-   basic innovation analysis
+
+### Outputs
+
+-   project health dashboard
+-   evidence-backed findings
+-   requirement matrix
+-   improvement plan
+-   jury simulator
+-   final readiness report
+
+That is already a substantial project.
+
+------------------------------------------------------------------------
+
+# 10. Future Scope
+
+Once the MVP works:
+
+### Version 2
+
+-   continuous GitHub monitoring
+-   automatic issue generation
+-   PR analysis
+-   test execution
+-   deeper security analysis
+-   dependency analysis
+-   architecture visualization
+
+### Version 3
+
+-   faculty dashboard
+-   multi-project comparison
+-   hackathon organizer dashboard
+-   configurable evaluation rubrics
+-   historical project analytics
+
+### Version 4
+
+-   autonomous project-management agent
+-   automatic GitHub task generation
+-   project progress monitoring
+-   team coordination
+-   deployment verification
+
+### Version 5
+
+-   competition platform integrations
+-   enterprise engineering evaluation
+-   startup prototype assessment
+-   research-prototype evaluation
+
+------------------------------------------------------------------------
+
+# 11. Tech Stack
+
+I'd deliberately keep this relatively conventional.
 
 ## Frontend
 
-* React
-* TypeScript
-* Vite
-* Tailwind CSS
-* shadcn/ui
-* React Router
-* Recharts
+**React + TypeScript**
 
-## Backend
+-   Vite
+-   Tailwind CSS
+-   shadcn/ui
+-   Recharts
+-   React Router
 
-* Python
-* FastAPI
-* Pydantic
-* SQLAlchemy
-* Alembic
+Why TypeScript?
 
-## Database
+Because this project will have a lot of structured objects:
 
-* PostgreSQL
-* pgvector
-
-## AI
-
-* Gemini API
-* LangGraph
-
-## Repository
-
-* GitHub API / GitHub App
-
-## Security / Analysis
-
-* Semgrep
-* Trivy
-* Ruff
-* Bandit
-* pytest
-* coverage.py
-* ESLint
-* npm audit
-
-## Infrastructure
-
-* Docker
-* Docker Compose
-
----
-
-# 24. ARCHITECTURE
-
-Current intended architecture:
-
-```text
-                        USER
-                          │
-                          ▼
-                 React + TypeScript
-                          │
-                          ▼
-                      FastAPI
-                          │
-        ┌─────────────────┼─────────────────┐
-        │                 │                 │
-        ▼                 ▼                 ▼
-   Project Service   Document Service   GitHub Service
-        │                 │                 │
-        └─────────────────┼─────────────────┘
-                          ▼
-                  Analysis Workflow
-                          │
-        ┌─────────────────┼─────────────────┐
-        ▼                 ▼                 ▼
- Requirement         Code/Security     Architecture
- Analysis             Analysis           Analysis
-        │                 │                 │
-        └─────────────────┼─────────────────┘
-                          ▼
-                    Evidence Layer
-                          │
-                          ▼
-                   Evaluation Engine
-                          │
-             ┌────────────┼────────────┐
-             ▼            ▼            ▼
-         Findings     Improvements    Jury
-             │            │            │
-             └────────────┼────────────┘
-                          ▼
-                    Final Report
-                          │
-                          ▼
-                     PostgreSQL
+``` text
+Project
+Requirement
+Finding
+Evidence
+Risk
+Agent
+Evaluation
 ```
 
----
+Type safety will save you from some spectacularly stupid bugs later.
 
-# 25. AGENT ARCHITECTURE
+------------------------------------------------------------------------
 
-The project should use workflows and agents where useful.
+# Backend
 
-Conceptual structure:
+**Python + FastAPI**
 
-```text
-Manager / Workflow
-       │
-       ├── Project Analysis
-       ├── Requirement Analysis
-       ├── Architecture Analysis
-       ├── Code Analysis
-       ├── Security Analysis
-       ├── Evidence Collection
-       ├── Evaluation
-       ├── Improvement Planning
-       └── Jury Simulation
+Responsibilities:
+
+-   authentication
+-   project management
+-   file processing
+-   AI orchestration
+-   GitHub integration
+-   evaluation engine
+-   report generation
+
+------------------------------------------------------------------------
+
+# Database
+
+### PostgreSQL
+
+Store:
+
+-   users
+-   projects
+-   requirements
+-   evaluations
+-   findings
+-   evidence references
+-   reports
+-   jury sessions
+-   questions
+-   answers
+
+For the one-month MVP, you could develop locally with PostgreSQL or use
+Docker.
+
+------------------------------------------------------------------------
+
+# AI Layer
+
+Because you already have Google AI access, I'd use:
+
+### Gemini API
+
+for:
+
+-   reasoning
+-   project analysis
+-   requirement extraction
+-   architecture interpretation
+-   report generation
+-   jury simulation
+
+You could later make the model provider configurable.
+
+------------------------------------------------------------------------
+
+# Agent Framework
+
+For the MVP:
+
+### LangGraph
+
+This is useful because your workflow is naturally graph-like:
+
+``` text
+Analyze
+  ↓
+Investigate
+  ↓
+Need more evidence?
+  ↓
+Yes → retrieve
+  ↓
+Analyze again
 ```
 
-Not every component needs to be an independent LLM agent.
+But I would **not begin by building a giant multi-agent system**.
 
-Deterministic services should remain deterministic.
+Start with a structured workflow and introduce agents where autonomous
+branching is actually useful.
 
----
+------------------------------------------------------------------------
 
-# 26. FRONTEND STRUCTURE
+# Repository Integration
 
-Current intended structure:
+### GitHub REST API / GitHub App
 
-```text
-frontend/
-├── public/
-└── src/
-    ├── assets/
-    ├── components/
-    │   ├── ui/
-    │   ├── layout/
-    │   ├── dashboard/
-    │   ├── projects/
-    │   ├── analysis/
-    │   ├── jury/
-    │   └── common/
-    ├── pages/
-    ├── hooks/
-    ├── lib/
-    ├── services/
-    ├── types/
-    └── utils/
+Use it for:
+
+-   repository metadata
+-   files
+-   commits
+-   issues
+-   pull requests
+-   contributors
+
+Later:
+
+-   GitHub Actions
+-   automated testing
+-   PR checks
+
+------------------------------------------------------------------------
+
+# Code Analysis
+
+Use existing tools rather than reinventing them.
+
+### Python
+
+-   Ruff
+-   Bandit
+-   pytest
+-   coverage.py
+
+### JavaScript/TypeScript
+
+-   ESLint
+-   npm audit
+-   Vitest/Jest
+
+### General
+
+-   Semgrep
+-   Trivy
+
+The exact tool set can depend on the languages detected in the
+repository.
+
+------------------------------------------------------------------------
+
+# Security Analysis
+
+Use:
+
+**Semgrep**
+
+for static security/code-pattern analysis.
+
+**Trivy**
+
+for dependency/container vulnerability detection.
+
+Then give the structured results to the AI for interpretation.
+
+------------------------------------------------------------------------
+
+# Document Processing
+
+For:
+
+-   PDF
+-   DOCX
+-   Markdown
+-   PPTX
+
+Use Python libraries and parsers appropriate to each format.
+
+For PDFs, extract text and preserve page references so findings can
+cite:
+
+> `proposal.pdf, page 7`
+
+That is important for your **Evidence Graph**.
+
+------------------------------------------------------------------------
+
+# Vector Search / RAG
+
+You'll probably need this.
+
+### Option
+
+**pgvector + PostgreSQL**
+
+Store embeddings for:
+
+-   project documents
+-   requirements
+-   README
+-   source-code summaries
+-   architecture descriptions
+
+Then the AI can retrieve relevant evidence rather than putting the
+entire repository into its context window.
+
+------------------------------------------------------------------------
+
+# Optional Object Storage
+
+For uploaded files:
+
+### MinIO locally
+
+or
+
+### S3-compatible storage
+
+Later, for deployment.
+
+------------------------------------------------------------------------
+
+# Deployment
+
+For your demo:
+
+``` text
+Frontend → Vercel
+Backend  → Render/Railway
+Database → PostgreSQL
 ```
 
----
+Or Dockerize everything and run locally.
 
-# 27. BACKEND STRUCTURE
+For a college demo, **local deployment is completely acceptable**. Don't
+turn deployment into another project.
 
-Current intended structure:
+------------------------------------------------------------------------
 
-```text
-backend/
-├── app/
-│   ├── api/
-│   │   └── routes/
-│   ├── core/
-│   ├── db/
-│   ├── models/
-│   ├── schemas/
-│   ├── services/
-│   │   ├── analysis/
-│   │   ├── documents/
-│   │   ├── evaluation/
-│   │   ├── evidence/
-│   │   ├── github/
-│   │   ├── jury/
-│   │   └── security/
-│   ├── agents/
-│   ├── workflows/
-│   └── utils/
-└── tests/
+# 12. Suggested Database Structure
+
+At a high level:
+
+``` text
+users
+  │
+  └── projects
+         │
+         ├── requirements
+         │
+         ├── artifacts
+         │      ├── proposal
+         │      ├── architecture
+         │      └── documentation
+         │
+         ├── github_repository
+         │
+         ├── evaluations
+         │      ├── criterion_scores
+         │      └── findings
+         │
+         ├── evidence
+         │
+         ├── improvement_tasks
+         │
+         └── jury_sessions
+                ├── questions
+                └── answers
 ```
 
-This is the intended starting structure, not a claim that all components are already implemented.
+------------------------------------------------------------------------
 
----
+# 13. High-Level System Architecture
 
-# 28. STORAGE
-
-MVP:
-
-```text
-storage/
-├── uploads/
-└── processed/
+``` text
+                       USER
+                        │
+                        ▼
+               React + TypeScript
+                        │
+                        ▼
+                    FastAPI
+                        │
+        ┌───────────────┼────────────────┐
+        │               │                │
+        ▼               ▼                ▼
+   Project Service   GitHub Service   File Service
+        │               │                │
+        └───────────────┼────────────────┘
+                        ▼
+                 Agent Orchestrator
+                     LangGraph
+                        │
+       ┌────────────────┼─────────────────┐
+       ▼                ▼                 ▼
+Project Analysis   Code Analysis   Requirement Analysis
+       │                │                 │
+       └────────────────┼─────────────────┘
+                        ▼
+                 Evaluation Engine
+                        │
+              ┌─────────┴──────────┐
+              ▼                    ▼
+        Evidence Graph       Risk Engine
+              │                    │
+              └─────────┬──────────┘
+                        ▼
+                Improvement Planner
+                        │
+                        ▼
+                  Jury Simulator
+                        │
+                        ▼
+                  Final Report
+                        │
+                        ▼
+                   PostgreSQL
 ```
 
-Local storage may be used during development.
+------------------------------------------------------------------------
 
-Future production storage may use S3-compatible storage or MinIO.
+# 14. Recommended Project Development Order
 
----
+Don't build it in the order listed above.
 
-# 29. DEVELOPMENT PHASES
+Build in this order:
 
-## Checkpoint 0
+### Phase 1
 
-Project foundation.
+Project upload + database.
 
-Status:
+### Phase 2
 
-```text
-COMPLETED
-```
+Proposal/document analysis.
 
-Tasks:
+### Phase 3
 
-* repository structure
-* AI instructions
-* project context
-* Git initialization
-* README
-* `.gitignore`
+Requirement extraction + traceability.
 
----
-
-## Checkpoint 1
-
-Application skeleton.
-
-Status:
-
-```text
-COMPLETED
-```
-
-Tasks:
-
-* initialize React/Vite
-* initialize FastAPI
-* frontend shell
-* backend health endpoint
-* environment configuration
-* basic Docker setup if required
-
----
-
-## Checkpoint 2
-
-Project creation and uploads.
-
-Status:
-
-```text
-COMPLETED
-```
-
-Tasks:
-
-* project creation
-* project metadata
-* document upload
-* artifact storage
-* basic database schema
-
----
-
-## Checkpoint 3
-
-Document understanding.
-
-Tasks:
-
-* document extraction
-* text processing
-* project understanding
-* initial structured project representation
-
----
-
-## Checkpoint 4
-
-Requirements and traceability.
-
-Tasks:
-
-* requirement extraction
-* requirement storage
-* implementation evidence
-* coverage calculation
-* traceability UI
-
----
-
-## Checkpoint 5
+### Phase 4
 
 GitHub integration.
 
-Tasks:
+### Phase 5
 
-* repository connection
-* repository metadata
-* file inspection
-* commit information
-* contributor information
+Code/security analysis.
 
----
-
-## Checkpoint 6
-
-Code and security analysis.
-
-Tasks:
-
-* language detection
-* static analysis
-* security scans
-* dependency analysis
-* test analysis
-* structured analysis results
-
----
-
-## Checkpoint 7
+### Phase 6
 
 Evaluation engine.
 
-Tasks:
+### Phase 7
 
-* evaluation criteria
-* scoring
-* explanations
-* confidence
-* limitations
-* findings
+Evidence-backed findings.
 
----
+### Phase 8
 
-## Checkpoint 8
+Improvement planner.
 
-Evidence and improvement planner.
-
-Tasks:
-
-* evidence model
-* evidence references
-* finding/evidence relationships
-* prioritized improvement tasks
-
----
-
-## Checkpoint 9
+### Phase 9
 
 Jury simulator.
 
-Tasks:
-
-* jury profiles
-* project-specific questions
-* answer evaluation
-* weakness-driven questioning
-
----
-
-## Checkpoint 10
-
-Dashboard and integration.
-
-Tasks:
-
-* project health dashboard
-* findings UI
-* requirement matrix
-* evidence viewer
-* improvement roadmap
-* jury dashboard
-* final report
-
----
-
-# 30. CURRENTLY IMPLEMENTED
-
-### Checkpoint 0 - Project Foundation
-- Basic repository folder structure established and verified.
-- Git repository initialized locally.
-- Core configuration and guidelines established (`PROJECT_CONTEXT.md`, `AI_INSTRUCTIONS.md`, `.gitignore`).
-
-### Checkpoint 1 - Application Foundation (Completed)
-- React/Vite frontend initialized with TypeScript.
-- Tailwind CSS configured and verified working.
-- shadcn/ui initialized correctly (`components.json`, `cn` helper, `Card`, `Badge`, `Button` UI primitives).
-- React Router initialized with layout and root route (`/`).
-- Recharts foundation installed and available for future dashboard work.
-- FastAPI backend initialized with separated modular routing (`app/main.py`, `app/api/router.py`, `app/api/routes/health.py`, `app/schemas/health.py`, `app/core/config.py`).
-- `/api/health` endpoint implemented, response typed with Pydantic (`{"status": "ok"}`).
-- Frontend ↔ Backend communication implemented: UI fetches real-time health from `/api/health` and displays live connection state (`Frontend: Running`, `Backend: Connected` / `Backend: Disconnected`) with graceful error handling and retry mechanism.
-- Backend automated unit test implemented in `backend/tests/test_health.py` and passing 100%.
-
-### Checkpoint 2 - Project Creation & Artifact Uploads (Completed)
-- Relational database foundation initialized with SQLAlchemy 2.0 and Alembic migrations.
-- Created ORM models: `Project` (metadata, UUID primary key, indexed title and creation date) and `Artifact` (file metadata, project foreign key, ON DELETE CASCADE, unique stored filename) in `backend/app/models/`.
-- Dual-mode database session engine configured in `backend/app/db/session.py` supporting PostgreSQL (via `psycopg` v3 binary driver) for production/Docker and SQLite fallback for local development/testing with automated `PRAGMA foreign_keys=ON;` enforcement.
-- Initial Alembic migration `1f5a7e40f7fe_create_projects_and_artifacts_tables.py` generated and applied successfully.
-- Hardened cross-platform filename sanitization and canonical boundary verification implemented in `backend/app/core/security.py` (stripping Windows/POSIX path traversal sequences, null bytes, double extensions).
-- Local storage service implemented in `backend/app/services/storage_service.py` with bounded 1MB chunked streaming directly to disk, strict 25 MB size quota enforcement, zero-byte rejection, and transactional cleanup of orphaned files upon database failure.
-- Business service layer created in `backend/app/services/project_service.py` handling project CRUD, pagination, artifact counts, and cross-project download ownership enforcement.
-- REST endpoints implemented and mounted in `backend/app/api/routes/projects.py`:
-  - `POST /api/projects` (201 Created with UUID, 422 validation)
-  - `GET /api/projects` (200 OK with pagination `skip`, `limit`, and `artifact_count`)
-  - `GET /api/projects/{project_id}` (200 OK, 404 not found, returns project metadata and attached artifacts list)
-  - `POST /api/projects/{project_id}/artifacts` (201 Created, 400 empty file, 404 project missing, 413 file too large, 415 unsupported media type)
-  - `GET /api/projects/{project_id}/artifacts` (200 OK, lists project artifacts)
-  - `GET /api/projects/{project_id}/artifacts/{artifact_id}/download` (200 OK file stream with original filename, 404 cross-project access rejection)
-- Frontend UI implemented (0 new npm dependencies added):
-  - Added UI primitives (`Input`, `Textarea`, `Label`) matching shadcn/ui design tokens in `frontend/src/components/ui/`.
-  - Added `ProjectCard`, `ProjectForm`, `ArtifactUploadSection`, and `ArtifactList` in `frontend/src/components/projects/`.
-  - Created `CreateProjectPage` (`/projects/new`) with client-side validation and loading states.
-  - Created `ProjectDetailPage` (`/projects/:projectId`) rendering project metadata, drag-and-drop artifact upload with progress indicators, and artifact list with direct file downloads.
-  - Updated `HomePage` (`/`) with an evaluated projects grid and "New Project" call-to-action alongside real-time system health checks.
-  - Updated global layout navigation in `frontend/src/components/layout/AppLayout.tsx`.
-- Test suite expanded to 25 automated unit/integration tests passing 100% across projects, storage security, artifacts, and health regression.
-- Frontend production build (`npm run build`) passing with 0 TypeScript or bundler errors.
-
-### Dependencies Installed
-- **Frontend Dependencies (0 new dependencies added in Checkpoint 2):**
-  - `react`: ^19.0.0
-  - `react-dom`: ^19.0.0
-  - `react-router-dom`: ^7.2.0
-  - `recharts`: ^2.15.1
-  - `clsx`: ^2.1.1
-  - `tailwind-merge`: ^3.0.1
-  - `class-variance-authority`: ^0.7.1
-  - `lucide-react`: ^0.475.0
-  - `tailwindcss-animate`: ^1.0.7
-- **Frontend Dev Dependencies:**
-  - `vite`: ^6.1.0
-  - `@vitejs/plugin-react`: ^4.3.4
-  - `typescript`: ~5.7.3
-  - `@types/react`: ^19.0.10
-  - `@types/react-dom`: ^19.0.4
-  - `@types/node`: ^22.13.4
-  - `tailwindcss`: ^3.4.17
-  - `postcss`: ^8.5.2
-  - `autoprefixer`: ^10.4.20
-- **Backend Dependencies (in `.venv` / `backend/requirements.txt`):**
-  - `fastapi`: 0.141.1
-  - `uvicorn`: 0.53.0
-  - `pydantic`: 2.13.5
-  - `starlette`: 1.6.0
-  - `httpx`: 0.28.1
-  - `pytest`: 9.1.1
-  - `sqlalchemy`: 2.0.54 (Added in Checkpoint 2)
-  - `alembic`: 1.20.0 (Added in Checkpoint 2)
-  - `psycopg`: 3.3.5 / `psycopg-binary`: 3.3.5 (Added in Checkpoint 2)
-  - `python-multipart`: 0.0.32 (Added in Checkpoint 2)
-
-### Tests Executed & Results
-- Backend test suite: `$env:PYTHONPATH="backend"; .venv\Scripts\pytest.exe backend\tests -v` -> 25 passed in 0.69s (100% pass rate: 1 health test, 8 project API/persistence tests, 6 storage security/sanitization tests, 10 artifact upload/download/isolation tests).
-- Frontend production build: `npm.cmd run build` -> passed with 0 errors (built in 4.76s).
-- Full live round-trip check via TestClient (health check -> create project -> upload artifact -> list projects with artifact count -> fetch details -> stream download artifact) -> 100% verified.
-
-### Known Issues
-- None unresolved.
-
----
-
-# 31. CURRENTLY NOT IMPLEMENTED
-
-At this checkpoint, the following are not yet implemented unless verified in the repository:
-
-* authentication
-* document text extraction & OCR
-* document chunking & vector embeddings
-* pgvector integration
-* Gemini / LLM analysis integration
-* LangGraph agent workflows
-* requirement AI extraction
-* requirement traceability matrix
-* GitHub repository cloning & analysis
-* code quality & static analysis (Semgrep, Bandit, Trivy)
-* evaluation engine & scoring formulas
-* evidence graph
-* improvement planner
-* jury simulator
-* final readiness report dashboard
-
----
-
-# 32. IMPORTANT ARCHITECTURAL DECISIONS
-
-## Decision 1
-
-Use deterministic analysis tools for facts and AI for interpretation.
-
-Status:
-
-Accepted.
-
-## Decision 2
-
-Keep evidence attached to important findings.
-
-Status:
-
-Accepted.
-
-## Decision 3
-
-Do not build a giant multi-agent architecture before the basic workflow works.
-
-Status:
-
-Accepted.
-
-## Decision 4
-
-MVP first, future scope later.
-
-Status:
-
-Accepted.
-
-## Decision 5
-
-Dual-mode relational database architecture (SQLAlchemy 2.0 + Alembic) with synchronous threadpool execution, supporting PostgreSQL in production and SQLite in testing with automated foreign key enforcement.
-
-Status:
-
-Accepted (Implemented in Checkpoint 2).
-
-## Decision 6
-
-Strict storage boundary enforcement with canonical path validation, cross-platform filename sanitization, 25 MB chunked upload limits, and transactional cleanup of orphaned disk files.
-
-Status:
-
-Accepted (Implemented in Checkpoint 2).
-
-## Decision 7
-
-Deterministic pure-Python document extraction (pypdf, python-docx, UTF-8/latin-1 plain text & markdown) with non-extractable types gracefully marked as `skipped_unsupported_type` without server errors.
-
-Status:
-
-Accepted (Implemented in Checkpoint 3).
-
-## Decision 8
-
-Single-copy raw text storage on disk (`storage/processed/{project_id}/{artifact_id}_extracted.txt`) with relational persistence of metadata, metrics, and outline sections; physical disk cleanup on artifact/project deletion.
-
-Status:
-
-Accepted (Implemented in Checkpoint 3).
-
-## Decision 9
-
-Strict "No Invention" rule for initial structured project understanding representation: fields default to `null` or `[]` unless explicitly backed by declared metadata or extracted document evidence, with explicit field-level provenance tracking.
-
-Status:
-
-Accepted (Implemented in Checkpoint 3).
-
----
-
-# 33. KNOWN LIMITATIONS
-
-At this stage:
-
-* Starlette's multipart parser buffers uploads exceeding 1MB to OS temporary files before the route handler receives the stream; application-level chunking and size limits are actively enforced from that point.
-* OCR is not implemented; scanned image-only PDFs yield empty text or skipped status as per Checkpoint 3 specification.
-* ZIP archive decompression is intentionally out-of-scope for Checkpoint 3; archives are marked as `skipped_unsupported_type`.
-* innovation cannot always be objectively verified
-* Git activity does not represent total team contribution
-* missing project artifacts limit evaluation accuracy
-* AI interpretation can still be imperfect
-* project readiness is an assessment, not certification
-* external claims require appropriate sources
-* security analysis depends partly on the tools and repository contents available
-
-These limitations must remain visible in the system design.
-
----
-
-# 34. CHECKPOINT 3 COMPLETION RECORD & NEXT ACTION
-
-### Checkpoint 3 Record:
-* **Current Stage**: Checkpoint 3 - Document Understanding & Deterministic Project Representation
-* **Completed Features**:
-  * Pure-Python deterministic document text extractors (`pypdf`, `python-docx`, UTF-8/latin-1 plain text / markdown reader).
-  * Safe handling of unsupported artifact types (`.png`, `.jpg`, `.jpeg`, `.zip`) as `skipped_unsupported_type`.
-  * Text normalization (CRLF -> LF, control character stripping, whitespace trimming, 5M character ceiling).
-  * Structural heading and outline detection (`DocumentSection`).
-  * Deterministic document metrics computation (character count, word count, line count, page count, SHA-256 hash).
-  * Single-copy authoritative text storage on disk (`storage/processed/{project_id}/{artifact_id}_extracted.txt`).
-  * Physical filesystem cleanup on artifact and project deletion (removing both raw uploads and processed texts).
-  * Relational database models (`DocumentExtraction`, `ProjectUnderstanding`) and Alembic migration `20a05a1dd259`.
-  * Deterministic structured project understanding synthesizer implementing the 11 dimensions defined in Section 11 (`problem`, `target_users`, `objectives`, `requirements_summary`, `modules`, `tech_stack`, `architecture_overview`, `dependencies`, `expected_scale`, `deployment`, `team`).
-  * Strict "No Invention" rule: missing fields remain strictly `null` or `[]`.
-  * Field-level provenance tracking referencing project metadata or source artifact sections.
-  * 7 Resource-oriented REST APIs for single extraction, batch extraction, extractions listing, extraction details, raw text streaming, understanding generation, and understanding retrieval.
-  * React frontend integration: Tabbed navigation (`Overview & Artifacts` vs `Structured Understanding`), extraction status badges, batch extraction trigger, raw text viewer modal with outline navigator, and full 11-dimension understanding card with provenance badges.
-* **Files/Systems Added**:
-  * `backend/app/models/document_extraction.py`, `backend/app/models/project_understanding.py`
-  * `backend/alembic/versions/20a05a1dd259_create_document_extractions_and_project_.py`
-  * `backend/app/services/documents/base.py`, `pdf_extractor.py`, `docx_extractor.py`, `text_extractor.py`, `fallback_extractor.py`, `normalizer.py`, `extraction_service.py`
-  * `backend/app/services/analysis/understanding_service.py`
-  * `backend/app/schemas/document.py`, `backend/app/schemas/understanding.py`
-  * `backend/app/api/routes/documents.py`, `backend/app/api/routes/understanding.py`
-  * `frontend/src/types/document.ts`, `frontend/src/types/understanding.ts`
-  * `frontend/src/services/documents.ts`
-  * `frontend/src/components/documents/DocumentExtractionBadge.tsx`, `ExtractedTextViewerModal.tsx`
-  * `frontend/src/components/understanding/ProjectUnderstandingCard.tsx`
-* **Tests**:
-  * 45 passed backend tests (`pytest backend/tests -v`) covering all extractors, normalizer, API routes, permissions, isolation, and filesystem lifecycle cleanup.
-  * TypeScript & Vite production build passed (`tsc -b && vite build`) with 0 errors.
-* **Known Issues / Limitations**:
-  * Remote repository has not been updated (commit pending user approval).
-### Checkpoint 4 Record:
-* **Current Stage**: Checkpoint 4 - Requirement Extraction & Requirement Traceability
-* **Completed Features**:
-  * Relational database models `Requirement` and `RequirementEvidence` with UUID primary keys, cascade behavior, and Alembic migration `7d91c33b40c7`.
-  * Deterministic requirement extraction engine (`RequirementService`) implementing 3-pass extraction:
-    - Pass 1: Project declared metadata requirements parsing.
-    - Pass 2: Section-scoped outline matching under requirement headings.
-    - Pass 3: RFC 2119 modal verb scanning ("shall", "must", "needs to") in prose documents.
-  * Deterministic two-tier requirement identity:
-    - Normalized SHA-256 content hashing (`content_hash`).
-    - Stable human-readable sequential code assignment (`REQ-001`, `REQ-002`, ...).
-    - Re-extraction state preservation: existing IDs remain stable without churn across re-runs.
-  * Fine-grained M:N provenance tracking via `requirement_evidence` preserving source type, artifact ID, filename, section heading, page number, verbatim quote snippet, and confidence score without duplicating document bodies.
-  * Strict "No Invention" rule: priority and actor remain strictly `None` unless explicitly supported in source evidence.
-  * Deterministic categorization (`functional`, `non_functional`, `security`, `performance`, `interface`).
-  * Exact duplicate consolidation and near-duplicate Jaccard similarity grouping.
-  * Inter-document technical contradiction detection flagging conflicting specifications with `status="conflicted"`, `is_ambiguous=True`, and explanatory conflict summary.
-  * 4 REST API endpoints mounted under `/api/projects/{project_id}/requirements`:
-    - `POST /extract` (triggers deterministic extraction and returns summary)
-    - `GET /` (lists requirements with category, status, ambiguity, and search filters)
-    - `GET /{requirement_id}` (retrieves single requirement by UUID or REQ code with full provenance evidence)
-    - `GET /summary` (calculates KPI distribution across categories, priorities, and conflicts)
-  * React frontend integration:
-    - Tab 3: `Requirements & Traceability` with live count badge.
-    - `RequirementSummaryHeader` KPI cards and extraction trigger.
-    - Filterable, searchable `RequirementList` with status badges and evidence links.
-    - Interactive `RequirementEvidenceDrawer` modal displaying verbatim source citations and metadata.
-* **Files/Systems Added**:
-  * `backend/app/models/requirement.py`
-  * `backend/alembic/versions/7d91c33b40c7_create_requirements_and_requirement_.py`
-  * `backend/app/schemas/requirement.py`
-  * `backend/app/services/analysis/requirement_service.py`
-  * `backend/app/api/routes/requirements.py`
-  * `backend/tests/test_requirements.py`
-  * `frontend/src/types/requirement.ts`
-  * `frontend/src/services/requirements.ts`
-  * `frontend/src/components/requirements/RequirementSummaryHeader.tsx`
-  * `frontend/src/components/requirements/RequirementList.tsx`
-  * `frontend/src/components/requirements/RequirementEvidenceDrawer.tsx`
-* **Tests**:
-  * 56 passed backend tests (`pytest backend/tests -v`, 100% pass rate) covering metadata parsing, section parsing, modal verbs, determinism, stable identity, deduplication, conflict detection, isolation, cascade delete, and API endpoints.
-  * TypeScript & Vite production build passed (`tsc -b && vite build`) with 0 errors.
-
-### Checkpoint 5 Record:
-* **Current Stage**: Checkpoint 5 - GitHub Repository Integration & Repository Evidence
-* **Completed Features**:
-  - Relational database models `GitHubRepository`, `RepositorySnapshot`, `RepositoryFile`, and `RepositoryEvidence` with UUID primary keys, cascade behavior, and Alembic migration `127f3da2f1c7`.
-  - GitHub REST API client using `httpx` supporting both unauthenticated public repositories and authenticated private repositories with masked/write-only Personal Access Tokens.
-  - Strict URL normalization and validation against GitHub canonical formats.
-  - Deterministic repository tree acquisition (up to 5,000 files in a single recursive API call).
-  - Deterministic file classification:
-    - Language detection across 20+ file extensions and special files (`Dockerfile`, `Makefile`).
-    - Binary file detection and exclusion (`.png`, `.pdf`, `.zip`, etc.).
-    - Ignored directories filtering (`.git/`, `node_modules/`, `vendor/`, `.venv/`, `dist/`, etc.).
-    - Sensitive credential file boundary protection (`.env*`, `*.pem`, `*.key`, `id_rsa`) omitting content from text storage.
-  - Structured repository evidence extraction (`manifest`, `configuration`, `entrypoint`, `test_suite`, `documentation`) with verbatim content snippets, line bounds, and SHA-256 evidence hashes.
-  - Immutable, commit-pinned `RepositorySnapshot` entities preserving full historical auditability.
-  - Idempotent synchronization: re-syncing an unchanged remote commit SHA creates 0 new snapshots and returns `status="up_to_date"`.
-  - Fail-safe transaction rollback: sync errors (rate limit, timeout, network failure) leave prior valid snapshots intact and active.
-  - 6 REST API endpoints mounted under `/api/projects/{project_id}/repository`:
-    - `POST /` (connect/update repository)
-    - `GET /` (get repository connection & active snapshot overview)
-    - `POST /sync` (trigger synchronization with optional force flag)
-    - `GET /tree` (query cataloged file tree with path and extension filters)
-    - `GET /evidence` (query structured evidence items by type)
-    - `DELETE /` (disconnect repository and cascade delete records)
-  - React frontend integration:
-    - Tab 4: `GitHub Evidence` with real-time status and evidence count badge.
-    - `RepositoryConnectionCard` with connection form and token security.
-    - `RepositorySnapshotHeader` with active commit SHA, copy button, GitHub link, branch, file count, and sync actions.
-    - `RepositoryEvidenceList` with filter chips (Manifests, Configs, Entry Points, Tests, Docs) and code snippet inspector.
-    - `RepositoryFileTree` with search, extension filters, and ignored directory toggles.
-* **Files/Systems Added**:
-  - `backend/app/models/github_repository.py`
-  - `backend/alembic/versions/127f3da2f1c7_create_github_integration_tables.py`
-  - `backend/app/schemas/github_repository.py`
-  - `backend/app/services/github/__init__.py`, `client.py`, `service.py`
-  - `backend/app/api/routes/repository.py`
-  - `backend/tests/test_github_service.py`
-  - `backend/tests/test_repository_api.py`
-  - `frontend/src/types/repository.ts`
-  - `frontend/src/services/repository.ts`
-  - `frontend/src/components/repository/RepositoryConnectionCard.tsx`
-  - `frontend/src/components/repository/RepositorySnapshotHeader.tsx`
-  - `frontend/src/components/repository/RepositoryEvidenceList.tsx`
-  - `frontend/src/components/repository/RepositoryFileTree.tsx`
-* **Tests**:
-  - 72 passed backend tests (`pytest backend/tests -v`, 100% pass rate) covering URL parsing, classification, evidence synthesis, API routes, authentication, idempotency, rollback on error, project isolation, and cascade delete.
-  - TypeScript & Vite production build passed (`tsc -b && vite build`) with 0 errors.
-* **Next Checkpoint**:
-  - Checkpoint 6: Code and Security Analysis (Language detection, static analysis, security scans, dependency analysis, test analysis).
-
-```text
-CHECKPOINT 4 (COMPLETED)
-↓
-CHECKPOINT 5 (COMPLETED)
-↓
-CHECKPOINT 6
-Code & Security Analysis:
-- Language detection & metrics
-- Static analysis & linters
-- Security scans & dependency analysis
-- Test suite analysis
+### Phase 10
+
+Dashboard + polish.
+
+That gives you a usable product even if you run out of time.
+
+------------------------------------------------------------------------
+
+# 15. The Master Prompt / Context for an AI Coding Agent
+
+This is the part you can paste into **Antigravity, Claude, Gemini,
+Cursor, or another coding agent** before starting implementation:
+
+``` text
+PROJECT CONTEXT
+
+Project Name:
+Project Doctor
+
+Project Type:
+AI-powered technical project evaluation, diagnosis, improvement, and jury-readiness platform.
+
+PROBLEM:
+Students frequently build software, AI, hardware, and interdisciplinary projects for college evaluations, hackathons, technical expos, and project competitions without having access to a structured technical evaluation process before submission.
+
+Projects may contain poorly defined requirements, unrealistic technical assumptions, architecture/implementation mismatches, missing functionality, security vulnerabilities, weak testing, unsupported scalability claims, insufficient documentation, or weak explanations of technical decisions.
+
+Faculty and competition judges face the opposite challenge: they may have to evaluate many projects within limited time and cannot deeply inspect every proposal, architecture, repository, and implementation manually.
+
+Project Doctor is designed to assist both groups.
+
+CORE OBJECTIVE:
+The system analyzes a technical project using its available artifacts, evaluates it against a configurable rubric, identifies weaknesses and inconsistencies, provides evidence supporting every major finding, generates an improvement plan, and simulates project-specific jury questions.
+
+The system must assist human evaluation rather than replace human judges.
+
+TARGET USERS:
+1. Students/project teams
+2. Faculty/project guides
+3. Hackathon/competition organizers
+
+PROJECT INPUTS:
+- Project proposal
+- Problem statement
+- Requirements
+- Architecture diagram
+- Technology stack
+- Documentation
+- GitHub repository
+- Source code
+- Database schema
+- Team information
+- Deployment information
+- Test results
+
+MVP FEATURES:
+
+1. Project Understanding
+Extract:
+- problem
+- target users
+- objectives
+- requirements
+- modules
+- technologies
+- architecture
+- expected scale
+- dependencies
+
+2. Project Evaluation
+Evaluate:
+- problem definition
+- technical feasibility
+- technical depth
+- architecture
+- implementation
+- security
+- scalability
+- innovation
+- completeness
+- documentation
+
+3. Requirement Traceability
+Map every requirement to implementation evidence and classify it as:
+- implemented
+- partially implemented
+- missing
+- unable to verify
+
+4. Evidence-Based Diagnosis
+Every major finding must include:
+- finding
+- severity
+- explanation
+- supporting evidence
+- source location
+- confidence/uncertainty
+- recommendation
+
+5. Repository Analysis
+Analyze GitHub repositories for:
+- code quality
+- structure
+- tests
+- documentation
+- dependency issues
+- security issues
+- implementation evidence
+- contribution activity
+
+6. Improvement Planner
+Convert detected weaknesses into prioritized actions based on:
+- severity
+- dependency
+- estimated effort
+- project deadline
+
+7. Jury Simulator
+Generate project-specific technical questions using the actual project and detected weaknesses.
+
+Jury categories:
+- Technical
+- Security
+- Innovation
+- Industry
+
+The system should evaluate the student's answer based on:
+- relevance
+- technical correctness
+- completeness
+- evidence
+- clarity
+
+8. Final Readiness Report
+Produce:
+- criterion-level assessment
+- project strengths
+- critical issues
+- requirement coverage
+- improvement plan
+- jury readiness
+- final readiness status
+
+AGENTIC BEHAVIOR:
+The system should not simply send the entire project to an LLM and request a score.
+
+It should perform an investigation workflow.
+
+Example:
+1. Read proposal.
+2. Extract requirements.
+3. Inspect architecture.
+4. Inspect repository.
+5. Compare documentation against implementation.
+6. Detect inconsistencies.
+7. Decide what additional evidence is needed.
+8. Call deterministic analysis tools where appropriate.
+9. Correlate all evidence.
+10. Generate findings.
+11. Generate recommendations.
+12. Generate targeted jury questions.
+
+The AI should decide what to investigate next based on earlier findings where practical.
+
+IMPORTANT PRINCIPLES:
+
+1. Do not invent evidence.
+2. Distinguish facts from interpretations.
+3. Every major finding must be evidence-backed.
+4. If evidence is unavailable, explicitly state that it could not be verified.
+5. Do not claim that AI evaluation is objectively correct.
+6. Do not automatically accuse contributors of poor performance based solely on GitHub activity.
+7. Use deterministic tools for deterministic checks.
+8. Use AI for reasoning, interpretation, correlation, and natural-language analysis.
+9. Keep sensitive project information private.
+10. The system is decision support, not an autonomous judge.
+
+TECH STACK:
+
+Frontend:
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- shadcn/ui
+- Recharts
+
+Backend:
+- Python
+- FastAPI
+
+AI:
+- Gemini API
+- LangGraph for agent/workflow orchestration
+
+Database:
+- PostgreSQL
+- pgvector
+
+Repository integration:
+- GitHub API / GitHub App
+
+Security/code analysis:
+- Semgrep
+- Trivy
+- Ruff
+- Bandit
+- ESLint
+- npm audit
+- pytest
+- coverage.py
+
+Storage:
+- Local storage for MVP
+- S3-compatible storage later
+
+DEPLOYMENT:
+- Docker
+- Vercel for frontend if required
+- Render/Railway for backend if required
+
+MVP PRIORITY:
+First make the following workflow work end-to-end:
+
+Project Upload
+→ Proposal Analysis
+→ Requirement Extraction
+→ GitHub Analysis
+→ Requirement Traceability
+→ Evidence-Based Findings
+→ Project Evaluation
+→ Improvement Plan
+→ Jury Simulation
+→ Final Report
+
+Do not add unnecessary features until this workflow works reliably.
+
+UI GOAL:
+The system should feel like a professional project diagnostic platform, not a chatbot.
+
+The dashboard should clearly show:
+- project health
+- strengths
+- critical findings
+- requirement coverage
+- evidence
+- improvement tasks
+- jury readiness
+
+Each AI finding should allow the user to inspect the evidence supporting it.
 ```
 
+------------------------------------------------------------------------
 
+# 16. What the MVP should look like when finished
 
----
+A student opens Project Doctor.
 
-# 35. CONTEXT UPDATE RULE
-
-When a checkpoint is completed, update this file with:
-
-```text
-Current Stage
-Completed Features
-Files/Systems Added
-Architecture Changes
-Database Changes
-Known Issues
-Tests
-Git Commit
-Next Checkpoint
+``` text
+┌──────────────────────────────────────────────┐
+│ PROJECT DOCTOR                               │
+├──────────────────────────────────────────────┤
+│                                              │
+│  LegalVault                                  │
+│  Project Health: 78%                         │
+│                                              │
+│  ✅ Problem      Strong                      │
+│  ✅ Architecture Good                       │
+│  ⚠ Security      Needs work                 │
+│  ⚠ Scalability   Needs evidence             │
+│  ✅ Requirements 84% covered                │
+│                                              │
+│  🔴 2 Critical Findings                      │
+│  🟠 5 Major Findings                         │
+│  🟡 6 Improvements                           │
+│                                              │
+│  [ View Diagnosis ]                          │
+│  [ Improvement Plan ]                        │
+│  [ Start Jury Simulation ]                   │
+│                                              │
+└──────────────────────────────────────────────┘
 ```
 
-Keep this document accurate.
+Then:
 
-If something is uncertain, explicitly mark it as uncertain.
+**View Diagnosis**
 
-Never rewrite historical facts to make the project appear more complete than it is.
+↓
+
+> **Finding: Blockchain justification is insufficient**
+
+> Evidence: Proposal states blockchain is used for "security" but does
+> not identify a trust requirement that requires decentralized
+> verification.
+
+↓
+
+**Recommendation**
+
+> Explicitly define the threat model and explain why conventional
+> database integrity controls are insufficient.
+
+↓
+
+**Jury Simulation**
+
+> *"Why did you use blockchain rather than PostgreSQL with cryptographic
+> hashing?"*
+
+That entire chain is the product:
+
+**Analyze → Explain → Improve → Defend.**
+
+------------------------------------------------------------------------
+
+# 17. Product Direction Amendment --- 2026-09-19
+
+This section supersedes any older assumptions about the user experience,
+while preserving the technical/product scope above.
+
+## Product North Star
+
+Project Doctor is primarily a **college-student project evaluator and
+helper**.
+
+The product must help a student answer:
+
+1.  Is my project coherent?
+2.  Does my implementation match what I claim?
+3.  What is weak, missing, risky, or inconsistent?
+4.  What should I fix before my evaluation?
+5.  Can I defend the project in front of a jury?
+
+The product must NOT drift into being a generic document-management
+system, legal-document system, repository browser, generic AI chatbot,
+or enterprise admin dashboard.
+
+Every feature must justify itself against the student evaluation
+journey.
+
+## User-First Product Flow
+
+The preferred end-to-end experience is:
+
+Create Project → Tell Project Doctor about the project in natural
+language → Add optional project evidence → Project Doctor builds
+structured understanding → Connect/inspect GitHub when available → Map
+requirements to implementation evidence → Diagnose strengths, gaps,
+inconsistencies and risks → Generate actionable improvement plan →
+Practice with project-specific jury questions → Generate final
+readiness/evaluation report
+
+The UI should present this as a guided diagnostic journey rather than a
+collection of database screens.
+
+## Baseline Input UX
+
+Project creation fields may include:
+
+-   Project title
+-   Problem statement
+-   Project description
+-   Rough goals/requirements
+-   Technology stack
+-   Architecture summary
+-   GitHub URL
+
+However, users should NOT be expected to manually type a long list of
+formal FR-001/NFR-001 requirements unless they already have them.
+
+The "Project Requirements" field is optional baseline context.
+
+Detailed requirements should normally be extracted from project
+documents such as SRS, proposal, README, architecture documents, etc.
+
+Preferred wording for the UX is closer to:
+
+"Known Goals & Requirements (Optional)" "Briefly describe what your
+project should do. If your requirements are documented elsewhere, you
+can upload them instead."
+
+## Evidence Semantics
+
+The product must clearly distinguish:
+
+### Specification / Requirement Evidence
+
+Where a requirement or project claim came from: - project metadata -
+proposal - SRS - README - architecture document
+
+### Implementation Evidence
+
+Where the repository appears to implement or support the requirement: -
+source files - API routes - components - configuration - database/schema
+code - tests
+
+### Test Evidence
+
+Where behavior is actually tested or verified: - automated tests - test
+reports - reproducible verification results
+
+Do not visually or semantically imply that a quoted requirement from
+project metadata or an SRS is GitHub implementation evidence.
+
+A requirement being present in a document is NOT evidence that it is
+implemented.
+
+A repository file merely containing a matching word is NOT proof that a
+requirement is implemented.
+
+When traceability is introduced, use statuses such as
+candidate/matched/ambiguous/unmatched only when supported by
+deterministic evidence and clearly explain uncertainty.
+
+## UX Direction
+
+The final product should feel like a modern AI-powered technical
+diagnostic platform for students.
+
+It should NOT look like: - a CRUD admin panel - a spreadsheet/data
+table - a document-management system - a generic enterprise dashboard -
+a legal-document application
+
+Design priorities: - clear hierarchy - short explanations - progressive
+disclosure - visual summaries before raw evidence - cards and guided
+sections where appropriate - readable evidence views - obvious next
+actions - technical details available on demand rather than dominating
+the first screen
+
+The dashboard should emphasize: - project health/readiness - strengths -
+critical findings - requirement coverage - evidence - improvement
+tasks - jury readiness
+
+Do not fill the interface with long technical text when a concise
+explanation or visual summary is sufficient.
+
+## Animation / Visual Design
+
+Animation is encouraged when it improves comprehension and perceived
+quality.
+
+Potential uses: - landing-page project-analysis visual -
+project-analysis progress states - scroll-based reveal of diagnostic
+sections - health/finding transitions - requirement traceability
+transitions - jury interaction
+
+Use animation deliberately and keep it fast and accessible.
+
+Higgsfield or other generated visual assets may be used for selected
+hero/landing visuals, but generated visuals must support the product
+story rather than become decorative clutter.
+
+Do not add animation to every component.
+
+## Architecture Principle
+
+Continue to preserve:
+
+**Deterministic systems establish facts. AI reasons over structured
+evidence.**
+
+The product should not become an LLM wrapper.
+
+Document extraction, requirement identity, repository snapshots, file
+classification, evidence provenance, hashing, idempotency, and
+security-sensitive file handling should remain deterministic where
+practical.
+
+AI should later be used for: - semantic interpretation - correlation
+across evidence - evaluation reasoning - natural-language findings -
+improvement recommendations - jury simulation
+
+## Scope Guardrail
+
+Before implementing any feature, ask:
+
+"Does this directly help a student understand, evaluate, improve, or
+defend their technical project?"
+
+If not, defer it.
+
+Do not prioritize: - generic admin dashboards - unrelated enterprise
+features - generic document management - unnecessary collaboration
+features - decorative AI features - premature autonomous agents
+
+## Current UI Bug
+
+Known bug as of 2026-09-19:
+
+When the user opens "View Text" after uploading a document, the
+modal/window appears but scrolling affects the background project page
+instead of the modal content.
+
+Expected behavior: - modal content has its own vertical scroll -
+background page scrolling is locked while the modal is open - long
+extracted text remains readable - Escape closes the modal - modal layout
+remains usable on smaller screens
+
+This should be fixed before treating the affected document-viewing
+experience as complete.
+
+## Development Workflow Guardrail
+
+For every checkpoint:
+
+1.  Assistant gives PLAN-ONLY prompt.
+2.  Antigravity inspects repository and returns its implementation plan.
+3.  User brings the plan to the assistant.
+4.  Assistant audits the plan against project context and scope.
+5.  Assistant gives the approved implementation prompt.
+6.  Antigravity implements.
+7.  Antigravity returns walkthrough and tests.
+8.  User manually verifies the actual UI/behavior.
+9.  Assistant helps interpret the manual results and identify defects.
+10. User commits/pushes only after verification passes.
+11. Only then does the next checkpoint begin.
+
+Never skip directly from a plan-only prompt to implementation. Never
+start the next checkpoint before the current checkpoint is manually
+verified and committed.
+
+## Current Build State --- 2026-09-19
+
+Completed and manually exercised: - project creation / metadata
+foundation - artifact upload and deterministic document extraction -
+structured project understanding - deterministic requirement extraction
+and provenance - GitHub repository connection and repository evidence
+foundation
+
+Checkpoint 5 added repository evidence including: - repository
+connection - commit-pinned snapshot - file catalog - language/binary
+classification - ignored/sensitive-file handling - repository evidence
+categories - sync/idempotency behavior - repository evidence UI
+
+Current checkpoint state: - Checkpoint 5 implementation exists. - It
+should NOT be considered committed/final until the remaining manual
+verification is complete. - Current screenshots demonstrate both
+document/metadata evidence and repository evidence, but
+requirement-to-implementation traceability is NOT implemented yet.
+
+## Next Checkpoint
+
+After Checkpoint 5 manual verification and commit, the next functional
+checkpoint should be:
+
+### Checkpoint 6 --- Requirement → Implementation Traceability
+
+Purpose: Connect structured requirements from project documents/metadata
+with candidate implementation evidence from the pinned GitHub repository
+snapshot.
+
+Scope: - deterministic candidate matching - traceability records -
+provenance - commit/snapshot identity -
+candidate/matched/ambiguous/unmatched semantics - project isolation -
+API - user-friendly traceability UI - tests
+
+Explicitly out of scope for this checkpoint: - Gemini - LangGraph -
+embeddings/vector search - pgvector - generic RAG - code-quality
+scoring - security scanning - evaluation scoring - jury simulation -
+improvement planning - full visual redesign
+
+The traceability UI must be student-readable first and expose raw
+evidence only when the user asks to inspect it.
+
+## UX Evolution Plan
+
+UX improvements should happen incrementally rather than as a giant final
+rewrite.
+
+Stage A --- immediate: - fix modal scrolling bug - remove confusing
+evidence terminology - improve labels and empty states where
+encountered - keep existing functionality stable
+
+Stage B --- during core feature checkpoints: - make each new screen
+user-first - show summary before technical detail - use progressive
+disclosure for evidence - use clear next actions
+
+Stage C --- dedicated product polish phase: - redesign dashboard around
+project health - improve navigation around the student journey - add
+meaningful animation/scroll transitions - create polished
+landing/project-analysis experience - reduce CRUD/table feel - improve
+responsive/mobile behavior - add visual storytelling
+
+Do not postpone all UX until the end, but do not let visual polish block
+core evidence architecture.
+
+------------------------------------------------------------------------

@@ -10,6 +10,11 @@ from app.models.github_repository import (
     RepositoryEvidence,
 )
 
+from app.models.traceability import (
+    RequirementSnapshotTraceability,
+    RequirementTraceabilityLink,
+)
+
 __all__ = [
     "Project",
     "Artifact",
@@ -21,6 +26,8 @@ __all__ = [
     "RepositorySnapshot",
     "RepositoryFile",
     "RepositoryEvidence",
+    "RequirementSnapshotTraceability",
+    "RequirementTraceabilityLink",
 ]
 
 

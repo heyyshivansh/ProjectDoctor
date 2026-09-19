@@ -16,6 +16,15 @@ import { DocumentExtractionSummary } from "@/types/document";
 import { ProjectUnderstanding } from "@/types/understanding";
 import { Requirement, RequirementMetrics } from "@/types/requirement";
 import {
+  RequirementTraceabilitySummary,
+  TraceabilityMetrics,
+} from "@/types/traceability";
+import {
+  listProjectTraceability,
+  getTraceabilitySummary,
+  generateTraceability,
+} from "@/services/traceability";
+import {
   RepositoryConnection,
   RepositoryFile,
   RepositoryEvidence,
@@ -84,6 +93,11 @@ export const ProjectDetailPage: React.FC = () => {
   const [repoSyncMessage, setRepoSyncMessage] = useState<string | null>(null);
   const [includeIgnoredFiles, setIncludeIgnoredFiles] = useState<boolean>(false);
 
+  // Traceability State
+  const [traceabilityMap, setTraceabilityMap] = useState<Record<string, RequirementTraceabilitySummary>>({});
+  const [traceabilityMetrics, setTraceabilityMetrics] = useState<TraceabilityMetrics | null>(null);
+  const [isGeneratingTraceability, setIsGeneratingTraceability] = useState<boolean>(false);
+
   const fetchProjectData = useCallback(async () => {
     if (!projectId) return;
 
@@ -97,6 +111,8 @@ export const ProjectDetailPage: React.FC = () => {
         requirementsList,
         metricsData,
         repositoryData,
+        traceabilityList,
+        traceMetrics,
       ] = await Promise.all([
         getProject(projectId),
         listDocumentExtractions(projectId).catch(() => [] as DocumentExtractionSummary[]),
@@ -104,6 +120,8 @@ export const ProjectDetailPage: React.FC = () => {
         listRequirements(projectId).catch(() => [] as Requirement[]),
         getRequirementMetrics(projectId).catch(() => null),
         getRepository(projectId).catch(() => null),
+        listProjectTraceability(projectId).catch(() => [] as RequirementTraceabilitySummary[]),
+        getTraceabilitySummary(projectId).catch(() => null),
       ]);
 
       setProject(projectData);
@@ -117,6 +135,14 @@ export const ProjectDetailPage: React.FC = () => {
       setRequirements(requirementsList);
       setRequirementMetrics(metricsData);
       setRepoConnection(repositoryData);
+
+      const traceMap: Record<string, RequirementTraceabilitySummary> = {};
+      traceabilityList.forEach((item) => {
+        traceMap[item.requirement_code] = item;
+        traceMap[item.requirement_id] = item;
+      });
+      setTraceabilityMap(traceMap);
+      setTraceabilityMetrics(traceMetrics);
 
       if (repositoryData?.current_snapshot) {
         const [files, evidenceList] = await Promise.all([
@@ -175,15 +201,25 @@ export const ProjectDetailPage: React.FC = () => {
       const result = await syncRepository(projectId, force);
       setRepoSyncMessage(result.message);
 
-      // Refresh connection, files, and evidence
-      const [updatedConn, files, evidenceList] = await Promise.all([
+      // Refresh connection, files, evidence, and traceability
+      const [updatedConn, files, evidenceList, traces, traceMetrics] = await Promise.all([
         getRepository(projectId),
         getRepositoryTree(projectId, { include_ignored: includeIgnoredFiles }).catch(() => [] as RepositoryFile[]),
         getRepositoryEvidence(projectId).catch(() => [] as RepositoryEvidence[]),
+        listProjectTraceability(projectId).catch(() => [] as RequirementTraceabilitySummary[]),
+        getTraceabilitySummary(projectId).catch(() => null),
       ]);
       setRepoConnection(updatedConn);
       setRepoFiles(files);
       setRepoEvidence(evidenceList);
+
+      const traceMap: Record<string, RequirementTraceabilitySummary> = {};
+      traces.forEach((item) => {
+        traceMap[item.requirement_code] = item;
+        traceMap[item.requirement_id] = item;
+      });
+      setTraceabilityMap(traceMap);
+      setTraceabilityMetrics(traceMetrics);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to sync repository.");
       // Refresh connection to catch error status
@@ -191,6 +227,29 @@ export const ProjectDetailPage: React.FC = () => {
       if (updatedConn) setRepoConnection(updatedConn);
     } finally {
       setIsSyncingRepo(false);
+    }
+  };
+
+  const handleGenerateTraceability = async () => {
+    if (!projectId) return;
+    setIsGeneratingTraceability(true);
+    try {
+      await generateTraceability(projectId, true);
+      const [traces, traceMetrics] = await Promise.all([
+        listProjectTraceability(projectId).catch(() => [] as RequirementTraceabilitySummary[]),
+        getTraceabilitySummary(projectId).catch(() => null),
+      ]);
+      const traceMap: Record<string, RequirementTraceabilitySummary> = {};
+      traces.forEach((item) => {
+        traceMap[item.requirement_code] = item;
+        traceMap[item.requirement_id] = item;
+      });
+      setTraceabilityMap(traceMap);
+      setTraceabilityMetrics(traceMetrics);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to generate requirement traceability.");
+    } finally {
+      setIsGeneratingTraceability(false);
     }
   };
 
@@ -586,11 +645,18 @@ export const ProjectDetailPage: React.FC = () => {
         <div className="space-y-6">
           <RequirementSummaryHeader
             metrics={requirementMetrics}
+            traceabilityMetrics={traceabilityMetrics}
+            hasRepository={Boolean(repoConnection?.current_snapshot)}
+            activeCommitSha={repoConnection?.current_snapshot?.commit_sha}
             isExtracting={isExtractingRequirements}
+            isGeneratingTraceability={isGeneratingTraceability}
             onExtract={handleExtractRequirements}
+            onGenerateTraceability={() => handleGenerateTraceability()}
           />
           <RequirementList
             requirements={requirements}
+            traceabilityMap={traceabilityMap}
+            hasRepository={Boolean(repoConnection?.current_snapshot)}
             onSelectRequirement={(reqId) => setSelectedRequirementId(reqId)}
           />
         </div>

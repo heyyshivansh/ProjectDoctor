@@ -23,6 +23,14 @@ from app.schemas.requirement import (
     RequirementExtractionSummaryResponse,
     RequirementMetricsResponse,
 )
+from app.schemas.finding import (
+    FindingEvidenceReference,
+    HydratedEvidenceItem,
+    FindingSummaryResponse,
+    FindingDetailResponse,
+    ProjectDiagnosisResponse,
+    DiagnosisGenerationResponse,
+)
 
 __all__ = [
     "HealthResponse",
@@ -42,5 +50,11 @@ __all__ = [
     "RequirementEvidenceResponse",
     "RequirementExtractionSummaryResponse",
     "RequirementMetricsResponse",
+    "FindingEvidenceReference",
+    "HydratedEvidenceItem",
+    "FindingSummaryResponse",
+    "FindingDetailResponse",
+    "ProjectDiagnosisResponse",
+    "DiagnosisGenerationResponse",
 ]
 

@@ -85,5 +85,10 @@ storage/processed/*
 Thumbs.db
 desktop.ini
 
-# AI instructions - local only
+# AI instructions & context files - local only
 AI_INSTRUCTIONS.md
+ANTIGRAVITY-INSTRUCTIONS.md
+PROJECT_CONTEXT.md
+PROJECT_CONTEXT-UPDATED.md
+PROJECT_CONTEXT*.md
+

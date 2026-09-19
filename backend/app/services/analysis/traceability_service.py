@@ -372,6 +372,18 @@ class TraceabilityService:
             summaries=persisted_summaries,
         )
 
+        # Trigger diagnosis generation for this snapshot at the orchestration boundary
+        try:
+            from app.services.analysis.diagnostic_service import DiagnosticService
+            DiagnosticService.generate_diagnosis(
+                db=db,
+                project_id=project_id,
+                snapshot_id=snapshot.id,
+                force=True,
+            )
+        except Exception:
+            pass
+
         return TraceabilityGenerationResponse(
             status="completed",
             message=f"Generated traceability for {len(requirements)} requirement(s) at commit {snapshot.commit_sha[:7]}.",

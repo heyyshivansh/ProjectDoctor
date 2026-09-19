@@ -70,9 +70,12 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
   useEffect(() => {
     if (!isOpen) return;
 
-    const originalOverflow = document.body.style.overflow;
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
@@ -85,7 +88,8 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.body.style.overflow = originalOverflow;
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
       document.body.style.paddingRight = "";
       window.removeEventListener("keydown", handleKeyDown);
     };
@@ -113,7 +117,7 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200 touch-none overscroll-contain"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();

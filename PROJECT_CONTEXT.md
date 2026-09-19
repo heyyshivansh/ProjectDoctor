@@ -10,11 +10,12 @@ AI-Powered Technical Project Evaluation, Diagnosis, Improvement, and Jury Readin
 
 **Status:** Development
 
-**Current Stage:** Checkpoint 4 - Requirement Extraction & Requirement Traceability
+**Current Stage:** Checkpoint 5 - GitHub Repository Integration & Repository Evidence
 
-**MVP Status:** In Progress (Project creation, artifact storage, deterministic text extraction, outline detection, structured project understanding, and deterministic requirement extraction & traceability completed)
+**MVP Status:** In Progress (Project creation, artifact storage, deterministic text extraction, outline detection, structured project understanding, deterministic requirement extraction, and GitHub repository integration & repository evidence completed)
 
-**Last Updated:** 2026-09-17
+**Last Updated:** 2026-09-19
+
 
 
 ---
@@ -1317,20 +1318,69 @@ These limitations must remain visible in the system design.
 * **Tests**:
   * 56 passed backend tests (`pytest backend/tests -v`, 100% pass rate) covering metadata parsing, section parsing, modal verbs, determinism, stable identity, deduplication, conflict detection, isolation, cascade delete, and API endpoints.
   * TypeScript & Vite production build passed (`tsc -b && vite build`) with 0 errors.
+
+### Checkpoint 5 Record:
+* **Current Stage**: Checkpoint 5 - GitHub Repository Integration & Repository Evidence
+* **Completed Features**:
+  - Relational database models `GitHubRepository`, `RepositorySnapshot`, `RepositoryFile`, and `RepositoryEvidence` with UUID primary keys, cascade behavior, and Alembic migration `127f3da2f1c7`.
+  - GitHub REST API client using `httpx` supporting both unauthenticated public repositories and authenticated private repositories with masked/write-only Personal Access Tokens.
+  - Strict URL normalization and validation against GitHub canonical formats.
+  - Deterministic repository tree acquisition (up to 5,000 files in a single recursive API call).
+  - Deterministic file classification:
+    - Language detection across 20+ file extensions and special files (`Dockerfile`, `Makefile`).
+    - Binary file detection and exclusion (`.png`, `.pdf`, `.zip`, etc.).
+    - Ignored directories filtering (`.git/`, `node_modules/`, `vendor/`, `.venv/`, `dist/`, etc.).
+    - Sensitive credential file boundary protection (`.env*`, `*.pem`, `*.key`, `id_rsa`) omitting content from text storage.
+  - Structured repository evidence extraction (`manifest`, `configuration`, `entrypoint`, `test_suite`, `documentation`) with verbatim content snippets, line bounds, and SHA-256 evidence hashes.
+  - Immutable, commit-pinned `RepositorySnapshot` entities preserving full historical auditability.
+  - Idempotent synchronization: re-syncing an unchanged remote commit SHA creates 0 new snapshots and returns `status="up_to_date"`.
+  - Fail-safe transaction rollback: sync errors (rate limit, timeout, network failure) leave prior valid snapshots intact and active.
+  - 6 REST API endpoints mounted under `/api/projects/{project_id}/repository`:
+    - `POST /` (connect/update repository)
+    - `GET /` (get repository connection & active snapshot overview)
+    - `POST /sync` (trigger synchronization with optional force flag)
+    - `GET /tree` (query cataloged file tree with path and extension filters)
+    - `GET /evidence` (query structured evidence items by type)
+    - `DELETE /` (disconnect repository and cascade delete records)
+  - React frontend integration:
+    - Tab 4: `GitHub Evidence` with real-time status and evidence count badge.
+    - `RepositoryConnectionCard` with connection form and token security.
+    - `RepositorySnapshotHeader` with active commit SHA, copy button, GitHub link, branch, file count, and sync actions.
+    - `RepositoryEvidenceList` with filter chips (Manifests, Configs, Entry Points, Tests, Docs) and code snippet inspector.
+    - `RepositoryFileTree` with search, extension filters, and ignored directory toggles.
+* **Files/Systems Added**:
+  - `backend/app/models/github_repository.py`
+  - `backend/alembic/versions/127f3da2f1c7_create_github_integration_tables.py`
+  - `backend/app/schemas/github_repository.py`
+  - `backend/app/services/github/__init__.py`, `client.py`, `service.py`
+  - `backend/app/api/routes/repository.py`
+  - `backend/tests/test_github_service.py`
+  - `backend/tests/test_repository_api.py`
+  - `frontend/src/types/repository.ts`
+  - `frontend/src/services/repository.ts`
+  - `frontend/src/components/repository/RepositoryConnectionCard.tsx`
+  - `frontend/src/components/repository/RepositorySnapshotHeader.tsx`
+  - `frontend/src/components/repository/RepositoryEvidenceList.tsx`
+  - `frontend/src/components/repository/RepositoryFileTree.tsx`
+* **Tests**:
+  - 72 passed backend tests (`pytest backend/tests -v`, 100% pass rate) covering URL parsing, classification, evidence synthesis, API routes, authentication, idempotency, rollback on error, project isolation, and cascade delete.
+  - TypeScript & Vite production build passed (`tsc -b && vite build`) with 0 errors.
 * **Next Checkpoint**:
-  * Checkpoint 5: GitHub Integration (Repository connection, repository metadata, file inspection, commit history, contributor activity).
+  - Checkpoint 6: Code and Security Analysis (Language detection, static analysis, security scans, dependency analysis, test analysis).
 
 ```text
-CHECKPOINT 3 (COMPLETED)
-↓
 CHECKPOINT 4 (COMPLETED)
 ↓
-CHECKPOINT 5
-GitHub Integration:
-- Repository connection & authentication
-- Repository metadata & file structure inspection
-- Commit history & contributor activity analysis
+CHECKPOINT 5 (COMPLETED)
+↓
+CHECKPOINT 6
+Code & Security Analysis:
+- Language detection & metrics
+- Static analysis & linters
+- Security scans & dependency analysis
+- Test suite analysis
 ```
+
 
 
 ---

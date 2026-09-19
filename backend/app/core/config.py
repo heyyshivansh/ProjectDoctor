@@ -1,5 +1,5 @@
 import os
-from typing import List, Set
+from typing import List, Optional, Set
 from pydantic import BaseModel, Field
 
 
@@ -21,6 +21,10 @@ class Settings(BaseModel):
     MAX_UPLOAD_SIZE_MB: int = Field(
         default_factory=lambda: int(os.getenv("MAX_UPLOAD_SIZE_MB", "25"))
     )
+    GITHUB_TOKEN: Optional[str] = Field(
+        default_factory=lambda: os.getenv("GITHUB_TOKEN", None)
+    )
+
     ALLOWED_UPLOAD_EXTENSIONS: Set[str] = {
         ".pdf",
         ".md",

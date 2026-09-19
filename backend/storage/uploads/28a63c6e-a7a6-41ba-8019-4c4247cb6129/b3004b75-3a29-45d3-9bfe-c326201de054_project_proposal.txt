@@ -1,0 +1,22 @@
+Smart Campus Assistant
+
+1. Introduction
+
+The Smart Campus Assistant helps students find campus information.
+
+2. Requirements
+
+2.1 Functional Requirements
+
+1. The system shall allow students to register using email.
+2. The system shall allow students to log in securely.
+3. Students shall be able to search campus information.
+4. The system must provide event notifications.
+
+2.2 Administration
+
+Administrators can manage campus information.
+
+3. Technology
+
+The backend uses Python and FastAPI.

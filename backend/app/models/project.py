@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from app.models.document_extraction import DocumentExtraction
     from app.models.project_understanding import ProjectUnderstanding
     from app.models.requirement import Requirement
+    from app.models.github_repository import GitHubRepository, RepositorySnapshot
 
 
 class Project(Base):
@@ -96,4 +97,18 @@ class Project(Base):
         cascade="all, delete-orphan",
         lazy="selectin",
     )
+    repository: Mapped[Optional["GitHubRepository"]] = relationship(
+        "GitHubRepository",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        uselist=False,
+        lazy="selectin",
+    )
+    repository_snapshots: Mapped[List["RepositorySnapshot"]] = relationship(
+        "RepositorySnapshot",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
 

@@ -1,0 +1,33 @@
+--- Page 1 ---
+LegalVault Software Requirements Specification
+Functional Requirements
+FR-01
+The system shall allow a user to upload a legal document.
+FR-02
+The system shall allow a user to assign a document title and category.
+FR-03
+The system shall store the uploaded document and its metadata.
+FR-04
+The system shall allow users to search documents by title or keyword.
+FR-05
+The system shall display document metadata when a document is selected.
+FR-06
+The system shall allow a user to download a stored document.
+FR-07
+The system shall allow a user to delete a document they own.
+FR-08
+The system shall distinguish between private documents and documents shared with authorized users.
+Non-Functional Requirements
+NFR-01
+Document search should return results within 2 seconds for a collection of up to 5,000 documents under normal
+operating conditions.
+NFR-02
+Uploaded files must not be exposed to unauthorized users.
+NFR-03
+The system should preserve the original uploaded file without silently changing its contents.
+NFR-04
+The application should provide clear feedback when an upload fails.
+Constraints
+The initial version supports PDF documents only.
+The system does not provide legal advice or determine legal outcomes.
+Only authenticated users can access private documents.

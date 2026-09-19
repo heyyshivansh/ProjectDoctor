@@ -15,12 +15,30 @@ import { ProjectDetail, Artifact } from "@/types/project";
 import { DocumentExtractionSummary } from "@/types/document";
 import { ProjectUnderstanding } from "@/types/understanding";
 import { Requirement, RequirementMetrics } from "@/types/requirement";
+import {
+  RepositoryConnection,
+  RepositoryFile,
+  RepositoryEvidence,
+  RepositoryConnectInput,
+} from "@/types/repository";
+import {
+  getRepository,
+  connectRepository,
+  syncRepository,
+  getRepositoryTree,
+  getRepositoryEvidence,
+  disconnectRepository,
+} from "@/services/repository";
 import { ArtifactUploadSection } from "@/components/projects/ArtifactUploadSection";
 import { ArtifactList } from "@/components/projects/ArtifactList";
 import { ProjectUnderstandingCard } from "@/components/understanding/ProjectUnderstandingCard";
 import { RequirementSummaryHeader } from "@/components/requirements/RequirementSummaryHeader";
 import { RequirementList } from "@/components/requirements/RequirementList";
 import { RequirementEvidenceDrawer } from "@/components/requirements/RequirementEvidenceDrawer";
+import { RepositoryConnectionCard } from "@/components/repository/RepositoryConnectionCard";
+import { RepositorySnapshotHeader } from "@/components/repository/RepositorySnapshotHeader";
+import { RepositoryEvidenceList } from "@/components/repository/RepositoryEvidenceList";
+import { RepositoryFileTree } from "@/components/repository/RepositoryFileTree";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -38,7 +56,9 @@ import {
   FileText,
   Sparkles,
   CheckCircle2,
+  GitFork,
 } from "lucide-react";
+
 
 export const ProjectDetailPage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -50,12 +70,19 @@ export const ProjectDetailPage: React.FC = () => {
   const [requirementMetrics, setRequirementMetrics] = useState<RequirementMetrics | null>(null);
   const [isExtractingRequirements, setIsExtractingRequirements] = useState<boolean>(false);
   const [selectedRequirementId, setSelectedRequirementId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"overview" | "understanding" | "requirements">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "understanding" | "requirements" | "repository">("overview");
   const [isLoading, setIsLoading] = useState(true);
   const [isBatchExtracting, setIsBatchExtracting] = useState(false);
   const [batchMessage, setBatchMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Repository State
+  const [repoConnection, setRepoConnection] = useState<RepositoryConnection | null>(null);
+  const [repoFiles, setRepoFiles] = useState<RepositoryFile[]>([]);
+  const [repoEvidence, setRepoEvidence] = useState<RepositoryEvidence[]>([]);
+  const [isSyncingRepo, setIsSyncingRepo] = useState<boolean>(false);
+  const [repoSyncMessage, setRepoSyncMessage] = useState<string | null>(null);
+  const [includeIgnoredFiles, setIncludeIgnoredFiles] = useState<boolean>(false);
 
   const fetchProjectData = useCallback(async () => {
     if (!projectId) return;
@@ -69,12 +96,14 @@ export const ProjectDetailPage: React.FC = () => {
         understandingData,
         requirementsList,
         metricsData,
+        repositoryData,
       ] = await Promise.all([
         getProject(projectId),
         listDocumentExtractions(projectId).catch(() => [] as DocumentExtractionSummary[]),
         getProjectUnderstanding(projectId).catch(() => null),
         listRequirements(projectId).catch(() => [] as Requirement[]),
         getRequirementMetrics(projectId).catch(() => null),
+        getRepository(projectId).catch(() => null),
       ]);
 
       setProject(projectData);
@@ -87,6 +116,16 @@ export const ProjectDetailPage: React.FC = () => {
       setUnderstanding(understandingData);
       setRequirements(requirementsList);
       setRequirementMetrics(metricsData);
+      setRepoConnection(repositoryData);
+
+      if (repositoryData?.current_snapshot) {
+        const [files, evidenceList] = await Promise.all([
+          getRepositoryTree(projectId, { include_ignored: includeIgnoredFiles }).catch(() => [] as RepositoryFile[]),
+          getRepositoryEvidence(projectId).catch(() => [] as RepositoryEvidence[]),
+        ]);
+        setRepoFiles(files);
+        setRepoEvidence(evidenceList);
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load project details."
@@ -94,7 +133,7 @@ export const ProjectDetailPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [projectId]);
+  }, [projectId, includeIgnoredFiles]);
 
   const handleExtractRequirements = async (forceRegenerate: boolean = false) => {
     if (!projectId) return;
@@ -112,6 +151,60 @@ export const ProjectDetailPage: React.FC = () => {
       setIsExtractingRequirements(false);
     }
   };
+
+  const handleConnectRepository = async (input: RepositoryConnectInput) => {
+    if (!projectId) return;
+    const connection = await connectRepository(projectId, input);
+    setRepoConnection(connection);
+  };
+
+  const handleDisconnectRepository = async () => {
+    if (!projectId) return;
+    await disconnectRepository(projectId);
+    setRepoConnection(null);
+    setRepoFiles([]);
+    setRepoEvidence([]);
+    setRepoSyncMessage(null);
+  };
+
+  const handleSyncRepository = async (force: boolean = false) => {
+    if (!projectId) return;
+    setIsSyncingRepo(true);
+    setRepoSyncMessage(null);
+    try {
+      const result = await syncRepository(projectId, force);
+      setRepoSyncMessage(result.message);
+
+      // Refresh connection, files, and evidence
+      const [updatedConn, files, evidenceList] = await Promise.all([
+        getRepository(projectId),
+        getRepositoryTree(projectId, { include_ignored: includeIgnoredFiles }).catch(() => [] as RepositoryFile[]),
+        getRepositoryEvidence(projectId).catch(() => [] as RepositoryEvidence[]),
+      ]);
+      setRepoConnection(updatedConn);
+      setRepoFiles(files);
+      setRepoEvidence(evidenceList);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to sync repository.");
+      // Refresh connection to catch error status
+      const updatedConn = await getRepository(projectId).catch(() => null);
+      if (updatedConn) setRepoConnection(updatedConn);
+    } finally {
+      setIsSyncingRepo(false);
+    }
+  };
+
+  const handleToggleIncludeIgnored = async (val: boolean) => {
+    setIncludeIgnoredFiles(val);
+    if (!projectId || !repoConnection?.current_snapshot) return;
+    try {
+      const files = await getRepositoryTree(projectId, { include_ignored: val });
+      setRepoFiles(files);
+    } catch (err) {
+      console.error("Failed to filter tree", err);
+    }
+  };
+
 
 
   useEffect(() => {
@@ -308,8 +401,31 @@ export const ProjectDetailPage: React.FC = () => {
               </span>
             )}
           </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("repository")}
+            className={cn(
+              "py-3 px-1 border-b-2 font-medium text-sm inline-flex items-center gap-2 transition-colors",
+              activeTab === "repository"
+                ? "border-blue-600 text-blue-600 font-semibold"
+                : "border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300"
+            )}
+          >
+            <GitFork className="h-4 w-4" />
+            GitHub Evidence
+            {repoConnection?.current_snapshot ? (
+              <span className="ml-1.5 py-0.5 px-2 rounded-full text-xs bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
+                {repoEvidence.length > 0 ? `${repoEvidence.length} facts` : "Synced"}
+              </span>
+            ) : repoConnection ? (
+              <span className="ml-1.5 py-0.5 px-2 rounded-full text-xs bg-blue-50 text-blue-600 font-medium border border-blue-200">
+                Connected
+              </span>
+            ) : null}
+          </button>
         </nav>
       </div>
+
 
 
       {/* Tab 1: Overview & Artifacts */}
@@ -479,6 +595,48 @@ export const ProjectDetailPage: React.FC = () => {
           />
         </div>
       )}
+
+      {/* Tab 4: GitHub Repository & Code Evidence */}
+      {activeTab === "repository" && (
+        <div className="space-y-6">
+          <RepositoryConnectionCard
+            connection={repoConnection}
+            onConnect={handleConnectRepository}
+            onDisconnect={handleDisconnectRepository}
+            isLoading={isSyncingRepo}
+          />
+
+          {repoConnection && (
+            <>
+              <RepositorySnapshotHeader
+                connection={repoConnection}
+                snapshot={repoConnection.current_snapshot ?? null}
+                onSync={handleSyncRepository}
+                isSyncing={isSyncingRepo}
+                syncMessage={repoSyncMessage}
+              />
+
+              {repoConnection.current_snapshot && (
+                <div className="space-y-8 pt-2">
+                  <RepositoryEvidenceList
+                    evidence={repoEvidence}
+                    repoUrl={repoConnection.repo_url}
+                  />
+
+                  <RepositoryFileTree
+                    files={repoFiles}
+                    repoUrl={repoConnection.repo_url}
+                    commitSha={repoConnection.current_snapshot.commit_sha}
+                    includeIgnored={includeIgnoredFiles}
+                    onToggleIncludeIgnored={handleToggleIncludeIgnored}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
 
       {/* Evidence Provenance Modal / Drawer */}
       <RequirementEvidenceDrawer

@@ -1,0 +1,25 @@
+--- Page 1 ---
+LegalVault Project Proposal
+1. Problem Statement
+Legal teams and individuals often manage contracts, case documents, notices, and supporting files across
+disconnected folders. Finding the correct document and understanding what it contains can be slow and error-prone.
+2. Proposed Solution
+LegalVault is a document management application for organizing legal documents in one searchable workspace.
+Users can upload documents, assign metadata, search documents, and review document details.
+3. Target Users
+Legal professionals
+Students or researchers working with legal documents
+Individuals maintaining personal legal records
+4. Core Features
+Document upload
+Document categorization
+Metadata management
+Search
+Document preview
+Basic access control
+5. Scope
+The initial system focuses on document organization, retrieval, and metadata. Advanced legal advice, automated
+legal conclusions, and autonomous legal decision-making are outside the initial scope.
+6. Expected Outcome
+Users should be able to store legal documents in an organized workspace and retrieve relevant documents without
+manually searching through unrelated files.

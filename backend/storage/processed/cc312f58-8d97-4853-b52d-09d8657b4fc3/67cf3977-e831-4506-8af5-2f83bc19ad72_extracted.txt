@@ -1,0 +1,41 @@
+LEGALVAULT TEST PACK
+====================
+
+Use this pack as a realistic sample project for Project Doctor.
+
+Project metadata
+----------------
+Name: LegalVault
+Description: A legal document management application for organizing, searching, and retrieving legal documents.
+Domain: Legal document management
+Users: Legal professionals, students/researchers, individuals
+Suggested stack: React, FastAPI, PostgreSQL, object/file storage
+
+Suggested artifact upload order
+--------------------------------
+1. 01_LegalVault_Project_Proposal.pdf
+2. 02_LegalVault_Requirements_SRS.pdf
+3. 03_LegalVault_Architecture.pdf
+4. 04_LegalVault_Test_Cases.pdf
+5. 05_LegalVault_Contradiction_Test.pdf
+
+GitHub
+------
+Use your own LegalVault repository URL if you have one. If not, the documents can still be used to test the artifact/requirement extraction flow.
+
+Manual test sequence
+--------------------
+A. Create a new project named LegalVault.
+B. Enter the metadata above.
+C. Add the GitHub repository URL.
+D. Upload the five PDFs.
+E. Check that artifacts are listed.
+F. Run requirement extraction.
+G. Verify that FR-01 through FR-08 and NFR-01 through NFR-04 are represented.
+H. Open requirement evidence/provenance and verify that evidence points back to the source documents.
+I. Verify the contradiction fixture produces conflicting evidence rather than silently resolving it.
+J. For Checkpoint 5, inspect the GitHub Evidence tab separately and verify repository snapshot/file/evidence behavior.
+
+Important
+---------
+These are synthetic test documents created for software testing. They are not legal advice, legal templates, or real legal records.

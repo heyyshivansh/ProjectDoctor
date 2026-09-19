@@ -3,6 +3,12 @@ from app.models.artifact import Artifact
 from app.models.document_extraction import DocumentExtraction
 from app.models.project_understanding import ProjectUnderstanding
 from app.models.requirement import Requirement, RequirementEvidence
+from app.models.github_repository import (
+    GitHubRepository,
+    RepositorySnapshot,
+    RepositoryFile,
+    RepositoryEvidence,
+)
 
 __all__ = [
     "Project",
@@ -11,5 +17,10 @@ __all__ = [
     "ProjectUnderstanding",
     "Requirement",
     "RequirementEvidence",
+    "GitHubRepository",
+    "RepositorySnapshot",
+    "RepositoryFile",
+    "RepositoryEvidence",
 ]
+
 

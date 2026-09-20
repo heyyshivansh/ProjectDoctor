@@ -4,69 +4,75 @@
 
 @layer base {
   :root, .dark {
-    /* Warm Obsidian & Smoked Charcoal Editorial Tokens */
-    --pd-canvas: #111317;
-    --pd-ink: #111317; /* Backwards compatible alias */
-    --pd-surface: #181a1f;
-    --pd-surface-raised: #20232a;
-    --pd-surface-overlay: #272b34;
-    --pd-surface-glass: rgba(24, 26, 31, 0.88);
+    /* ── Obsidian AI Canvas & Foundations ── */
+    --pd-canvas: #08090C;
+    --pd-ink: #08090C;
+    --pd-surface: #0E1117;
+    --pd-surface-raised: #141821;
+    --pd-surface-overlay: #1A1F2B;
+    --pd-surface-glass: rgba(14, 17, 23, 0.85);
 
-    --pd-hairline: #2c303a;
-    --pd-hairline-subtle: #21242c;
-    --pd-hairline-accent: rgba(212, 146, 79, 0.35);
-    --pd-hairline-specular: rgba(255, 255, 255, 0.08);
+    /* ── Hairline Borders ── */
+    --pd-hairline: #1F2533;
+    --pd-hairline-subtle: #161A24;
+    --pd-hairline-accent: rgba(99, 102, 241, 0.30);
+    --pd-hairline-specular: rgba(255, 255, 255, 0.06);
 
-    /* Warm Editorial Paper Typography */
-    --pd-text-primary: #f2efe9;
-    --pd-text: #f2efe9;
-    --pd-text-body: #c4c8d0;
-    --pd-text-muted: #888e9b;
-    --pd-text-faint: #5a606e;
-    --pd-text-dim: #5a606e;
+    /* ── Editorial Typography ── */
+    --pd-text-primary: #F8FAFC;
+    --pd-text: #F8FAFC;
+    --pd-text-body: #CBD5E1;
+    --pd-text-muted: #64748B;
+    --pd-text-faint: #475569;
+    --pd-text-dim: #334155;
 
-    /* Primary Brand Accent (Refined Copper-Amber, Strictly Zero Cyan) */
-    --pd-accent: #d4924f;
-    --pd-accent-hover: #e2a15f;
-    --pd-accent-wash: rgba(212, 146, 79, 0.08);
-    --pd-accent-glow: rgba(212, 146, 79, 0.22);
+    /* ── Primary Brand Accent (Iridescent Indigo) ── */
+    --pd-accent: #6366F1;
+    --pd-accent-hover: #818CF8;
+    --pd-accent-wash: rgba(99, 102, 241, 0.10);
+    --pd-accent-glow: rgba(99, 102, 241, 0.20);
 
-    /* Diagnostic Severity Semantic Tokens */
-    --pd-critical: #e06c75;
-    --pd-critical-wash: rgba(224, 108, 117, 0.10);
-    --pd-attention: #e5a84b;
-    --pd-attention-wash: rgba(229, 168, 75, 0.10);
-    --pd-strength: #56b68b;
-    --pd-strength-wash: rgba(86, 182, 139, 0.10);
+    /* ── Atmospheric Iridescent Accents ── */
+    --pd-iridescent-indigo: #6366F1;
+    --pd-iridescent-cyan: #38BDF8;
+    --pd-iridescent-emerald: #10B981;
 
-    /* Standard Tailwind theme integration */
-    --background: 220 15% 7%;
-    --foreground: 45 25% 93%;
+    /* ── Diagnostic Severity Semantic Tokens ── */
+    --pd-critical: #F43F5E;
+    --pd-critical-wash: rgba(244, 63, 94, 0.12);
+    --pd-attention: #F59E0B;
+    --pd-attention-wash: rgba(245, 158, 11, 0.12);
+    --pd-strength: #10B981;
+    --pd-strength-wash: rgba(16, 185, 129, 0.12);
 
-    --card: 220 12% 11%;
-    --card-foreground: 45 25% 93%;
+    /* ── Standard Tailwind Theme Integration ── */
+    --background: 220 20% 4%;
+    --foreground: 210 40% 98%;
 
-    --popover: 220 12% 11%;
-    --popover-foreground: 45 25% 93%;
+    --card: 220 18% 6%;
+    --card-foreground: 210 40% 98%;
 
-    --primary: 31 60% 57%;
-    --primary-foreground: 220 15% 7%;
+    --popover: 220 18% 6%;
+    --popover-foreground: 210 40% 98%;
 
-    --secondary: 220 14% 14%;
-    --secondary-foreground: 45 25% 93%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 220 20% 4%;
 
-    --muted: 220 14% 14%;
-    --muted-foreground: 220 8% 58%;
+    --secondary: 220 18% 8%;
+    --secondary-foreground: 210 40% 98%;
 
-    --accent: 220 14% 14%;
-    --accent-foreground: 45 25% 93%;
+    --muted: 220 18% 8%;
+    --muted-foreground: 215 16% 47%;
 
-    --destructive: 355 65% 65%;
-    --destructive-foreground: 45 25% 93%;
+    --accent: 220 18% 8%;
+    --accent-foreground: 210 40% 98%;
 
-    --border: 220 14% 20%;
-    --input: 220 14% 20%;
-    --ring: 31 60% 57%;
+    --destructive: 350 89% 60%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 22% 14%;
+    --input: 220 22% 14%;
+    --ring: 239 84% 67%;
 
     --radius: 0.75rem;
   }
@@ -83,7 +89,7 @@
     overflow-x: hidden;
     position: relative;
   }
-  /* Micro-subtle paper grain texture overlay (pure SVG data-URI, 1.5% opacity) */
+  /* Micro-subtle grain texture overlay */
   body::before {
     content: "";
     position: fixed;
@@ -93,7 +99,7 @@
     height: 100vh;
     pointer-events: none;
     z-index: 9999;
-    opacity: 0.018;
+    opacity: 0.015;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   }
   h1, h2, h3, .font-display {
@@ -104,7 +110,7 @@
   }
 }
 
-/* Custom Scrollbar for Smoked Charcoal Surface */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -113,9 +119,19 @@
   background: var(--pd-canvas);
 }
 ::-webkit-scrollbar-thumb {
-  background: #2c303a;
+  background: #1F2533;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #424755;
+  background: #2D3548;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

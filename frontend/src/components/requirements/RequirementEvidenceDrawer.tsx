@@ -18,9 +18,7 @@ import {
   ChevronUp,
   Copy,
   Check,
-  HelpCircle,
   CheckCircle2,
-  XCircle,
 } from "lucide-react";
 
 interface RequirementEvidenceDrawerProps {
@@ -94,31 +92,30 @@ export const RequirementEvidenceDrawer: React.FC<RequirementEvidenceDrawerProps>
     switch (status) {
       case "candidate_with_tests":
         return (
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#10B981] bg-[#10B981]/15 px-2.5 py-1 rounded-full border border-[#10B981]/30">
+            <CheckCircle2 className="h-3.5 w-3.5 text-[#10B981]" />
             Candidate Code & Tests Located
           </span>
         );
       case "candidate":
         return (
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
-            <HelpCircle className="h-3.5 w-3.5 text-blue-600" />
-            Candidate Code Located (No Tests)
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#F59E0B] bg-[#F59E0B]/15 px-2.5 py-1 rounded-full border border-[#F59E0B]/30">
+            <Code2 className="h-3.5 w-3.5 text-[#F59E0B]" />
+            Candidate Code Located
           </span>
         );
       case "ambiguous":
         return (
-          <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
-            Ambiguous Candidate Evidence
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#F43F5E] bg-[#F43F5E]/15 px-2.5 py-1 rounded-full border border-[#F43F5E]/30">
+            <AlertTriangle className="h-3.5 w-3.5 text-[#F43F5E]" />
+            Ambiguous Code Evidence
           </span>
         );
       case "unmatched":
       default:
         return (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
-            <XCircle className="h-3.5 w-3.5 text-slate-400" />
-            No Candidate Evidence Located
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--pd-text-muted)] bg-[var(--pd-surface-raised)] px-2.5 py-1 rounded-full border border-[var(--pd-hairline)]">
+            No Candidate Code Match
           </span>
         );
     }
@@ -126,7 +123,7 @@ export const RequirementEvidenceDrawer: React.FC<RequirementEvidenceDrawerProps>
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -134,33 +131,33 @@ export const RequirementEvidenceDrawer: React.FC<RequirementEvidenceDrawerProps>
       aria-modal="true"
     >
       <div
-        className="bg-white rounded-xl shadow-2xl border border-slate-200 max-w-3xl w-full h-[85vh] max-h-[85vh] flex flex-col overflow-hidden overscroll-contain"
+        className="bg-[var(--pd-surface-overlay)] rounded-2xl shadow-2xl border border-[var(--pd-hairline)] max-w-3xl w-full h-[85vh] max-h-[85vh] flex flex-col overflow-hidden overscroll-contain text-[var(--pd-text-primary)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drawer Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--pd-hairline)] bg-[var(--pd-surface)]">
           <div className="flex items-center gap-2.5 truncate max-w-xl">
-            <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200 shrink-0">
+            <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-[var(--pd-surface-raised)] text-[var(--pd-accent)] border border-[var(--pd-hairline)] shrink-0">
               {detail?.requirement_code || requirementId}
             </span>
-            <h3 className="text-base font-bold text-slate-900 truncate">
+            <h3 className="text-base font-display font-medium text-[var(--pd-text-primary)] truncate">
               {detail?.title || "Requirement Traceability & Evidence"}
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-lg text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] hover:bg-[var(--pd-surface-raised)] transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Sub-bar: Status and Tabs */}
-        <div className="flex items-center justify-between px-6 py-2.5 bg-slate-50 border-b border-slate-200 text-xs">
+        <div className="flex flex-wrap items-center justify-between px-6 py-2.5 bg-[var(--pd-surface)] border-b border-[var(--pd-hairline)] text-xs gap-3">
           <div className="flex items-center gap-2">
             {renderStatusBadge(detail?.status)}
             {detail?.commit_sha && (
-              <span className="font-mono text-[11px] text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
+              <span className="font-mono text-[11px] text-[var(--pd-text-muted)] bg-[var(--pd-surface-raised)] px-2 py-0.5 rounded border border-[var(--pd-hairline)]">
                 Commit: {detail.commit_sha.slice(0, 7)}
               </span>
             )}
@@ -169,10 +166,10 @@ export const RequirementEvidenceDrawer: React.FC<RequirementEvidenceDrawerProps>
           <div className="flex items-center gap-1">
             <button
               onClick={() => setActiveTab("code")}
-              className={`px-3 py-1 rounded-md font-semibold transition-colors flex items-center gap-1.5 ${
+              className={`px-3 py-1 rounded-lg font-mono text-xs font-medium transition-colors flex items-center gap-1.5 ${
                 activeTab === "code"
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                  ? "bg-[var(--pd-accent)] text-white shadow-sm"
+                  : "bg-[var(--pd-surface-raised)] text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] border border-[var(--pd-hairline)]"
               }`}
             >
               <Code2 className="h-3.5 w-3.5" />
@@ -180,10 +177,10 @@ export const RequirementEvidenceDrawer: React.FC<RequirementEvidenceDrawerProps>
             </button>
             <button
               onClick={() => setActiveTab("spec")}
-              className={`px-3 py-1 rounded-md font-semibold transition-colors flex items-center gap-1.5 ${
+              className={`px-3 py-1 rounded-lg font-mono text-xs font-medium transition-colors flex items-center gap-1.5 ${
                 activeTab === "spec"
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                  ? "bg-[var(--pd-accent)] text-white shadow-sm"
+                  : "bg-[var(--pd-surface-raised)] text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] border border-[var(--pd-hairline)]"
               }`}
             >
               <FileText className="h-3.5 w-3.5" />
@@ -195,14 +192,14 @@ export const RequirementEvidenceDrawer: React.FC<RequirementEvidenceDrawerProps>
         {/* Content Body */}
         <div className="flex-1 p-6 overflow-y-auto overscroll-contain min-h-0 space-y-6">
           {isLoading && (
-            <div className="py-20 flex flex-col items-center justify-center space-y-2 text-slate-500">
-              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-              <p className="text-xs">Loading requirement traceability...</p>
+            <div className="py-20 flex flex-col items-center justify-center space-y-2 text-[var(--pd-text-muted)]">
+              <Loader2 className="h-6 w-6 animate-spin text-[var(--pd-accent)]" />
+              <p className="text-xs font-mono">Loading requirement traceability...</p>
             </div>
           )}
 
           {error && (
-            <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs">
+            <div className="p-4 rounded-xl bg-[var(--pd-critical)]/10 border border-[var(--pd-critical)]/25 text-[var(--pd-critical)] text-xs font-mono">
               {error}
             </div>
           )}
@@ -210,39 +207,39 @@ export const RequirementEvidenceDrawer: React.FC<RequirementEvidenceDrawerProps>
           {detail && (
             <>
               {/* Requirement Statement Card */}
-              <div className="space-y-1.5 bg-slate-50 p-4 rounded-lg border border-slate-200">
+              <div className="space-y-2 bg-[var(--pd-surface)] p-5 rounded-xl border border-[var(--pd-hairline)]">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <p className="text-xs font-mono uppercase tracking-wider text-[var(--pd-text-muted)]">
                     Requirement Statement
                   </p>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="capitalize text-[11px] bg-white">
+                    <Badge variant="outline" className="capitalize text-[11px] bg-[var(--pd-surface-raised)] border-[var(--pd-hairline)] text-[var(--pd-text-body)]">
                       {detail.category}
                     </Badge>
                     {detail.priority && (
-                      <Badge variant="outline" className="capitalize text-[11px] bg-white">
+                      <Badge variant="outline" className="capitalize text-[11px] bg-[var(--pd-surface-raised)] border-[var(--pd-hairline)] text-[var(--pd-text-body)]">
                         {detail.priority}
                       </Badge>
                     )}
                     {detail.actor && (
-                      <Badge variant="outline" className="text-[11px] bg-white">
-                        <User className="h-3 w-3 mr-1 text-slate-400" />
+                      <Badge variant="outline" className="text-[11px] bg-[var(--pd-surface-raised)] border-[var(--pd-hairline)] text-[var(--pd-text-body)]">
+                        <User className="h-3 w-3 mr-1 text-[var(--pd-text-muted)]" />
                         {detail.actor}
                       </Badge>
                     )}
                   </div>
                 </div>
-                <p className="text-sm text-slate-800 leading-relaxed font-medium pt-1">
+                <p className="text-sm text-[var(--pd-text-body)] leading-relaxed font-normal pt-1">
                   {detail.description}
                 </p>
               </div>
 
               {/* Technical Verification Note */}
               {detail.verification_note && (
-                <div className="p-3.5 rounded-lg bg-blue-50/70 border border-blue-200 text-blue-900 flex items-start gap-2.5">
-                  <ShieldCheck className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+                <div className="p-4 rounded-xl bg-[var(--pd-accent)]/10 border border-[var(--pd-accent)]/25 text-[var(--pd-text-body)] flex items-start gap-2.5">
+                  <ShieldCheck className="h-4 w-4 text-[var(--pd-accent)] shrink-0 mt-0.5" />
                   <div className="text-xs space-y-0.5">
-                    <span className="font-semibold text-blue-950">Technical Verification Note: </span>
+                    <span className="font-semibold text-[var(--pd-text-primary)]">Technical Verification Note: </span>
                     <span>{detail.verification_note}</span>
                   </div>
                 </div>
@@ -253,13 +250,13 @@ export const RequirementEvidenceDrawer: React.FC<RequirementEvidenceDrawerProps>
                 <div className="space-y-6">
                   {/* Implementation Candidates */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                      <Code2 className="h-3.5 w-3.5 text-indigo-600" />
+                    <h4 className="text-xs font-mono uppercase tracking-wider text-[var(--pd-text-muted)] flex items-center gap-1.5">
+                      <Code2 className="h-3.5 w-3.5 text-[var(--pd-accent)]" />
                       Candidate Implementation Files ({detail.implementation_links.length})
                     </h4>
 
                     {detail.implementation_links.length === 0 ? (
-                      <div className="p-6 text-center rounded-lg border border-dashed border-slate-200 bg-slate-50/50 text-xs text-slate-500">
+                      <div className="p-6 text-center rounded-xl border border-dashed border-[var(--pd-hairline)] bg-[var(--pd-surface)]/50 text-xs text-[var(--pd-text-muted)] font-mono">
                         No candidate implementation files or route endpoints were detected in this snapshot.
                       </div>
                     ) : (
@@ -280,18 +277,18 @@ export const RequirementEvidenceDrawer: React.FC<RequirementEvidenceDrawerProps>
 
                   {/* Test Evidence */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                    <h4 className="text-xs font-mono uppercase tracking-wider text-[var(--pd-text-muted)] flex items-center gap-1.5">
+                      <ShieldCheck className="h-3.5 w-3.5 text-[#10B981]" />
                       Candidate Automated Test Suites ({detail.test_links.length})
                     </h4>
 
                     {detail.test_links.length === 0 ? (
-                      <div className="p-4 rounded-lg bg-amber-50/70 border border-amber-200 text-xs text-amber-800 space-y-1">
+                      <div className="p-4 rounded-xl bg-[#F59E0B]/10 border border-[#F59E0B]/25 text-xs text-[#F59E0B] space-y-1">
                         <div className="flex items-center gap-1.5 font-semibold">
-                          <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+                          <AlertTriangle className="h-3.5 w-3.5 text-[#F59E0B]" />
                           Missing Automated Tests
                         </div>
-                        <p>
+                        <p className="text-[var(--pd-text-body)]">
                           No automated test files matching this requirement were located in the repository tree. Automated tests are recommended to verify requirement implementation.
                         </p>
                       </div>
@@ -316,13 +313,13 @@ export const RequirementEvidenceDrawer: React.FC<RequirementEvidenceDrawerProps>
               {/* TAB 2: Specification Provenance */}
               {activeTab === "spec" && (
                 <div className="space-y-3">
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                    <Bookmark className="h-3.5 w-3.5 text-blue-600" />
+                  <h4 className="text-xs font-mono uppercase tracking-wider text-[var(--pd-text-muted)] flex items-center gap-1.5">
+                    <Bookmark className="h-3.5 w-3.5 text-[var(--pd-accent)]" />
                     Document Specification Provenance ({detail.specification_evidence.length})
                   </h4>
 
                   {detail.specification_evidence.length === 0 ? (
-                    <div className="p-6 text-center rounded-lg border border-dashed border-slate-200 bg-slate-50/50 text-xs text-slate-500">
+                    <div className="p-6 text-center rounded-xl border border-dashed border-[var(--pd-hairline)] bg-[var(--pd-surface)]/50 text-xs text-[var(--pd-text-muted)] font-mono">
                       No document quotes attached. Requirement declared in project metadata.
                     </div>
                   ) : (
@@ -330,32 +327,32 @@ export const RequirementEvidenceDrawer: React.FC<RequirementEvidenceDrawerProps>
                       {detail.specification_evidence.map((ev, idx) => (
                         <div
                           key={ev.id || idx}
-                          className="p-4 rounded-lg border border-slate-200 bg-white space-y-2 shadow-sm"
+                          className="p-4 rounded-xl border border-[var(--pd-hairline)] bg-[var(--pd-surface)] space-y-2 shadow-sm"
                         >
-                          <div className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-1.5 font-medium text-slate-800 truncate">
-                              <FileText className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                          <div className="flex items-center justify-between text-xs font-mono">
+                            <div className="flex items-center gap-1.5 font-medium text-[var(--pd-text-primary)] truncate">
+                              <FileText className="h-3.5 w-3.5 text-[var(--pd-accent)] shrink-0" />
                               <span className="truncate">
                                 {ev.source_type === "project_metadata"
                                   ? "Project Metadata"
                                   : ev.artifact_name || "Document Specification"}
                               </span>
                               {ev.section_title && (
-                                <span className="text-slate-400 truncate">
+                                <span className="text-[var(--pd-text-muted)] truncate">
                                   &gt; {ev.section_title}
                                 </span>
                               )}
                             </div>
 
                             {ev.page_number && (
-                              <span className="text-[10px] bg-slate-100 text-slate-600 font-semibold px-1.5 py-0.5 rounded">
+                              <span className="text-[10px] bg-[var(--pd-surface-raised)] text-[var(--pd-text-muted)] font-semibold px-2 py-0.5 rounded border border-[var(--pd-hairline)]">
                                 Page {ev.page_number}
                               </span>
                             )}
                           </div>
 
-                          <div className="relative pl-3 border-l-2 border-blue-500 bg-slate-50/70 p-2.5 rounded-r text-xs text-slate-700 italic leading-relaxed">
-                            <Quote className="h-3 w-3 text-slate-300 absolute -top-1.5 -left-1 bg-white" />
+                          <div className="relative pl-3 border-l-2 border-[var(--pd-accent)] bg-[var(--pd-surface-raised)]/60 p-3 rounded-r text-xs text-[var(--pd-text-body)] italic leading-relaxed">
+                            <Quote className="h-3 w-3 text-[var(--pd-text-muted)] absolute -top-1.5 -left-1" />
                             "{ev.exact_snippet}"
                           </div>
                         </div>
@@ -369,8 +366,8 @@ export const RequirementEvidenceDrawer: React.FC<RequirementEvidenceDrawerProps>
         </div>
 
         {/* Drawer Footer */}
-        <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/70 flex justify-end">
-          <Button variant="outline" size="sm" onClick={onClose} className="text-xs">
+        <div className="px-6 py-3.5 border-t border-[var(--pd-hairline)] bg-[var(--pd-surface)] flex justify-end">
+          <Button variant="outline" size="sm" onClick={onClose} className="text-xs font-mono bg-[var(--pd-surface-raised)] border-[var(--pd-hairline)] text-[var(--pd-text-primary)] hover:bg-[var(--pd-hairline)]">
             Close
           </Button>
         </div>
@@ -395,14 +392,14 @@ const TraceabilityLinkCard: React.FC<TraceabilityLinkCardProps> = ({
   onCopy,
 }) => {
   return (
-    <div className="p-3.5 rounded-lg border border-slate-200 bg-white space-y-2 shadow-sm hover:border-slate-300 transition-colors">
+    <div className="p-4 rounded-xl border border-[var(--pd-hairline)] bg-[var(--pd-surface)] space-y-2.5 shadow-sm hover:border-[var(--pd-accent)]/40 transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-2 truncate">
-          <span className="font-mono text-xs font-bold text-slate-900 truncate">
+          <span className="font-mono text-xs font-semibold text-[var(--pd-text-primary)] truncate">
             {link.file_path}
           </span>
           {link.line_start && (
-            <span className="text-[11px] text-slate-400">
+            <span className="text-[11px] font-mono text-[var(--pd-text-muted)]">
               Lines {link.line_start}-{link.line_end}
             </span>
           )}
@@ -411,12 +408,12 @@ const TraceabilityLinkCard: React.FC<TraceabilityLinkCardProps> = ({
         <div className="flex items-center gap-2 shrink-0">
           <Badge
             variant="outline"
-            className={`text-[10px] uppercase font-semibold ${
+            className={`text-[10px] font-mono uppercase font-semibold ${
               link.match_level === "strong_match"
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                ? "bg-[#10B981]/15 text-[#10B981] border-[#10B981]/30"
                 : link.match_level === "candidate_match"
-                ? "bg-blue-50 text-blue-700 border-blue-200"
-                : "bg-slate-100 text-slate-600 border-slate-200"
+                ? "bg-[var(--pd-accent)]/15 text-[var(--pd-accent)] border-[var(--pd-accent)]/30"
+                : "bg-[var(--pd-surface-raised)] text-[var(--pd-text-muted)] border-[var(--pd-hairline)]"
             }`}
           >
             {Math.round(link.match_confidence * 100)}% Confidence
@@ -427,7 +424,7 @@ const TraceabilityLinkCard: React.FC<TraceabilityLinkCardProps> = ({
               href={link.github_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-800 font-medium"
+              className="inline-flex items-center gap-1 text-[11px] font-mono text-[var(--pd-accent)] hover:underline"
             >
               <span>GitHub</span>
               <ExternalLink className="h-3 w-3" />
@@ -436,16 +433,16 @@ const TraceabilityLinkCard: React.FC<TraceabilityLinkCardProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+      <div className="flex items-center justify-between text-[11px] font-mono text-[var(--pd-text-muted)] pt-0.5">
         <span className="truncate max-w-lg">
-          <strong className="text-slate-700">Rationale:</strong> {link.match_rationale}
+          <strong className="text-[var(--pd-text-primary)]">Rationale:</strong> {link.match_rationale}
         </span>
 
         {link.code_snippet && (
           <button
             type="button"
             onClick={onToggleExpand}
-            className="inline-flex items-center gap-0.5 text-slate-600 hover:text-slate-900 text-[11px] font-medium ml-2"
+            className="inline-flex items-center gap-0.5 text-[var(--pd-accent)] hover:underline text-[11px] font-mono ml-2 shrink-0"
           >
             {isExpanded ? (
               <>
@@ -463,16 +460,16 @@ const TraceabilityLinkCard: React.FC<TraceabilityLinkCardProps> = ({
       </div>
 
       {isExpanded && link.code_snippet && (
-        <div className="mt-2 rounded bg-slate-950 p-2.5 text-slate-200 text-xs font-mono overflow-x-auto relative">
+        <div className="mt-2 rounded-xl bg-[var(--pd-canvas)] border border-[var(--pd-hairline)] p-3 text-[var(--pd-text-body)] text-xs font-mono overflow-x-auto relative">
           <div className="flex justify-end pb-1">
             <button
               type="button"
               onClick={onCopy}
-              className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-white"
+              className="flex items-center gap-1 text-[10px] font-mono text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)]"
             >
               {copiedId === link.id ? (
                 <>
-                  <Check className="h-3 w-3 text-emerald-400" />
+                  <Check className="h-3 w-3 text-[#10B981]" />
                   Copied
                 </>
               ) : (

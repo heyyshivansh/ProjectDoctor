@@ -27,27 +27,27 @@ export const TelemetryStep: React.FC<TelemetryStepProps> = ({
       aria-label={`Step ${index + 1}: ${label} - ${state}`}
       className={cn(
         "flex items-start gap-3.5 p-3.5 rounded-xl transition-colors border",
-        state === "in_progress" && "bg-[#20232a] border-[#d4924f]/40 shadow-[0_0_16px_rgba(212,146,79,0.15)]",
-        state === "completed" && "bg-[#181a1f] border-[#262a33]",
-        state === "waiting" && "bg-[#181a1f]/50 border-[#262a33]/50 opacity-60",
-        state === "error" && "bg-[#e06c75]/10 border-[#e06c75]/40"
+        state === "in_progress" && "bg-[var(--pd-surface-raised)] border-[var(--pd-accent)]/40 shadow-[0_0_16px_rgba(99,102,241,0.15)]",
+        state === "completed" && "bg-[var(--pd-surface)] border-[var(--pd-hairline)]",
+        state === "waiting" && "bg-[var(--pd-surface)]/50 border-[var(--pd-hairline)]/50 opacity-60",
+        state === "error" && "bg-[var(--pd-critical)]/10 border-[var(--pd-critical)]/40"
       )}
     >
       {/* State Indicator */}
       <div className="flex-shrink-0 mt-0.5">
         {state === "completed" && (
-          <CheckCircle2 className="w-4 h-4 text-[#56b68b]" />
+          <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
         )}
         {state === "in_progress" && (
-          <Loader2 className="w-4 h-4 text-[#d4924f] animate-spin" />
+          <Loader2 className="w-4 h-4 text-[var(--pd-accent)] animate-spin" />
         )}
         {state === "waiting" && (
-          <div className="w-4 h-4 rounded-full border border-[#5d6370] flex items-center justify-center">
-            <span className="w-1 h-1 rounded-full bg-[#5d6370]" />
+          <div className="w-4 h-4 rounded-full border border-[var(--pd-hairline)] flex items-center justify-center">
+            <span className="w-1 h-1 rounded-full bg-[var(--pd-text-muted)]" />
           </div>
         )}
         {state === "error" && (
-          <AlertCircle className="w-4 h-4 text-[#e06c75]" />
+          <AlertCircle className="w-4 h-4 text-[var(--pd-critical)]" />
         )}
       </div>
 
@@ -56,16 +56,16 @@ export const TelemetryStep: React.FC<TelemetryStepProps> = ({
         <p
           className={cn(
             "text-xs sm:text-sm font-mono",
-            state === "completed" && "text-[#f2efe9] font-medium",
-            state === "in_progress" && "text-[#d4924f] font-semibold",
-            state === "waiting" && "text-[#5d6370]",
-            state === "error" && "text-[#e06c75] font-semibold"
+            state === "completed" && "text-[var(--pd-text-primary)] font-medium",
+            state === "in_progress" && "text-[var(--pd-accent)] font-semibold",
+            state === "waiting" && "text-[var(--pd-text-muted)]",
+            state === "error" && "text-[var(--pd-critical)] font-semibold"
           )}
         >
           {label}
         </p>
         {detail && (
-          <p className="text-xs font-sans text-[#888e9b] mt-1 break-words leading-relaxed">
+          <p className="text-xs font-sans text-[var(--pd-text-muted)] mt-1 break-words leading-relaxed">
             {detail}
           </p>
         )}

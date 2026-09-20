@@ -17,30 +17,30 @@ export const AnalysisFailureRecovery: React.FC<AnalysisFailureRecoveryProps> = (
   errorMessage,
   onRetry,
   onContinue,
-  continueLabel = "Continue to Studio",
+  continueLabel = "Continue to Review Desk",
 }) => {
   return (
     <TactileSurface
       elevation="raised"
-      className="p-5 border-[#e06c75]/40 bg-[#20232a] mt-4 space-y-4 text-left"
+      className="p-5 border-[var(--pd-critical)]/40 bg-[var(--pd-surface-raised)] mt-4 space-y-4 text-left rounded-xl"
     >
       <div className="flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-[#e06c75] flex-shrink-0 mt-0.5" />
+        <AlertTriangle className="w-5 h-5 text-[var(--pd-critical)] flex-shrink-0 mt-0.5" />
         <div className="space-y-1 text-left">
-          <h4 className="text-sm font-semibold text-[#e06c75]">
+          <h4 className="text-sm font-semibold text-[var(--pd-critical)] font-sans">
             Encountered an issue during evaluation
           </h4>
-          <p className="text-xs text-[#888e9b] leading-relaxed break-words font-mono">
+          <p className="text-xs text-[var(--pd-text-muted)] leading-relaxed break-words font-mono">
             {errorMessage}
           </p>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2 border-t border-[#262a33]">
+      <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2 border-t border-[var(--pd-hairline)]">
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium bg-[#181a1f] text-[#f2efe9] border border-[#262a33] hover:border-[#d4924f] hover:text-[#d4924f] transition-colors"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium bg-[var(--pd-surface)] text-[var(--pd-text-primary)] border border-[var(--pd-hairline)] hover:border-[var(--pd-accent)] hover:text-[var(--pd-accent)] transition-colors"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Retry Step</span>
@@ -49,7 +49,7 @@ export const AnalysisFailureRecovery: React.FC<AnalysisFailureRecoveryProps> = (
         <button
           type="button"
           onClick={onContinue}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium bg-[#d4924f] text-[#111317] hover:bg-[#e5a84b] transition-colors font-semibold"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-mono font-medium bg-[var(--pd-accent)] text-white hover:bg-[var(--pd-accent-hover)] transition-colors font-semibold"
         >
           <span>{continueLabel}</span>
           <ArrowRight className="w-3.5 h-3.5" />

@@ -225,17 +225,17 @@ export const DiagnosticInstrument: React.FC<DiagnosticInstrumentProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       className="w-full max-w-2xl mx-auto"
     >
-      <TactileSurface elevation="floating" className="p-6 sm:p-8 bg-[#181a1f] border-[#262a33] text-[#f2efe9]">
+      <TactileSurface elevation="floating" className="p-6 sm:p-8 bg-[var(--pd-surface)] border-[var(--pd-hairline)] text-[var(--pd-text-primary)] rounded-2xl">
         {/* Header */}
-        <div className="space-y-2 mb-6 pb-4 border-b border-[#262a33] text-left">
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[#20232a] border border-[#262a33] text-[11px] font-mono uppercase tracking-wider text-[#d4924f]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#d4924f] animate-pulse" />
+        <div className="space-y-2 mb-6 pb-4 border-b border-[var(--pd-hairline)] text-left">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[var(--pd-surface-raised)] border border-[var(--pd-hairline)] text-[11px] font-mono uppercase tracking-wider text-[var(--pd-accent)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--pd-accent)] animate-pulse" />
             <span>Active Diagnostic Instrument</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-display font-medium text-[#f2efe9]">
+          <h2 className="text-xl sm:text-2xl font-display font-medium text-[var(--pd-text-primary)]">
             {createdProject ? createdProject.title : data.title}
           </h2>
-          <p className="text-xs sm:text-sm text-[#888e9b] font-sans">
+          <p className="text-xs sm:text-sm text-[var(--pd-text-muted)] font-sans">
             Executing deterministic technical analysis across submitted project artifacts
           </p>
         </div>

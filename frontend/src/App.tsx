@@ -3,37 +3,37 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { EntryPage } from "@/pages/EntryPage";
 
-// Dynamically code-split ProjectStudioPage so GSAP and Studio bundles are not loaded on Entry route
-const ProjectStudioPage = lazy(() => import("@/pages/ProjectStudioPage"));
+// Code-split ReviewDeskPage for fast initial entry load
+const ReviewDeskPage = lazy(() => import("@/pages/ReviewDeskPage"));
 
 export const App: React.FC = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<AppLayout />}>
-          {/* Root Invitational Entry Experience */}
-          <Route index element={<EntryPage />} />
-
-          {/* New Project creation is integrated into the Entry surface */}
+        {/* Entry / Landing Layout with MinimalHeader */}
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<EntryPage />} />
           <Route path="projects/new" element={<Navigate to="/" replace />} />
-
-          {/* Diagnostic Studio Orchestrator (Lazy Loaded with GSAP isolated) */}
-          <Route
-            path="projects/:projectId"
-            element={
-              <Suspense
-                fallback={
-                  <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
-                    <div className="w-8 h-8 rounded-full border-2 border-slate-300 border-t-slate-900 animate-spin" />
-                    <p className="text-sm text-slate-500 font-medium">Opening Studio...</p>
-                  </div>
-                }
-              >
-                <ProjectStudioPage />
-              </Suspense>
-            }
-          />
         </Route>
+
+        {/* Full Cinematic Review Desk with ReviewDeskHeader & Navigation */}
+        <Route
+          path="projects/:projectId"
+          element={
+            <Suspense
+              fallback={
+                <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3 bg-[var(--pd-canvas)]">
+                  <div className="w-8 h-8 rounded-full border-2 border-[var(--pd-hairline)] border-t-[var(--pd-accent)] animate-spin" />
+                  <p className="text-sm font-mono text-[var(--pd-text-muted)] font-medium">
+                    Opening Technical Review Desk...
+                  </p>
+                </div>
+              }
+            >
+              <ReviewDeskPage />
+            </Suspense>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

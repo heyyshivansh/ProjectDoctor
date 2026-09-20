@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { RepositoryConnection, RepositoryConnectInput } from "@/types/repository";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -78,175 +77,168 @@ export const RepositoryConnectionCard: React.FC<RepositoryConnectionCardProps> =
   };
 
   return (
-    <Card className="border border-slate-200 shadow-sm">
-      <CardHeader className="pb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-slate-900 text-white rounded-lg shrink-0">
-              <GitFork className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle className="text-lg font-bold text-slate-900">
-                GitHub Repository Association
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-500">
-                Connect a remote repository to deterministically acquire structure, files, and implementation evidence.
-              </CardDescription>
-            </div>
+    <div className="border border-[var(--pd-hairline)] bg-[var(--pd-surface)] rounded-xl p-5 sm:p-6 shadow-sm text-left space-y-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--pd-hairline)]">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-[var(--pd-surface-raised)] text-[var(--pd-accent)] rounded-lg shrink-0 border border-[var(--pd-hairline)]">
+            <GitFork className="h-5 w-5" />
           </div>
-
-          {connection && (
-            <div className="flex items-center gap-2">
-              <Badge
-                variant="outline"
-                className={
-                  connection.status === "synced" || connection.status === "connected"
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-200 gap-1 text-xs font-semibold"
-                    : "bg-amber-50 text-amber-700 border-amber-200 gap-1 text-xs font-semibold"
-                }
-              >
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                {connection.status.toUpperCase()}
-              </Badge>
-              {connection.is_private ? (
-                <Badge variant="secondary" className="gap-1 text-xs">
-                  <Lock className="h-3 w-3" /> Private
-                </Badge>
-              ) : (
-                <Badge variant="secondary" className="gap-1 text-xs">
-                  <Unlock className="h-3 w-3" /> Public
-                </Badge>
-              )}
-            </div>
-          )}
+          <div>
+            <h3 className="text-base font-display font-medium text-[var(--pd-text-primary)]">
+              GitHub Repository Association
+            </h3>
+            <p className="text-xs font-mono text-[var(--pd-text-muted)] mt-0.5">
+              Connect a remote repository to deterministically acquire structure, files, and implementation evidence.
+            </p>
+          </div>
         </div>
-      </CardHeader>
 
-      <CardContent className="space-y-4 pt-0">
-        {formError && (
-          <div className="p-3 text-xs bg-rose-50 border border-rose-200 text-rose-800 rounded-md flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
-            <span>{formError}</span>
+        {connection && (
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className={`text-xs font-mono font-semibold ${
+                connection.status === "synced" || connection.status === "connected"
+                  ? "bg-[#10B981]/15 text-[#10B981] border-[#10B981]/30 gap-1"
+                  : "bg-[#F59E0B]/15 text-[#F59E0B] border-[#F59E0B]/30 gap-1"
+              }`}
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              {connection.status.toUpperCase()}
+            </Badge>
+            {connection.is_private ? (
+              <Badge variant="secondary" className="gap-1 text-xs font-mono bg-[var(--pd-surface-raised)] text-[var(--pd-text-muted)] border border-[var(--pd-hairline)]">
+                <Lock className="h-3 w-3" /> Private
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="gap-1 text-xs font-mono bg-[var(--pd-surface-raised)] text-[var(--pd-text-muted)] border border-[var(--pd-hairline)]">
+                <Unlock className="h-3 w-3" /> Public
+              </Badge>
+            )}
           </div>
         )}
+      </div>
 
-        {connection && !isEditing ? (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-50 border border-slate-200 rounded-lg">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <a
-                  href={connection.repo_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-bold text-slate-900 hover:text-blue-600 inline-flex items-center gap-1.5 transition-colors text-base"
-                >
-                  {connection.owner}/{connection.repo_name}
-                  <ExternalLink className="h-3.5 w-3.5 text-slate-400" />
-                </a>
-              </div>
-              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                <span>Default Branch: <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-semibold">{connection.default_branch}</code></span>
-                <span>&bull;</span>
-                <span>Token: {connection.has_token ? "Configured (Masked)" : "None (Public API)"}</span>
-              </div>
+      {formError && (
+        <div className="p-3 text-xs font-mono bg-[var(--pd-critical)]/10 border border-[var(--pd-critical)]/25 text-[var(--pd-critical)] rounded-lg flex items-center gap-2">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>{formError}</span>
+        </div>
+      )}
+
+      {connection && !isEditing ? (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-[var(--pd-surface-raised)] border border-[var(--pd-hairline)] rounded-xl">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <a
+                href={connection.repo_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono font-bold text-[var(--pd-text-primary)] hover:text-[var(--pd-accent)] inline-flex items-center gap-1.5 transition-colors text-base"
+              >
+                {connection.owner}/{connection.repo_name}
+                <ExternalLink className="h-3.5 w-3.5 text-[var(--pd-text-muted)]" />
+              </a>
             </div>
-
-            <div className="flex items-center gap-2 self-start sm:self-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditing(true)}
-                className="text-xs"
-              >
-                Change Settings
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDisconnect}
-                disabled={isSubmitting || isLoading}
-                className="text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700 border-rose-200"
-              >
-                <Trash2 className="h-3.5 w-3.5 mr-1" />
-                Disconnect
-              </Button>
+            <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-[var(--pd-text-muted)]">
+              <span>Default Branch: <code className="bg-[var(--pd-canvas)] px-1.5 py-0.5 rounded border border-[var(--pd-hairline)] font-semibold text-[var(--pd-text-primary)]">{connection.default_branch}</code></span>
+              <span>&bull;</span>
+              <span>Token: {connection.has_token ? "Configured (Masked)" : "None (Public API)"}</span>
             </div>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="repoUrl" className="text-xs font-semibold text-slate-700">
-                GitHub Repository URL <span className="text-rose-500">*</span>
+
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditing(true)}
+              className="text-xs font-mono bg-[var(--pd-surface)] border-[var(--pd-hairline)] text-[var(--pd-text-primary)] hover:bg-[var(--pd-hairline)]"
+            >
+              Change Settings
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDisconnect}
+              disabled={isSubmitting || isLoading}
+              className="text-xs font-mono text-[var(--pd-critical)] hover:bg-[var(--pd-critical)]/10 border-[var(--pd-critical)]/30"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-1" />
+              Disconnect
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="repoUrl" className="text-xs font-mono uppercase tracking-wider text-[var(--pd-text-muted)]">
+              GitHub Repository URL <span className="text-[var(--pd-critical)]">*</span>
+            </Label>
+            <Input
+              id="repoUrl"
+              placeholder="https://github.com/owner/repository"
+              value={repoUrl}
+              onChange={(e) => setRepoUrl(e.target.value)}
+              disabled={isSubmitting || isLoading}
+              className="font-mono text-xs bg-[var(--pd-canvas)] border-[var(--pd-hairline)] text-[var(--pd-text-primary)] focus:border-[var(--pd-accent)]"
+            />
+            <p className="text-[11px] font-mono text-[var(--pd-text-muted)]">
+              Format: <code className="bg-[var(--pd-surface-raised)] px-1 py-0.5 rounded border border-[var(--pd-hairline)]">https://github.com/owner/repo</code>
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="token" className="text-xs font-mono uppercase tracking-wider text-[var(--pd-text-muted)] flex items-center gap-1">
+                <Key className="h-3 w-3 text-[var(--pd-text-muted)]" />
+                Personal Access Token (Optional)
               </Label>
-              <Input
-                id="repoUrl"
-                placeholder="https://github.com/owner/repository"
-                value={repoUrl}
-                onChange={(e) => setRepoUrl(e.target.value)}
-                disabled={isSubmitting || isLoading}
-                className="font-mono text-xs"
-              />
-              <p className="text-[11px] text-slate-500">
-                Supported format: <code className="bg-slate-100 px-1 py-0.5 rounded">https://github.com/owner/repo</code>
-              </p>
+              <span className="text-[11px] font-mono text-[var(--pd-text-muted)]">Required for private repos</span>
             </div>
+            <Input
+              id="token"
+              type="password"
+              placeholder={connection?.has_token ? "•••••••••••••••• (Leave blank to keep existing)" : "ghp_xxxxxxxxxxxxxxxxxxxx"}
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              disabled={isSubmitting || isLoading}
+              className="font-mono text-xs bg-[var(--pd-canvas)] border-[var(--pd-hairline)] text-[var(--pd-text-primary)] focus:border-[var(--pd-accent)]"
+            />
+          </div>
 
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="token" className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                  <Key className="h-3 w-3 text-slate-500" />
-                  Personal Access Token (Optional)
-                </Label>
-                <span className="text-[11px] text-slate-400">Required only for private repositories or elevated rate limits</span>
-              </div>
-              <Input
-                id="token"
-                type="password"
-                placeholder={connection?.has_token ? "•••••••••••••••• (Leave blank to keep existing token)" : "ghp_xxxxxxxxxxxxxxxxxxxx"}
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                disabled={isSubmitting || isLoading}
-                className="font-mono text-xs"
-              />
-              <p className="text-[11px] text-slate-500">
-                Credentials are encrypted/masked and never sent back in API responses.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 pt-1">
-              <Button
-                type="submit"
-                disabled={isSubmitting || isLoading}
-                size="sm"
-                className="text-xs gap-1.5"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    Connecting...
-                  </>
-                ) : (
-                  <>
-                    <GitFork className="h-3.5 w-3.5" />
-                    {connection ? "Update Association" : "Connect Repository"}
-                  </>
-                )}
-              </Button>
-              {connection && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsEditing(false)}
-                  className="text-xs"
-                >
-                  Cancel
-                </Button>
+          <div className="flex items-center gap-2 pt-1">
+            <Button
+              type="submit"
+              disabled={isSubmitting || isLoading}
+              size="sm"
+              className="text-xs font-mono bg-[var(--pd-accent)] text-white hover:bg-[var(--pd-accent-hover)] gap-1.5"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Connecting...
+                </>
+              ) : (
+                <>
+                  <GitFork className="h-3.5 w-3.5" />
+                  {connection ? "Update Association" : "Connect Repository"}
+                </>
               )}
-            </div>
-          </form>
-        )}
-      </CardContent>
-    </Card>
+            </Button>
+            {connection && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditing(false)}
+                className="text-xs font-mono text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)]"
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
+        </form>
+      )}
+    </div>
   );
 };

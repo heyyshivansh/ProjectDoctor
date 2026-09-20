@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { ProjectUnderstanding } from "@/types/understanding";
 import { generateProjectUnderstanding } from "@/services/documents";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -60,8 +59,8 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
   };
 
   const renderNotSpecified = () => (
-    <span className="text-xs text-slate-400 italic flex items-center gap-1">
-      <HelpCircle className="h-3 w-3 text-slate-300" />
+    <span className="text-xs font-mono text-[var(--pd-text-muted)] italic flex items-center gap-1">
+      <HelpCircle className="h-3 w-3 text-[var(--pd-text-muted)]" />
       Not specified
     </span>
   );
@@ -74,7 +73,7 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
     if (Array.isArray(prov) && prov.length > 0) {
       return (
         <span
-          className="text-[10px] text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded"
+          className="text-[10px] text-[var(--pd-text-muted)] font-mono bg-[var(--pd-surface-raised)] border border-[var(--pd-hairline)] px-1.5 py-0.5 rounded"
           title={JSON.stringify(prov)}
         >
           Source: {prov[0].source_type === "project_metadata" ? "Metadata" : "Document"}
@@ -89,7 +88,7 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
           : `Artifact: ${prov.section || "Document"}`;
       return (
         <span
-          className="text-[10px] text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded"
+          className="text-[10px] text-[var(--pd-text-muted)] font-mono bg-[var(--pd-surface-raised)] border border-[var(--pd-hairline)] px-1.5 py-0.5 rounded"
           title={`Source: ${prov.source_type}`}
         >
           Source: {label}
@@ -101,21 +100,21 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
   };
 
   return (
-    <Card className="border-slate-200 shadow-sm overflow-hidden">
-      <CardHeader className="bg-slate-50/70 border-b border-slate-200 flex flex-row items-center justify-between py-4 px-6">
+    <div className="border border-[var(--pd-hairline)] bg-[var(--pd-surface)] rounded-2xl shadow-sm overflow-hidden text-left">
+      <div className="bg-[var(--pd-surface-raised)]/60 border-b border-[var(--pd-hairline)] flex flex-col sm:flex-row sm:items-center justify-between py-4 px-6 gap-3">
         <div>
-          <CardTitle className="text-lg font-bold text-slate-900 flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-indigo-600" />
+          <h3 className="text-lg font-display font-medium text-[var(--pd-text-primary)] flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-[var(--pd-accent)]" />
             Structured Project Understanding
-          </CardTitle>
-          <p className="text-xs text-slate-500 mt-0.5">
+          </h3>
+          <p className="text-xs font-mono text-[var(--pd-text-muted)] mt-0.5">
             Deterministic 11-dimensional synthesis backed strictly by metadata and extracted documents.
           </p>
         </div>
         <Button
           onClick={handleGenerate}
           disabled={isGenerating}
-          className="gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-9"
+          className="gap-2 bg-[var(--pd-accent)] hover:bg-[var(--pd-accent-hover)] text-white text-xs font-mono h-9 shrink-0"
         >
           {isGenerating ? (
             <>
@@ -129,24 +128,24 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
             </>
           )}
         </Button>
-      </CardHeader>
+      </div>
 
-      <CardContent className="p-6 space-y-6">
+      <div className="p-6 space-y-6">
         {error && (
-          <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs">
+          <div className="p-3 rounded-xl bg-[var(--pd-critical)]/10 border border-[var(--pd-critical)]/25 text-[var(--pd-critical)] text-xs font-mono">
             {error}
           </div>
         )}
 
         {!understanding ? (
-          <div className="text-center py-12 px-4 border border-dashed border-slate-200 rounded-xl bg-slate-50/50 space-y-3">
-            <div className="h-10 w-10 mx-auto rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center">
+          <div className="text-center py-12 px-4 border border-dashed border-[var(--pd-hairline)] rounded-xl bg-[var(--pd-surface-raised)]/30 space-y-3">
+            <div className="h-10 w-10 mx-auto rounded-full bg-[var(--pd-accent)]/15 text-[var(--pd-accent)] flex items-center justify-center">
               <Sparkles className="h-5 w-5" />
             </div>
-            <h3 className="text-sm font-semibold text-slate-900">
+            <h4 className="text-sm font-display font-medium text-[var(--pd-text-primary)]">
               No Structured Representation Generated Yet
-            </h3>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
+            </h4>
+            <p className="text-xs font-sans text-[var(--pd-text-muted)] max-w-md mx-auto">
               Synthesize an initial 11-dimensional understanding model combining your declared project
               metadata with extracted text from uploaded proposal and specification documents.
             </p>
@@ -155,19 +154,19 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
               disabled={isGenerating}
               variant="outline"
               size="sm"
-              className="gap-1.5 text-xs text-indigo-700 border-indigo-200 hover:bg-indigo-50"
+              className="gap-1.5 text-xs font-mono bg-[var(--pd-surface-raised)] border-[var(--pd-hairline)] text-[var(--pd-accent)] hover:bg-[var(--pd-hairline)]"
             >
-              <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
+              <Sparkles className="h-3.5 w-3.5" />
               Generate Initial Understanding
             </Button>
           </div>
         ) : (
           <div className="space-y-6">
             {/* Top Stats Banner */}
-            <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-indigo-50/60 rounded-lg border border-indigo-100 text-xs text-indigo-900">
+            <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-[var(--pd-surface-raised)] rounded-xl border border-[var(--pd-hairline)] text-xs font-mono text-[var(--pd-text-body)]">
               <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1 font-medium">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <span className="flex items-center gap-1 font-medium text-[#10B981]">
+                  <CheckCircle2 className="h-4 w-4 text-[#10B981]" />
                   Status: Completed
                 </span>
                 <span>•</span>
@@ -177,7 +176,7 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
                 <span>•</span>
                 <span>{understanding.total_words_analyzed.toLocaleString()} Total Words</span>
               </div>
-              <span className="text-[11px] text-indigo-700 font-mono">
+              <span className="text-[11px] text-[var(--pd-accent)] font-mono">
                 No-Invention Rule Enforced
               </span>
             </div>
@@ -185,24 +184,24 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
             {/* 11 Dimensions Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* 1. Problem Statement */}
-              <div className="p-4 rounded-lg border border-slate-200 bg-white space-y-2">
+              <div className="p-4 rounded-xl border border-[var(--pd-hairline)] bg-[var(--pd-surface-raised)]/40 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <Target className="h-4 w-4 text-slate-600" />
+                  <span className="text-xs font-mono font-semibold text-[var(--pd-text-primary)] flex items-center gap-1.5">
+                    <Target className="h-4 w-4 text-[var(--pd-accent)]" />
                     1. Problem Statement
                   </span>
                   {renderProvenanceBadge("problem")}
                 </div>
-                <p className="text-xs text-slate-700 leading-relaxed">
+                <p className="text-xs font-sans text-[var(--pd-text-body)] leading-relaxed">
                   {understanding.problem || renderNotSpecified()}
                 </p>
               </div>
 
               {/* 2. Target Users */}
-              <div className="p-4 rounded-lg border border-slate-200 bg-white space-y-2">
+              <div className="p-4 rounded-xl border border-[var(--pd-hairline)] bg-[var(--pd-surface-raised)]/40 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <Users className="h-4 w-4 text-slate-600" />
+                  <span className="text-xs font-mono font-semibold text-[var(--pd-text-primary)] flex items-center gap-1.5">
+                    <Users className="h-4 w-4 text-[var(--pd-accent)]" />
                     2. Target Users
                   </span>
                   {renderProvenanceBadge("target_users")}
@@ -210,7 +209,7 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
                 {understanding.target_users && understanding.target_users.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {understanding.target_users.map((user, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs font-normal">
+                      <Badge key={idx} variant="secondary" className="text-xs font-mono bg-[var(--pd-surface-raised)] text-[var(--pd-text-body)] border border-[var(--pd-hairline)]">
                         {user}
                       </Badge>
                     ))}
@@ -221,16 +220,16 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
               </div>
 
               {/* 3. Objectives */}
-              <div className="p-4 rounded-lg border border-slate-200 bg-white space-y-2">
+              <div className="p-4 rounded-xl border border-[var(--pd-hairline)] bg-[var(--pd-surface-raised)]/40 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <CheckCircle2 className="h-4 w-4 text-slate-600" />
+                  <span className="text-xs font-mono font-semibold text-[var(--pd-text-primary)] flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4 text-[var(--pd-accent)]" />
                     3. Objectives
                   </span>
                   {renderProvenanceBadge("objectives")}
                 </div>
                 {understanding.objectives && understanding.objectives.length > 0 ? (
-                  <ul className="list-disc list-inside space-y-1 text-xs text-slate-700">
+                  <ul className="list-disc list-inside space-y-1 text-xs font-sans text-[var(--pd-text-body)]">
                     {understanding.objectives.map((obj, idx) => (
                       <li key={idx}>{obj}</li>
                     ))}
@@ -241,27 +240,27 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
               </div>
 
               {/* 4. Requirements Summary */}
-              <div className="p-4 rounded-lg border border-slate-200 bg-white space-y-2">
+              <div className="p-4 rounded-xl border border-[var(--pd-hairline)] bg-[var(--pd-surface-raised)]/40 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <FileCheck className="h-4 w-4 text-slate-600" />
+                  <span className="text-xs font-mono font-semibold text-[var(--pd-text-primary)] flex items-center gap-1.5">
+                    <FileCheck className="h-4 w-4 text-[var(--pd-accent)]" />
                     4. Requirements Summary
                   </span>
                   {renderProvenanceBadge("requirements_summary")}
                 </div>
-                <p className="text-xs text-slate-700 leading-relaxed max-h-32 overflow-y-auto">
+                <p className="text-xs font-sans text-[var(--pd-text-body)] leading-relaxed max-h-32 overflow-y-auto">
                   {understanding.requirements_summary || renderNotSpecified()}
                 </p>
-                <p className="text-[10px] text-slate-400 italic">
-                  Raw document summary (atomic R1/RN decomposition scheduled for Checkpoint 4).
+                <p className="text-[10px] font-mono text-[var(--pd-text-muted)] italic">
+                  Raw document summary (atomic R1/RN decomposition available in Requirements explorer).
                 </p>
               </div>
 
               {/* 5. Modules */}
-              <div className="p-4 rounded-lg border border-slate-200 bg-white space-y-2">
+              <div className="p-4 rounded-xl border border-[var(--pd-hairline)] bg-[var(--pd-surface-raised)]/40 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <Boxes className="h-4 w-4 text-slate-600" />
+                  <span className="text-xs font-mono font-semibold text-[var(--pd-text-primary)] flex items-center gap-1.5">
+                    <Boxes className="h-4 w-4 text-[var(--pd-accent)]" />
                     5. Modules & Components
                   </span>
                   {renderProvenanceBadge("modules")}
@@ -269,7 +268,7 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
                 {understanding.modules && understanding.modules.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {understanding.modules.map((mod, idx) => (
-                      <Badge key={idx} variant="outline" className="text-xs">
+                      <Badge key={idx} variant="outline" className="text-xs font-mono bg-[var(--pd-surface-raised)] text-[var(--pd-text-body)] border border-[var(--pd-hairline)]">
                         {mod}
                       </Badge>
                     ))}
@@ -280,10 +279,10 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
               </div>
 
               {/* 6. Technology Stack */}
-              <div className="p-4 rounded-lg border border-slate-200 bg-white space-y-2">
+              <div className="p-4 rounded-xl border border-[var(--pd-hairline)] bg-[var(--pd-surface-raised)]/40 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <Cpu className="h-4 w-4 text-slate-600" />
+                  <span className="text-xs font-mono font-semibold text-[var(--pd-text-primary)] flex items-center gap-1.5">
+                    <Cpu className="h-4 w-4 text-[var(--pd-accent)]" />
                     6. Technology Stack
                   </span>
                   {renderProvenanceBadge("tech_stack")}
@@ -291,7 +290,7 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
                 {understanding.tech_stack && understanding.tech_stack.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {understanding.tech_stack.map((tech, idx) => (
-                      <Badge key={idx} className="bg-slate-900 text-white text-xs">
+                      <Badge key={idx} className="bg-[var(--pd-surface-raised)] text-[var(--pd-text-primary)] border border-[var(--pd-hairline)] font-mono text-xs">
                         {tech}
                       </Badge>
                     ))}
@@ -302,24 +301,24 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
               </div>
 
               {/* 7. Architecture Overview */}
-              <div className="p-4 rounded-lg border border-slate-200 bg-white space-y-2">
+              <div className="p-4 rounded-xl border border-[var(--pd-hairline)] bg-[var(--pd-surface-raised)]/40 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <Layers className="h-4 w-4 text-slate-600" />
+                  <span className="text-xs font-mono font-semibold text-[var(--pd-text-primary)] flex items-center gap-1.5">
+                    <Layers className="h-4 w-4 text-[var(--pd-accent)]" />
                     7. Architecture Overview
                   </span>
                   {renderProvenanceBadge("architecture_overview")}
                 </div>
-                <p className="text-xs text-slate-700 leading-relaxed">
+                <p className="text-xs font-sans text-[var(--pd-text-body)] leading-relaxed">
                   {understanding.architecture_overview || renderNotSpecified()}
                 </p>
               </div>
 
               {/* 8. Dependencies */}
-              <div className="p-4 rounded-lg border border-slate-200 bg-white space-y-2">
+              <div className="p-4 rounded-xl border border-[var(--pd-hairline)] bg-[var(--pd-surface-raised)]/40 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <Share2 className="h-4 w-4 text-slate-600" />
+                  <span className="text-xs font-mono font-semibold text-[var(--pd-text-primary)] flex items-center gap-1.5">
+                    <Share2 className="h-4 w-4 text-[var(--pd-accent)]" />
                     8. Dependencies
                   </span>
                   {renderProvenanceBadge("dependencies")}
@@ -327,7 +326,7 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
                 {understanding.dependencies && understanding.dependencies.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {understanding.dependencies.map((dep, idx) => (
-                      <Badge key={idx} variant="outline" className="text-xs font-mono">
+                      <Badge key={idx} variant="outline" className="text-xs font-mono bg-[var(--pd-surface-raised)] text-[var(--pd-text-body)] border border-[var(--pd-hairline)]">
                         {dep}
                       </Badge>
                     ))}
@@ -338,38 +337,38 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
               </div>
 
               {/* 9. Expected Scale */}
-              <div className="p-4 rounded-lg border border-slate-200 bg-white space-y-2">
+              <div className="p-4 rounded-xl border border-[var(--pd-hairline)] bg-[var(--pd-surface-raised)]/40 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <Gauge className="h-4 w-4 text-slate-600" />
+                  <span className="text-xs font-mono font-semibold text-[var(--pd-text-primary)] flex items-center gap-1.5">
+                    <Gauge className="h-4 w-4 text-[var(--pd-accent)]" />
                     9. Expected Scale
                   </span>
                   {renderProvenanceBadge("expected_scale")}
                 </div>
-                <p className="text-xs text-slate-700">
+                <p className="text-xs font-sans text-[var(--pd-text-body)]">
                   {understanding.expected_scale || renderNotSpecified()}
                 </p>
               </div>
 
               {/* 10. Deployment */}
-              <div className="p-4 rounded-lg border border-slate-200 bg-white space-y-2">
+              <div className="p-4 rounded-xl border border-[var(--pd-hairline)] bg-[var(--pd-surface-raised)]/40 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <Cloud className="h-4 w-4 text-slate-600" />
+                  <span className="text-xs font-mono font-semibold text-[var(--pd-text-primary)] flex items-center gap-1.5">
+                    <Cloud className="h-4 w-4 text-[var(--pd-accent)]" />
                     10. Deployment Strategy
                   </span>
                   {renderProvenanceBadge("deployment")}
                 </div>
-                <p className="text-xs text-slate-700">
+                <p className="text-xs font-sans text-[var(--pd-text-body)]">
                   {understanding.deployment || renderNotSpecified()}
                 </p>
               </div>
 
               {/* 11. Team */}
-              <div className="p-4 rounded-lg border border-slate-200 bg-white space-y-2 md:col-span-2">
+              <div className="p-4 rounded-xl border border-[var(--pd-hairline)] bg-[var(--pd-surface-raised)]/40 space-y-2 md:col-span-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-900 flex items-center gap-1.5">
-                    <Users className="h-4 w-4 text-slate-600" />
+                  <span className="text-xs font-mono font-semibold text-[var(--pd-text-primary)] flex items-center gap-1.5">
+                    <Users className="h-4 w-4 text-[var(--pd-accent)]" />
                     11. Team Members
                   </span>
                   {renderProvenanceBadge("team")}
@@ -379,11 +378,11 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
                     {understanding.team.map((member, idx) => (
                       <div
                         key={idx}
-                        className="px-2.5 py-1 rounded bg-slate-50 border border-slate-200 text-xs flex items-center gap-1.5"
+                        className="px-2.5 py-1 rounded-lg bg-[var(--pd-surface-raised)] border border-[var(--pd-hairline)] text-xs font-mono flex items-center gap-1.5"
                       >
-                        <span className="font-medium text-slate-900">{member.name}</span>
+                        <span className="font-medium text-[var(--pd-text-primary)]">{member.name}</span>
                         {member.role && (
-                          <span className="text-slate-500 font-normal">({member.role})</span>
+                          <span className="text-[var(--pd-text-muted)] font-normal">({member.role})</span>
                         )}
                       </div>
                     ))}
@@ -395,7 +394,7 @@ export const ProjectUnderstandingCard: React.FC<ProjectUnderstandingCardProps> =
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };

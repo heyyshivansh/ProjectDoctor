@@ -73,7 +73,7 @@ export const RecentProjectSpecimen: React.FC<RecentProjectSpecimenProps> = ({
       tabIndex={0}
       role="button"
       aria-label={`Open project ${project.title}`}
-      className="p-5 flex flex-col justify-between group h-full bg-[#181a1f] border-[#262a33] text-[#f2efe9] hover:border-[#d4924f]/40 focus:outline-none focus:ring-2 focus:ring-[#d4924f]"
+      className="p-5 flex flex-col justify-between group h-full bg-[var(--pd-surface)] border-[var(--pd-hairline)] text-[var(--pd-text-primary)] hover:border-[var(--pd-accent)]/40 focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent)]"
     >
       <div className="space-y-3 text-left">
         {/* Top Row: Settled qualitative badge or quiet indicator */}
@@ -81,28 +81,28 @@ export const RecentProjectSpecimen: React.FC<RecentProjectSpecimenProps> = ({
           {diagnosisStatus ? (
             <QualitativeStatusBadge status={diagnosisStatus} size="sm" />
           ) : (
-            <span className="text-xs font-mono text-[#888e9b]">Ready for review</span>
+            <span className="text-xs font-mono text-[var(--pd-text-muted)]">Ready for review</span>
           )}
-          <span className="text-[#5d6370] group-hover:text-[#d4924f] transition-colors">
+          <span className="text-[var(--pd-text-muted)] group-hover:text-[var(--pd-accent)] transition-colors">
             <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
           </span>
         </div>
 
         {/* Project Title in Fraunces / font-display */}
-        <h3 className="text-base sm:text-lg font-display font-medium text-[#f2efe9] line-clamp-1 group-hover:text-[#d4924f] transition-colors">
+        <h3 className="text-base sm:text-lg font-display font-medium text-[var(--pd-text-primary)] line-clamp-1 group-hover:text-[var(--pd-accent)] transition-colors">
           {project.title}
         </h3>
       </div>
 
       {/* Bottom Metadata Row */}
-      <div className="pt-3.5 mt-3 border-t border-[#262a33] flex items-center justify-between text-xs font-mono text-[#888e9b]">
+      <div className="pt-3.5 mt-3 border-t border-[var(--pd-hairline)] flex items-center justify-between text-xs font-mono text-[var(--pd-text-muted)]">
         <span className="flex items-center gap-1.5 truncate">
-          <FileText className="w-3.5 h-3.5 text-[#5d6370]" />
+          <FileText className="w-3.5 h-3.5 text-[var(--pd-text-muted)]" />
           {project.artifact_count === 1
             ? "1 specification"
             : `${project.artifact_count} specifications`}
         </span>
-        <span className="flex items-center gap-1 text-[#5d6370] shrink-0">
+        <span className="flex items-center gap-1 text-[var(--pd-text-muted)] shrink-0">
           <Clock className="w-3 h-3" />
           {formatRelativeTime(project.updated_at)}
         </span>

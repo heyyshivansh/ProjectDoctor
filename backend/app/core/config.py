@@ -24,6 +24,18 @@ class Settings(BaseModel):
     GITHUB_TOKEN: Optional[str] = Field(
         default_factory=lambda: os.getenv("GITHUB_TOKEN", None)
     )
+    GEMINI_API_KEY: Optional[str] = Field(
+        default_factory=lambda: os.getenv("GEMINI_API_KEY", None)
+    )
+    GEMINI_MODEL: str = Field(
+        default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+    )
+    GEMINI_TIMEOUT_SECONDS: float = Field(
+        default_factory=lambda: float(os.getenv("GEMINI_TIMEOUT_SECONDS", "30.0"))
+    )
+    GEMINI_MAX_RETRIES: int = Field(
+        default_factory=lambda: int(os.getenv("GEMINI_MAX_RETRIES", "2"))
+    )
 
     ALLOWED_UPLOAD_EXTENSIONS: Set[str] = {
         ".pdf",

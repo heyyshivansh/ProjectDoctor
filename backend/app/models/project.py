@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from app.models.requirement import Requirement
     from app.models.github_repository import GitHubRepository, RepositorySnapshot
     from app.models.finding import Finding
+    from app.models.ai_analysis import AIAnalysis
 
 
 class Project(Base):
@@ -117,6 +118,13 @@ class Project(Base):
         cascade="all, delete-orphan",
         lazy="selectin",
         order_by="desc(Finding.created_at)",
+    )
+    ai_analyses: Mapped[List["AIAnalysis"]] = relationship(
+        "AIAnalysis",
+        back_populates="project",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+        order_by="desc(AIAnalysis.created_at)",
     )
 
 

@@ -3,76 +3,79 @@
 @tailwind utilities;
 
 @layer base {
-  :root, .dark {
-    /* ── Obsidian AI Canvas & Foundations ── */
-    --pd-canvas: #08090C;
-    --pd-ink: #08090C;
-    --pd-surface: #0E1117;
-    --pd-surface-raised: #141821;
-    --pd-surface-overlay: #1A1F2B;
-    --pd-surface-glass: rgba(14, 17, 23, 0.85);
+  :root {
+    /* ── Canvas & Foundations (Elegant Dark Charcoal / Graphite) ── */
+    --pd-canvas: #0B0D11;
+    --pd-canvas-subtle: #10131A;
+    --pd-surface: #141720;
+    --pd-surface-raised: #1A1E29;
+    --pd-surface-overlay: #222735;
+    --pd-surface-glass: rgba(20, 23, 32, 0.85);
 
-    /* ── Hairline Borders ── */
-    --pd-hairline: #1F2533;
-    --pd-hairline-subtle: #161A24;
-    --pd-hairline-accent: rgba(99, 102, 241, 0.30);
-    --pd-hairline-specular: rgba(255, 255, 255, 0.06);
+    /* ── Hairline Borders & Dividers ── */
+    --pd-border: rgba(255, 255, 255, 0.08);
+    --pd-border-hover: rgba(255, 255, 255, 0.16);
+    --pd-border-focus: rgba(157, 123, 252, 0.40);
 
-    /* ── Editorial Typography ── */
-    --pd-text-primary: #F8FAFC;
-    --pd-text: #F8FAFC;
-    --pd-text-body: #CBD5E1;
+    /* ── Editorial Typography (Warm White & Soft Grey) ── */
+    --pd-text-primary: #F1F5F9;
+    --pd-text-body: #94A3B8;
     --pd-text-muted: #64748B;
     --pd-text-faint: #475569;
-    --pd-text-dim: #334155;
 
-    /* ── Primary Brand Accent (Iridescent Indigo) ── */
-    --pd-accent: #6366F1;
-    --pd-accent-hover: #818CF8;
-    --pd-accent-wash: rgba(99, 102, 241, 0.10);
-    --pd-accent-glow: rgba(99, 102, 241, 0.20);
+    /* ── AI / Understanding Accent (Restrained Muted Violet) ── */
+    --pd-ai: #9D7BFC;
+    --pd-ai-hover: #8B5CF6;
+    --pd-ai-wash: rgba(157, 123, 252, 0.08);
+    --pd-ai-glow: rgba(157, 123, 252, 0.18);
 
-    /* ── Atmospheric Iridescent Accents ── */
-    --pd-iridescent-indigo: #6366F1;
-    --pd-iridescent-cyan: #38BDF8;
-    --pd-iridescent-emerald: #10B981;
+    /* ── Verified / Strengths (Muted Mint) ── */
+    --pd-mint: #34D399;
+    --pd-mint-wash: rgba(52, 211, 153, 0.08);
+    --pd-mint-glow: rgba(52, 211, 153, 0.18);
 
-    /* ── Diagnostic Severity Semantic Tokens ── */
-    --pd-critical: #F43F5E;
-    --pd-critical-wash: rgba(244, 63, 94, 0.12);
-    --pd-attention: #F59E0B;
-    --pd-attention-wash: rgba(245, 158, 11, 0.12);
-    --pd-strength: #10B981;
-    --pd-strength-wash: rgba(16, 185, 129, 0.12);
+    /* ── Critical Concerns (Muted Coral) ── */
+    --pd-coral: #FB7185;
+    --pd-coral-wash: rgba(251, 113, 133, 0.08);
+    --pd-coral-glow: rgba(251, 113, 133, 0.18);
 
-    /* ── Standard Tailwind Theme Integration ── */
-    --background: 220 20% 4%;
-    --foreground: 210 40% 98%;
+    /* ── Attention / Investigation (Muted Amber) ── */
+    --pd-amber: #FBBF24;
+    --pd-amber-wash: rgba(251, 191, 36, 0.08);
+    --pd-amber-glow: rgba(251, 191, 36, 0.18);
 
-    --card: 220 18% 6%;
-    --card-foreground: 210 40% 98%;
+    /* ── Technical / Repository (Restrained Neutral Slate) ── */
+    --pd-tech: #94A3B8;
+    --pd-tech-wash: rgba(148, 163, 184, 0.08);
 
-    --popover: 220 18% 6%;
-    --popover-foreground: 210 40% 98%;
+    /* ── Standard Tailwind Theme Integration (Dark) ── */
+    --background: 220 20% 5%;
+    --foreground: 210 40% 96%;
 
-    --primary: 239 84% 67%;
-    --primary-foreground: 220 20% 4%;
+    --card: 220 23% 10%;
+    --card-foreground: 210 40% 96%;
 
-    --secondary: 220 18% 8%;
-    --secondary-foreground: 210 40% 98%;
+    --popover: 220 23% 10%;
+    --popover-foreground: 210 40% 96%;
 
-    --muted: 220 18% 8%;
-    --muted-foreground: 215 16% 47%;
+    --primary: 255 94% 74%;
+    --primary-foreground: 210 40% 98%;
 
-    --accent: 220 18% 8%;
-    --accent-foreground: 210 40% 98%;
+    --secondary: 220 22% 13%;
+    --secondary-foreground: 210 40% 96%;
+
+    --muted: 220 22% 13%;
+    --muted-foreground: 215 20% 50%;
+
+    --accent: 220 22% 15%;
+    --accent-foreground: 210 40% 96%;
 
     --destructive: 350 89% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 220 22% 14%;
-    --input: 220 22% 14%;
-    --ring: 239 84% 67%;
+    --border: 220 20% 12%;
+    --input: 220 20% 12%;
+    --ring: 255 94% 74%;
 
     --radius: 0.75rem;
   }
@@ -80,7 +83,7 @@
 
 @layer base {
   * {
-    border-color: var(--pd-hairline);
+    border-color: var(--pd-border);
   }
   body {
     background-color: var(--pd-canvas);
@@ -89,28 +92,29 @@
     overflow-x: hidden;
     position: relative;
   }
-  /* Micro-subtle grain texture overlay */
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.015;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  }
   h1, h2, h3, .font-display {
-    font-family: 'Fraunces', Georgia, serif;
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    font-weight: 600;
   }
   code, pre, .font-mono {
     font-family: 'IBM Plex Mono', 'SF Mono', monospace;
   }
 }
 
-/* Custom Scrollbar */
+/* Noise texture overlay for tactile depth */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* Custom Scrollbar — Dark Charcoal */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -119,11 +123,11 @@
   background: var(--pd-canvas);
 }
 ::-webkit-scrollbar-thumb {
-  background: #1F2533;
+  background: var(--pd-text-faint);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2D3548;
+  background: var(--pd-text-muted);
 }
 
 /* Reduced motion support */

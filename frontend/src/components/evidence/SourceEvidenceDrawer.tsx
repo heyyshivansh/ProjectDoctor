@@ -76,15 +76,18 @@ export function SourceEvidenceDrawer({ isOpen, findingDetail, onClose }: SourceE
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={onClose}
-            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:bg-black/40"
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
             aria-hidden="true"
           />
 
+          {/* Drawer Panel */}
           <motion.div
             ref={drawerRef}
             role="dialog"
@@ -97,36 +100,43 @@ export function SourceEvidenceDrawer({ isOpen, findingDetail, onClose }: SourceE
             exit="exit"
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className={cn(
-              "fixed z-50 flex flex-col bg-[var(--pd-surface-overlay)] border-[var(--pd-hairline)] shadow-xl outline-none",
-              "bottom-0 left-0 right-0 max-h-[80vh] rounded-t-2xl border-t",
-              "lg:top-0 lg:bottom-0 lg:left-auto lg:right-0 lg:max-h-full lg:w-[min(440px,40vw)] lg:rounded-none lg:border-l lg:border-t-0"
+              "fixed z-50 flex flex-col bg-[var(--pd-surface)] shadow-2xl outline-none",
+              // Mobile: bottom sheet
+              "bottom-0 left-0 right-0 max-h-[85vh] rounded-t-2xl border-t border-[var(--pd-border)]",
+              // Desktop: right drawer
+              "lg:top-0 lg:bottom-0 lg:left-auto lg:right-0 lg:max-h-full lg:w-[min(520px,50vw)] lg:rounded-none lg:border-l lg:border-t-0 lg:border-[var(--pd-border)]"
             )}
           >
             {/* Mobile Drag Handle */}
             {isMobile && (
-              <div 
+              <div
                 className="w-full flex justify-center py-3 cursor-grab active:cursor-grabbing"
                 onClick={onClose}
               >
-                <div className="w-12 h-1.5 rounded-full bg-[var(--pd-hairline)]" />
+                <div className="w-12 h-1.5 rounded-full bg-[var(--pd-text-faint)]" />
               </div>
             )}
 
             {/* Header */}
-            <div className={cn("flex flex-col gap-1 px-6 pb-4 border-b border-[var(--pd-hairline)]", isMobile ? "pt-2" : "pt-6")}>
+            <div
+              className={cn(
+                "flex flex-col gap-1 px-6 pb-4 border-b border-[var(--pd-border)] bg-[var(--pd-surface)]",
+                isMobile ? "pt-2" : "pt-6"
+              )}
+            >
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-display text-[var(--pd-text-primary)] font-semibold">
-                  Evidence
+                <h2 className="text-base font-semibold text-[var(--pd-text-primary)]">
+                  Source Evidence Inspection
                 </h2>
                 <button
                   onClick={onClose}
-                  className="p-2 -mr-2 rounded-md text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] hover:bg-[var(--pd-surface-raised)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--pd-accent)]"
+                  className="p-1.5 -mr-2 rounded-md text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] hover:bg-[var(--pd-surface-raised)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--pd-border-focus)]"
                   aria-label="Close drawer"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
-              <p className="text-sm text-[var(--pd-text-body)] line-clamp-2">
+              <p className="text-xs text-[var(--pd-text-body)] line-clamp-2">
                 {findingDetail.title}
               </p>
             </div>
@@ -134,33 +144,43 @@ export function SourceEvidenceDrawer({ isOpen, findingDetail, onClose }: SourceE
             {/* Body */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {evidences.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center text-[var(--pd-text-muted)]">
-                  <AlertTriangle className="w-10 h-10 mb-3 opacity-20" />
-                  <p>No detailed evidence available for this finding.</p>
+                /* Empty State */
+                <div className="flex flex-col items-center justify-center py-16 text-center text-[var(--pd-text-muted)]">
+                  <AlertTriangle className="w-10 h-10 mb-3 opacity-30 text-[var(--pd-text-muted)]" />
+                  <p className="text-xs font-mono">No detailed evidence records available for this finding.</p>
                 </div>
               ) : (
                 evidences.map((item, idx) => (
-                  <div key={`${item.target_id}-${idx}`} className="flex flex-col gap-3">
+                  <motion.div
+                    key={`${item.target_id}-${idx}`}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: idx * 0.05 }}
+                    className="flex flex-col gap-3"
+                  >
+                    {/* Type & Confidence Badges */}
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-2 text-xs font-medium text-[var(--pd-text-muted)] bg-[var(--pd-surface-raised)] px-2 py-1 rounded-md border border-[var(--pd-hairline)]">
+                      <div className="flex items-center gap-2 text-xs font-medium text-[var(--pd-text-muted)] bg-[var(--pd-surface-raised)] px-2.5 py-1.5 rounded-md border border-[var(--pd-border)]">
                         {getTypeIcon(item.target_type)}
                         <span>{formatTargetType(item.target_type)}</span>
                       </div>
                       {item.match_confidence != null && (
-                        <div className="text-xs text-[var(--pd-text-muted)] px-2 py-1 rounded-md border border-[var(--pd-hairline)] bg-[var(--pd-surface)]">
+                        <div className="text-xs text-[var(--pd-text-muted)] px-2.5 py-1.5 rounded-md border border-[var(--pd-border)]">
                           {(item.match_confidence * 100).toFixed(0)}% Match
                         </div>
                       )}
                     </div>
 
+                    {/* Evidence Title (non-file items) */}
                     {item.title && !item.file_path && (
                       <h4 className="text-sm font-medium text-[var(--pd-text-primary)]">
                         {item.title}
                       </h4>
                     )}
 
+                    {/* File Path Header */}
                     {item.file_path && (
-                      <div className="flex items-center justify-between text-sm text-[var(--pd-text-body)] font-mono bg-[var(--pd-surface)] px-3 py-2 rounded-t-md border border-[var(--pd-hairline)] border-b-0">
+                      <div className="flex items-center justify-between text-sm text-[var(--pd-text-body)] font-mono bg-[var(--pd-canvas-subtle)] px-3 py-2 rounded-t-md border border-[var(--pd-border)] border-b-0">
                         <span className="truncate" title={item.file_path}>{item.file_path}</span>
                         {(item.line_start != null || item.line_end != null) && (
                           <span className="flex-shrink-0 text-xs text-[var(--pd-text-muted)]">
@@ -170,25 +190,31 @@ export function SourceEvidenceDrawer({ isOpen, findingDetail, onClose }: SourceE
                       </div>
                     )}
 
+                    {/* Snippet Content */}
                     {item.snippet && (
                       <div className={cn(
-                        "relative text-sm text-[var(--pd-text-body)] bg-[var(--pd-canvas)] rounded-md border border-[var(--pd-hairline)] overflow-hidden",
+                        "relative text-sm text-[var(--pd-text-body)] bg-[var(--pd-canvas)] rounded-lg border border-[var(--pd-border)] overflow-hidden",
                         item.file_path ? "rounded-t-none" : "",
-                        findingDetail.severity === 'critical' ? 'border-l-4 border-l-[var(--pd-critical)]' :
-                        findingDetail.severity === 'major' ? 'border-l-4 border-l-[var(--pd-attention)]' : ''
+                        findingDetail.severity === 'critical' ? 'border-l-4 border-l-[var(--pd-coral)]' :
+                        findingDetail.severity === 'major' ? 'border-l-4 border-l-[var(--pd-amber)]' : ''
                       )}>
                         {item.file_path ? (
-                          <pre className="p-4 overflow-x-auto text-xs font-mono leading-relaxed whitespace-pre-wrap break-words">
+                          <pre className="p-4 overflow-x-auto text-xs font-mono text-[var(--pd-text-body)] leading-relaxed whitespace-pre-wrap break-words">
                             {item.snippet}
                           </pre>
                         ) : (
-                          <blockquote className="p-4 italic border-l-2 border-l-[var(--pd-accent)] bg-[var(--pd-surface-raised)]">
+                          <blockquote className="p-4 italic text-[var(--pd-text-body)] border-l-2 border-l-[var(--pd-ai)] bg-[var(--pd-surface-raised)]">
                             {item.snippet}
                           </blockquote>
                         )}
                       </div>
                     )}
-                  </div>
+
+                    {/* Divider between evidence items */}
+                    {idx < evidences.length - 1 && (
+                      <div className="border-b border-[var(--pd-border)] mt-2" />
+                    )}
+                  </motion.div>
                 ))
               )}
 
@@ -196,22 +222,23 @@ export function SourceEvidenceDrawer({ isOpen, findingDetail, onClose }: SourceE
               <div className="pt-8 pb-4">
                 <button
                   onClick={() => setShowTechnical(!showTechnical)}
-                  className="flex items-center gap-2 text-sm font-medium text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-accent)] rounded-sm"
+                  className="flex items-center gap-2 text-sm font-medium text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-border-focus)] rounded-sm"
                   aria-expanded={showTechnical}
                 >
                   {showTechnical ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                   Technical Record
                 </button>
-                
+
                 <AnimatePresence>
                   {showTechnical && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25 }}
                       className="overflow-hidden"
                     >
-                      <div className="mt-4 p-4 rounded-md border border-[var(--pd-hairline)] bg-[var(--pd-surface)] space-y-3 text-xs">
+                      <div className="mt-4 p-4 rounded-lg border border-[var(--pd-border)] bg-[var(--pd-surface-raised)] space-y-3 text-xs">
                         <div className="grid grid-cols-3 gap-2">
                           <span className="text-[var(--pd-text-muted)]">ID</span>
                           <span className="col-span-2 font-mono text-[var(--pd-text-body)] select-all truncate">{findingDetail.id}</span>
@@ -252,11 +279,11 @@ export function SourceEvidenceDrawer({ isOpen, findingDetail, onClose }: SourceE
                           <span className="text-[var(--pd-text-muted)]">Created</span>
                           <span className="col-span-2 text-[var(--pd-text-body)]">{new Date(findingDetail.created_at).toLocaleString()}</span>
                         </div>
-                        
+
                         {findingDetail.technical_details && Object.keys(findingDetail.technical_details).length > 0 && (
-                          <div className="pt-2 mt-2 border-t border-[var(--pd-hairline)]">
+                          <div className="pt-2 mt-2 border-t border-[var(--pd-border)]">
                             <span className="text-[var(--pd-text-muted)] mb-2 block">Raw Data</span>
-                            <pre className="font-mono text-[10px] text-[var(--pd-text-body)] bg-[var(--pd-canvas)] p-2 rounded overflow-x-auto">
+                            <pre className="font-mono text-[10px] text-[var(--pd-text-body)] bg-[var(--pd-canvas)] p-3 rounded-lg overflow-x-auto">
                               {JSON.stringify(findingDetail.technical_details, null, 2)}
                             </pre>
                           </div>

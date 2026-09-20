@@ -78,16 +78,30 @@ def temp_storage(tmp_path, monkeypatch) -> LocalStorageService:
     return custom_storage
 
 
+from app.api.routes.ai_analysis import get_ai_provider
+from app.services.ai.mock_provider import MockAIProvider
+
+
 @pytest.fixture
-def client(db_session, temp_storage) -> Generator[TestClient, None, None]:
-    """TestClient with overridden get_db dependency and temporary storage."""
+def mock_ai_provider() -> MockAIProvider:
+    """Fixture providing a deterministic MockAIProvider."""
+    return MockAIProvider()
+
+
+@pytest.fixture
+def client(db_session, temp_storage, mock_ai_provider) -> Generator[TestClient, None, None]:
+    """TestClient with overridden get_db and get_ai_provider dependencies."""
     def override_get_db():
         try:
             yield db_session
         finally:
             pass
 
+    def override_get_ai_provider():
+        return mock_ai_provider
+
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_ai_provider] = override_get_ai_provider
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()

@@ -3,74 +3,119 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+  :root, .dark {
+    /* Warm Obsidian & Smoked Charcoal Editorial Tokens */
+    --pd-canvas: #111317;
+    --pd-ink: #111317; /* Backwards compatible alias */
+    --pd-surface: #181a1f;
+    --pd-surface-raised: #20232a;
+    --pd-surface-overlay: #272b34;
+    --pd-surface-glass: rgba(24, 26, 31, 0.88);
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --pd-hairline: #2c303a;
+    --pd-hairline-subtle: #21242c;
+    --pd-hairline-accent: rgba(212, 146, 79, 0.35);
+    --pd-hairline-specular: rgba(255, 255, 255, 0.08);
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Warm Editorial Paper Typography */
+    --pd-text-primary: #f2efe9;
+    --pd-text: #f2efe9;
+    --pd-text-body: #c4c8d0;
+    --pd-text-muted: #888e9b;
+    --pd-text-faint: #5a606e;
+    --pd-text-dim: #5a606e;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary Brand Accent (Refined Copper-Amber, Strictly Zero Cyan) */
+    --pd-accent: #d4924f;
+    --pd-accent-hover: #e2a15f;
+    --pd-accent-wash: rgba(212, 146, 79, 0.08);
+    --pd-accent-glow: rgba(212, 146, 79, 0.22);
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Diagnostic Severity Semantic Tokens */
+    --pd-critical: #e06c75;
+    --pd-critical-wash: rgba(224, 108, 117, 0.10);
+    --pd-attention: #e5a84b;
+    --pd-attention-wash: rgba(229, 168, 75, 0.10);
+    --pd-strength: #56b68b;
+    --pd-strength-wash: rgba(86, 182, 139, 0.10);
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Standard Tailwind theme integration */
+    --background: 220 15% 7%;
+    --foreground: 45 25% 93%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --card: 220 12% 11%;
+    --card-foreground: 45 25% 93%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --popover: 220 12% 11%;
+    --popover-foreground: 45 25% 93%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --primary: 31 60% 57%;
+    --primary-foreground: 220 15% 7%;
 
-    --radius: 0.5rem;
-  }
+    --secondary: 220 14% 14%;
+    --secondary-foreground: 45 25% 93%;
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --muted: 220 14% 14%;
+    --muted-foreground: 220 8% 58%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --accent: 220 14% 14%;
+    --accent-foreground: 45 25% 93%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --destructive: 355 65% 65%;
+    --destructive-foreground: 45 25% 93%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --border: 220 14% 20%;
+    --input: 220 14% 20%;
+    --ring: 31 60% 57%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.8 100% 47%;
+    --radius: 0.75rem;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: var(--pd-hairline);
   }
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--pd-canvas);
+    color: var(--pd-text-primary);
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+    position: relative;
   }
+  /* Micro-subtle paper grain texture overlay (pure SVG data-URI, 1.5% opacity) */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.018;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+  h1, h2, h3, .font-display {
+    font-family: 'Fraunces', Georgia, serif;
+  }
+  code, pre, .font-mono {
+    font-family: 'IBM Plex Mono', 'SF Mono', monospace;
+  }
+}
+
+/* Custom Scrollbar for Smoked Charcoal Surface */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--pd-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: #2c303a;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #424755;
 }

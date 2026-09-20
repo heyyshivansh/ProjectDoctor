@@ -1,23 +1,17 @@
 import React, { useState, useMemo } from "react";
 import { Requirement } from "@/types/requirement";
 import { RequirementTraceabilitySummary, TraceabilityStatus } from "@/types/traceability";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import {
   Search,
-  Bookmark,
-  Layers,
-  AlertTriangle,
-  User,
   ChevronRight,
   CheckCircle2,
-  HelpCircle,
-  XCircle,
   FileCode,
   ShieldCheck,
   FileText,
+  AlertTriangle,
+  Layers,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface RequirementListProps {
   requirements: Requirement[];
@@ -29,7 +23,7 @@ interface RequirementListProps {
 export const RequirementList: React.FC<RequirementListProps> = ({
   requirements,
   traceabilityMap = {},
-  hasRepository = false,
+  hasRepository: _hasRepository = false,
   onSelectRequirement,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -59,298 +53,188 @@ export const RequirementList: React.FC<RequirementListProps> = ({
     });
   }, [requirements, searchQuery, selectedCategory, selectedTraceStatus, traceabilityMap]);
 
-  const getCategoryBadgeClass = (category: string) => {
-    switch (category) {
-      case "security":
-        return "bg-purple-50 text-purple-700 border-purple-200";
-      case "performance":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-      case "interface":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      case "non_functional":
-        return "bg-indigo-50 text-indigo-700 border-indigo-200";
-      default:
-        return "bg-blue-50 text-blue-700 border-blue-200";
-    }
-  };
-
-  const getPriorityBadgeClass = (priority: string | null) => {
-    switch (priority) {
-      case "high":
-        return "bg-rose-50 text-rose-700 border-rose-200";
-      case "medium":
-        return "bg-amber-50 text-amber-700 border-amber-200";
-      case "low":
-        return "bg-slate-50 text-slate-600 border-slate-200";
-      default:
-        return "";
-    }
-  };
-
-  const renderTraceabilityBadge = (status?: TraceabilityStatus) => {
-    if (!status || !hasRepository) return null;
-
+  const getTraceabilityBadge = (status: TraceabilityStatus) => {
     switch (status) {
       case "candidate_with_tests":
-        return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-            Candidate Code & Tests Located
-          </span>
-        );
+        return {
+          label: "Traced with Tests",
+          classes: "bg-[#56b68b]/15 text-[#56b68b] border-[#56b68b]/30",
+          icon: CheckCircle2,
+        };
       case "candidate":
-        return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
-            <HelpCircle className="h-3 w-3 text-blue-600" />
-            Candidate Code Located (No Tests)
-          </span>
-        );
+        return {
+          label: "Candidate Code",
+          classes: "bg-[#e5a84b]/15 text-[#e5a84b] border-[#e5a84b]/30",
+          icon: FileCode,
+        };
       case "ambiguous":
-        return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-            <AlertTriangle className="h-3 w-3 text-amber-600" />
-            Ambiguous Candidate Evidence
-          </span>
-        );
+        return {
+          label: "Ambiguous Evidence",
+          classes: "bg-[#e5a84b]/15 text-[#e5a84b] border-[#e5a84b]/30",
+          icon: AlertTriangle,
+        };
       case "unmatched":
       default:
-        return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
-            <XCircle className="h-3 w-3 text-slate-400" />
-            No Candidate Evidence Found
-          </span>
-        );
+        return {
+          label: "No Code Match",
+          classes: "bg-[#888e9b]/15 text-[#888e9b] border-[#2c303a]",
+          icon: Layers,
+        };
     }
   };
 
   return (
-    <div className="space-y-4">
-      {/* Search & Filter Bar */}
-      <div className="flex flex-col gap-3 bg-white p-3 rounded-lg border border-slate-200">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="relative flex-1">
-            <Search className="h-4 w-4 text-slate-400 absolute left-3 top-2.5" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filter requirements by keyword, ID, or title..."
-              className="pl-9 h-9 text-xs border-slate-200 bg-slate-50/50 focus:bg-white"
-            />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5 shrink-0">
-            {[
-              { id: "all", label: "All Categories" },
-              { id: "functional", label: "Functional" },
-              { id: "security", label: "Security" },
-              { id: "performance", label: "Performance" },
-              { id: "ambiguous", label: "Ambiguous Specs" },
-            ].map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors ${
-                  selectedCategory === cat.id
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
+    <div className="space-y-4 text-left">
+      {/* Search & Filter Controls */}
+      <div className="p-4 rounded-xl bg-[#181a1f] border border-[#2c303a] space-y-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#888e9b]" />
+          <input
+            type="text"
+            placeholder="Search specification requirements by ID, title, or keywords..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 rounded-lg bg-[#111317] border border-[#2c303a] text-sm text-[#f2efe9] placeholder-[#5a606e] focus:outline-none focus:border-[#d4924f]"
+          />
         </div>
 
-        {/* Traceability Filter Bar (if repository connected) */}
-        {hasRepository && Object.keys(traceabilityMap).length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mr-1">
-              Trace Status:
-            </span>
-            {[
-              { id: "all", label: "All Statuses" },
-              { id: "candidate_with_tests", label: "Candidate Code & Tests" },
-              { id: "candidate", label: "Candidate Code (No Tests)" },
-              { id: "ambiguous", label: "Ambiguous Evidence" },
-              { id: "unmatched", label: "No Candidate Evidence" },
-            ].map((st) => (
+        {/* Category & Status Filters */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[#888e9b] mr-1">
+            Category:
+          </span>
+          {["all", "functional", "security", "performance", "interface", "non_functional"].map(
+            (cat) => (
               <button
-                key={st.id}
-                onClick={() => setSelectedTraceStatus(st.id)}
-                className={`px-2 py-0.5 text-[11px] rounded-md font-medium transition-colors ${
-                  selectedTraceStatus === st.id
-                    ? "bg-slate-800 text-white shadow-sm"
-                    : "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200"
-                }`}
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-mono rounded-md transition-colors",
+                  selectedCategory === cat
+                    ? "bg-[#d4924f] text-[#111317] font-semibold"
+                    : "bg-[#20232a] text-[#888e9b] hover:text-[#f2efe9] border border-[#2c303a]"
+                )}
               >
-                {st.label}
+                {cat === "all" ? "All" : cat.replace("_", " ")}
               </button>
-            ))}
-          </div>
-        )}
+            )
+          )}
+
+          <span className="text-[11px] font-mono uppercase tracking-wider text-[#888e9b] ml-2 mr-1">
+            Trace:
+          </span>
+          {[
+            { id: "all", label: "All" },
+            { id: "candidate_with_tests", label: "With Tests" },
+            { id: "candidate", label: "Candidate" },
+            { id: "unmatched", label: "Unmatched" },
+          ].map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setSelectedTraceStatus(item.id)}
+              className={cn(
+                "px-2 py-0.5 text-xs font-mono rounded-md transition-colors",
+                selectedTraceStatus === item.id
+                  ? "bg-[#d4924f]/20 text-[#d4924f] border border-[#d4924f]/40 font-semibold"
+                  : "bg-[#20232a] text-[#888e9b] hover:text-[#f2efe9] border border-[#2c303a]"
+              )}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Requirements Cards List */}
+      {/* Requirements Specimen Cards */}
       {filteredRequirements.length === 0 ? (
-        <div className="p-12 text-center bg-slate-50 border border-slate-200 rounded-lg space-y-2">
-          <Layers className="h-8 w-8 text-slate-300 mx-auto" />
-          <p className="text-sm font-semibold text-slate-700">No requirements found</p>
-          <p className="text-xs text-slate-500">
-            {requirements.length === 0
-              ? "Click 'Extract Requirements' above to analyze specifications and generate atomic requirements."
-              : "No requirements match your current search or category/status filter."}
+        <div className="p-12 text-center bg-[#181a1f] border border-[#2c303a] rounded-xl space-y-2">
+          <Layers className="h-8 w-8 text-[#5a606e] mx-auto" />
+          <p className="text-sm font-sans font-medium text-[#f2efe9]">No requirements match your filter</p>
+          <p className="text-xs font-mono text-[#888e9b]">
+            Try adjusting your search query or category filter.
           </p>
         </div>
       ) : (
         <div className="space-y-3">
           {filteredRequirements.map((req) => {
             const trace = traceabilityMap[req.requirement_id] || traceabilityMap[req.id];
+            const traceStatus: TraceabilityStatus = trace ? trace.status : "unmatched";
+            const badge = getTraceabilityBadge(traceStatus);
+            const BadgeIcon = badge.icon;
+
+            const candidateFilesCount = trace?.candidate_files?.length ?? trace?.implementation_count ?? 0;
+            const matchingTestsCount = trace?.test_files?.length ?? trace?.test_count ?? 0;
 
             return (
-              <Card
+              <div
                 key={req.id}
-                className="border border-slate-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer overflow-hidden"
                 onClick={() => onSelectRequirement(req.requirement_id)}
+                className="group p-5 rounded-xl bg-[#181a1f] border border-[#2c303a] hover:border-[#d4924f]/40 hover:shadow-pd-deck transition-all cursor-pointer space-y-3"
               >
-                <CardContent className="p-4 space-y-3">
-                  {/* Top Bar: IDs, Badges, Status Pill */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-200">
-                        {req.requirement_id}
+                {/* Header Row: ID, Category, Traceability Status */}
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-[#20232a] text-[#d4924f] border border-[#2c303a]">
+                      {req.requirement_id}
+                    </span>
+                    <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-[#20232a] text-[#888e9b] border border-[#2c303a] capitalize">
+                      {req.category}
+                    </span>
+                    {req.priority && (
+                      <span className="text-[11px] font-mono text-[#5a606e]">
+                        Priority: {req.priority}
                       </span>
-
-                      <Badge
-                        variant="outline"
-                        className={`text-[11px] capitalize font-semibold ${getCategoryBadgeClass(
-                          req.category
-                        )}`}
-                      >
-                        {req.category}
-                      </Badge>
-
-                      {req.priority && (
-                        <Badge
-                          variant="outline"
-                          className={`text-[11px] capitalize font-semibold ${getPriorityBadgeClass(
-                            req.priority
-                          )}`}
-                        >
-                          {req.priority}
-                        </Badge>
-                      )}
-
-                      {req.actor && (
-                        <Badge
-                          variant="outline"
-                          className="text-[11px] bg-slate-50 text-slate-600 border-slate-200"
-                        >
-                          <User className="h-3 w-3 mr-1 text-slate-400" />
-                          {req.actor}
-                        </Badge>
-                      )}
-
-                      {req.is_ambiguous && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                          <AlertTriangle className="h-3 w-3" />
-                          Ambiguous Spec
-                        </span>
-                      )}
-
-                      {req.status === "conflicted" && (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
-                          <AlertTriangle className="h-3 w-3" />
-                          Conflicted
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="shrink-0">
-                      {renderTraceabilityBadge(trace?.status)}
-                    </div>
+                    )}
                   </div>
 
-                  {/* Title & Description */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-slate-900 leading-snug">
-                      {req.title}
-                    </h4>
-                    <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed mt-1">
-                      {req.description}
-                    </p>
-                  </div>
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-mono font-medium border",
+                      badge.classes
+                    )}
+                  >
+                    <BadgeIcon className="w-3.5 h-3.5" />
+                    <span>{badge.label}</span>
+                  </span>
+                </div>
 
-                  {/* Student-Friendly 3-Part Evidence Checklist */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2 border-t border-slate-100 text-xs">
-                    {/* 1. Specification Evidence */}
-                    <div className="flex items-center gap-2 p-2 rounded bg-slate-50/70 text-slate-700">
-                      <FileText className="h-3.5 w-3.5 text-blue-600 shrink-0" />
-                      <div className="truncate">
-                        <span className="font-semibold text-slate-800">Specification: </span>
-                        {req.evidence_count > 0 ? (
-                          <span className="text-emerald-700 font-medium">✓ Found in Docs ({req.evidence_count})</span>
-                        ) : (
-                          <span className="text-slate-400 italic">No document quote</span>
-                        )}
-                      </div>
-                    </div>
+                {/* Title & Description */}
+                <div>
+                  <h3 className="text-base font-sans font-medium text-[#f2efe9] group-hover:text-[#d4924f] transition-colors">
+                    {req.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm font-sans text-[#c4c8d0] leading-relaxed mt-1 line-clamp-2">
+                    {req.description}
+                  </p>
+                </div>
 
-                    {/* 2. Implementation Evidence */}
-                    <div className="flex items-center gap-2 p-2 rounded bg-slate-50/70 text-slate-700">
-                      <FileCode className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
-                      <div className="truncate">
-                        <span className="font-semibold text-slate-800">Implementation: </span>
-                        {trace && trace.implementation_count > 0 ? (
-                          <span className="text-indigo-700 font-medium truncate" title={trace.candidate_files.join(", ")}>
-                            ✓ {trace.implementation_count} file(s) located
-                          </span>
-                        ) : hasRepository ? (
-                          <span className="text-slate-400">✕ No candidate code</span>
-                        ) : (
-                          <span className="text-slate-400 italic">Repo not linked</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* 3. Automated Test Evidence */}
-                    <div className="flex items-center gap-2 p-2 rounded bg-slate-50/70 text-slate-700">
-                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
-                      <div className="truncate">
-                        <span className="font-semibold text-slate-800">Testing: </span>
-                        {trace && trace.test_count > 0 ? (
-                          <span className="text-emerald-700 font-medium truncate" title={trace.test_files.join(", ")}>
-                            ✓ {trace.test_count} test file(s)
-                          </span>
-                        ) : hasRepository ? (
-                          <span className="text-amber-600 font-medium">⚠ No tests found</span>
-                        ) : (
-                          <span className="text-slate-400 italic">Repo not linked</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Card Bottom: Summary note & Link */}
-                  <div className="flex items-center justify-between text-xs text-slate-500 pt-1">
-                    <span className="text-[11px] text-slate-400 truncate max-w-lg">
-                      {trace?.summary_notes || `Fingerprint: ${req.content_hash.slice(0, 8)}...`}
+                {/* Evidence Proof Grid (What exists) */}
+                <div className="pt-2 border-t border-[#2c303a]/70 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-[#888e9b]">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <span className="flex items-center gap-1.5">
+                      <FileText className="w-3.5 h-3.5 text-[#d4924f]" />
+                      <span>Specification: Document Citation</span>
                     </span>
 
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelectRequirement(req.requirement_id);
-                      }}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 shrink-0"
-                    >
-                      <Bookmark className="h-3.5 w-3.5" />
-                      <span>View Technical Evidence</span>
-                      <ChevronRight className="h-3.5 w-3.5" />
-                    </button>
+                    <span className="flex items-center gap-1.5">
+                      <FileCode className="w-3.5 h-3.5 text-[#56b68b]" />
+                      <span>{candidateFilesCount} Implementation {candidateFilesCount === 1 ? "File" : "Files"}</span>
+                    </span>
+
+                    <span className="flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#56b68b]" />
+                      <span>{matchingTestsCount} Matching {matchingTestsCount === 1 ? "Test" : "Tests"}</span>
+                    </span>
                   </div>
-                </CardContent>
-              </Card>
+
+                  <div className="inline-flex items-center gap-1 text-[11px] text-[#d4924f] group-hover:translate-x-0.5 transition-transform ml-auto font-medium">
+                    <span>Inspect Traceability</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>

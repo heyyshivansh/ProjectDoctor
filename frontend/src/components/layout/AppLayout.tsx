@@ -1,43 +1,33 @@
 import React from "react";
-import { Link, Outlet } from "react-router-dom";
-import { Activity } from "lucide-react";
+import { Outlet } from "react-router-dom";
+import { MinimalHeader } from "./MinimalHeader";
 
 export const AppLayout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-xl font-bold tracking-tight text-slate-900">
-            <Activity className="h-6 w-6 text-blue-600" />
-            <span>Project Doctor</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link
-              to="/"
-              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/projects/new"
-              className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-            >
-              New Project
-            </Link>
-            <div className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
-              Checkpoint 2: Project Upload + DB
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#111317] text-[#f2efe9] flex flex-col font-sans antialiased relative selection:bg-[#d4924f]/30 selection:text-[#f2efe9]">
+      {/* Subtle ambient copper-amber glow at the top of the canvas */}
+      <div
+        className="pointer-events-none fixed inset-0 z-0 opacity-40"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212, 146, 79, 0.12), transparent 70%)",
+        }}
+        aria-hidden="true"
+      />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Outlet />
-      </main>
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <MinimalHeader />
 
-      <footer className="border-t bg-white py-4 text-center text-xs text-slate-500">
-        Project Doctor &copy; {new Date().getFullYear()} — Technical Project Evaluation Platform
-      </footer>
+        <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+          <Outlet />
+        </main>
+
+        <footer className="py-8 text-center text-xs text-[#888e9b] border-t border-[#2c303a] font-mono">
+          Project Doctor &copy; {new Date().getFullYear()} — AI-Powered Technical Project Evaluation Platform
+        </footer>
+      </div>
     </div>
   );
 };
+
+export default AppLayout;

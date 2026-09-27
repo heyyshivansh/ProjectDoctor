@@ -21,11 +21,38 @@ class ProjectUnderstandingService:
 
     HEADING_KEYWORDS = {
         "problem": ["problem", "problem statement", "background"],
-        "target_users": ["target users", "target audience", "user personas", "stakeholders"],
+        "target_users": [
+            "target users",
+            "target audience",
+            "user personas",
+            "stakeholders",
+            "users",
+            "user groups",
+            "beneficiaries",
+        ],
         "objectives": ["objectives", "project objectives", "goals", "scope"],
-        "requirements_summary": ["requirements", "system requirements", "functional requirements"],
-        "modules": ["modules", "components", "system modules", "functional decomposition"],
-        "tech_stack": ["technology stack", "tech stack", "tools used", "technologies"],
+        "requirements_summary": [
+            "requirements",
+            "system requirements",
+            "functional requirements",
+        ],
+        "modules": [
+            "modules",
+            "components",
+            "system modules",
+            "functional decomposition",
+            "core features",
+            "features",
+            "functional requirements",
+            "system capabilities",
+        ],
+        "tech_stack": [
+            "technology stack",
+            "tech stack",
+            "tools used",
+            "technologies",
+            "suggested stack",
+        ],
         "architecture_overview": ["architecture", "system architecture", "design overview", "technical architecture"],
         "dependencies": ["dependencies", "third-party services", "external apis", "prerequisites"],
         "expected_scale": ["scale", "expected scale", "capacity", "scalability targets", "load expectations"],
@@ -62,8 +89,8 @@ class ProjectUnderstandingService:
         total_words_analyzed: int = 0
         extracted_sections_count: int = 0
 
-        # Map of dimension -> list of (content_str, provenance_dict)
-        doc_evidence: Dict[str, List[Tuple[str, Dict[str, Any]]]] = {
+        # Map of dimension -> list of (content_str, provenance_dict, heading_title)
+        doc_evidence: Dict[str, List[Tuple[str, Dict[str, Any], str]]] = {
             dim: [] for dim in cls.HEADING_KEYWORDS
         }
 
@@ -82,6 +109,17 @@ class ProjectUnderstandingService:
                     full_text = ext.text_preview or ""
 
             sections = ext.sections or []
+            # Self-healing fallback for legacy extractions whose sections only contain generic "Page X" titles or are empty
+            has_only_generic_page_sections = (
+                not sections
+                or all(re.match(r"^page\s+\d+$", str(sec.get("title", "")).strip().lower()) for sec in sections)
+            )
+            if has_only_generic_page_sections and full_text:
+                from app.services.documents.section_detector import detect_headings
+                detected = detect_headings(full_text)
+                if detected:
+                    sections = [s.to_dict() for s in detected]
+
             extracted_sections_count += len(sections)
 
             # Match sections to dimensions
@@ -104,12 +142,16 @@ class ProjectUnderstandingService:
                 for dim, keywords in cls.HEADING_KEYWORDS.items():
                     for kw in keywords:
                         if kw in clean_title:
+                            if kw == "functional requirements" and "non-" in clean_title:
+                                continue
                             prov = {
                                 "source_type": "artifact",
                                 "artifact_id": str(ext.artifact_id),
                                 "section": sec.get("title", ""),
                             }
-                            doc_evidence[dim].append((section_content, prov))
+                            if sec.get("page") is not None:
+                                prov["page"] = sec.get("page")
+                            doc_evidence[dim].append((section_content, prov, sec.get("title", "")))
                             break
 
         # 4. Synthesize the 11 dimensions with STRICT NO-INVENTION rules
@@ -129,27 +171,35 @@ class ProjectUnderstandingService:
 
         # 4.2 Target Users
         target_users_val: List[str] = []
+        target_users_prov: List[Dict[str, Any]] = []
         if doc_evidence["target_users"]:
-            target_users_val = cls._extract_list_items(doc_evidence["target_users"][0][0])
-            provenance["target_users"] = [
-                {
-                    "value": item,
-                    **doc_evidence["target_users"][0][1],
-                }
-                for item in target_users_val
-            ]
+            for content, prov_item, heading_t in doc_evidence["target_users"]:
+                extracted = cls._extract_list_items(content, heading_title=heading_t)
+                for item in extracted:
+                    if item not in target_users_val:
+                        target_users_val.append(item)
+                        target_users_prov.append({
+                            "value": item,
+                            **prov_item,
+                        })
+            if target_users_val:
+                provenance["target_users"] = target_users_prov
 
         # 4.3 Objectives
         objectives_val: List[str] = []
+        objectives_prov: List[Dict[str, Any]] = []
         if doc_evidence["objectives"]:
-            objectives_val = cls._extract_list_items(doc_evidence["objectives"][0][0])
-            provenance["objectives"] = [
-                {
-                    "value": item,
-                    **doc_evidence["objectives"][0][1],
-                }
-                for item in objectives_val
-            ]
+            for content, prov_item, heading_t in doc_evidence["objectives"]:
+                extracted = cls._extract_list_items(content, heading_title=heading_t)
+                for item in extracted:
+                    if item not in objectives_val:
+                        objectives_val.append(item)
+                        objectives_prov.append({
+                            "value": item,
+                            **prov_item,
+                        })
+            if objectives_val:
+                provenance["objectives"] = objectives_prov
 
         # 4.4 Requirements Summary (Checkpoint 3: Raw Text Only, No R1/RN decomposition)
         requirements_summary_val: Optional[str] = None
@@ -165,15 +215,19 @@ class ProjectUnderstandingService:
 
         # 4.5 Modules
         modules_val: List[str] = []
+        modules_prov: List[Dict[str, Any]] = []
         if doc_evidence["modules"]:
-            modules_val = cls._extract_list_items(doc_evidence["modules"][0][0])
-            provenance["modules"] = [
-                {
-                    "value": item,
-                    **doc_evidence["modules"][0][1],
-                }
-                for item in modules_val
-            ]
+            for content, prov_item, heading_t in doc_evidence["modules"]:
+                extracted = cls._extract_list_items(content, heading_title=heading_t)
+                for item in extracted:
+                    if item not in modules_val:
+                        modules_val.append(item)
+                        modules_prov.append({
+                            "value": item,
+                            **prov_item,
+                        })
+            if modules_val:
+                provenance["modules"] = modules_prov
 
         # 4.6 Tech Stack
         tech_stack_set: List[str] = []
@@ -192,8 +246,8 @@ class ProjectUnderstandingService:
                     })
 
         # From documents
-        for doc_text, prov_item in doc_evidence["tech_stack"]:
-            doc_items = cls._extract_list_items(doc_text)
+        for doc_text, prov_item, heading_t in doc_evidence["tech_stack"]:
+            doc_items = cls._extract_list_items(doc_text, heading_title=heading_t)
             for item in doc_items:
                 if item and item not in tech_stack_set:
                     tech_stack_set.append(item)
@@ -331,23 +385,66 @@ class ProjectUnderstandingService:
         return db.scalars(stmt).first()
 
     @staticmethod
-    def _extract_list_items(text: str) -> List[str]:
-        """Parse structured items from a section of text (bullet points or non-empty lines)."""
+    def _extract_list_items(text: str, heading_title: Optional[str] = None) -> List[str]:
+        """Parse structured items from a section of text (bullet points, non-empty lines, or comma-separated lists)."""
         if not text:
             return []
 
+        heading_clean = ""
+        if heading_title:
+            heading_clean = re.sub(r"^[#\s\d.-]+", "", heading_title).strip().lower()
+
+        raw_lines = [l.strip() for l in text.splitlines() if l.strip()]
+        lines: List[str] = []
+        i = 0
+        while i < len(raw_lines):
+            line = raw_lines[i]
+            if re.match(r"^(?:[A-Z]{1,5}-\d{1,4})$", line) and i + 1 < len(raw_lines):
+                lines.append(f"{line}: {raw_lines[i+1]}")
+                i += 2
+            else:
+                lines.append(line)
+                i += 1
+
         items: List[str] = []
-        for line in text.splitlines():
-            line_clean = line.strip()
-            # Strip heading if present on first line
+        for line_clean in lines:
+
+            # Strip markdown heading marker if present
             if line_clean.startswith("#"):
                 continue
-            # Strip bullet markers: -, *, +, numbers
-            line_clean = re.sub(r"^[-*+•]\s+", "", line_clean)
-            line_clean = re.sub(r"^\d+[\.\)]\s+", "", line_clean)
-            line_clean = line_clean.strip()
 
-            if line_clean and len(line_clean) > 1 and line_clean not in items:
-                items.append(line_clean)
+            # Strip leading bullets and list markers
+            candidate = re.sub(r"^[-*+•]\s+", "", line_clean)
+            candidate = re.sub(r"^\d+[\.\)]\s+", "", candidate).strip()
+
+            candidate_clean = re.sub(r"^[#\s\d.-]+", "", candidate).strip().lower()
+
+            # Skip the line if it is the heading title itself
+            if heading_clean and (candidate_clean == heading_clean or candidate_clean in (
+                "target users", "target audience", "core features", "features",
+                "functional requirements", "non-functional requirements", "users",
+                "beneficiaries", "modules", "components", "system capabilities", "tech stack",
+                "suggested stack", "objectives", "problem statement"
+            )):
+                continue
+
+            # Check if line has an inline colon prefix (e.g. "Users: foo, bar" -> "foo, bar")
+            if ":" in candidate:
+                prefix, rest = candidate.split(":", 1)
+                prefix_clean = prefix.strip().lower()
+                if prefix_clean in ("users", "target users", "stakeholders", "beneficiaries", "features", "modules", "stack", "suggested stack"):
+                    candidate = rest.strip()
+
+            # If line contains comma-separated values (and is not a long descriptive prose sentence ending with period)
+            if "," in candidate and not candidate.endswith((".", ";")) and len(candidate.split(",")) > 1:
+                parts = [p.strip() for p in candidate.split(",")]
+                for p in parts:
+                    clean_p = re.sub(r"^[-*+•\d\.\)]\s*", "", p).strip()
+                    if clean_p and len(clean_p) > 1 and clean_p not in items:
+                        items.append(clean_p)
+                continue
+
+            if candidate and len(candidate) > 1 and candidate not in items:
+                items.append(candidate)
 
         return items

@@ -231,3 +231,43 @@ def test_invalid_traceability_unknown_uuid(test_package):
     result = _make_result_with_citations([cit])
     with pytest.raises(CitationIntegrityError):
         CitationValidator.validate_citation_integrity(result, test_package)
+
+
+def test_invalid_artifact_uuid_none_or_unlisted_repo_file(test_package):
+    """
+    Verify that citing an unlisted document or repository file (e.g. PROJECT_CONTEXT.md)
+    as target_type='artifact' with target_id=None fails citation integrity.
+    """
+    cit = AIEvidenceCitation(
+        target_type="artifact",
+        target_id=None,
+        identifier="PROJECT_CONTEXT.md",
+    )
+    result = _make_result_with_citations([cit])
+    with pytest.raises(CitationIntegrityError) as exc_info:
+        CitationValidator.validate_citation_integrity(result, test_package)
+    assert "Artifact UUID 'None' not found in evidence package" in str(exc_info.value)
+
+
+def test_invalid_repository_file_wildcard_or_aggregate_path(test_package):
+    """
+    Verify that wildcard glob patterns or aggregate descriptions (e.g. 'backend/test_*.py (16 files)')
+    are rejected by CitationValidator because only literal file paths are valid citations.
+    """
+    cit_aggregate = AIEvidenceCitation(
+        target_type="repository_file",
+        identifier="backend/test_*.py (16 files)",
+    )
+    result1 = _make_result_with_citations([cit_aggregate])
+    with pytest.raises(CitationIntegrityError) as exc_info1:
+        CitationValidator.validate_citation_integrity(result1, test_package)
+    assert "backend/test_*.py (16 files)" in str(exc_info1.value)
+
+    cit_wildcard = AIEvidenceCitation(
+        target_type="repository_file",
+        identifier="backend/test_*.py",
+    )
+    result2 = _make_result_with_citations([cit_wildcard])
+    with pytest.raises(CitationIntegrityError) as exc_info2:
+        CitationValidator.validate_citation_integrity(result2, test_package)
+    assert "backend/test_*.py" in str(exc_info2.value)

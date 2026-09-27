@@ -117,7 +117,7 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200 touch-none overscroll-contain"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 touch-none overscroll-contain"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -128,45 +128,46 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
       aria-labelledby="extracted-text-title"
     >
       <div
-        className="relative w-full max-w-4xl h-[85vh] max-h-[85vh] bg-white rounded-xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden overscroll-contain"
+        className="relative w-full max-w-4xl h-[85vh] max-h-[85vh] bg-[var(--pd-surface)] rounded-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.75)] border border-[var(--pd-border)] flex flex-col overflow-hidden overscroll-contain text-[var(--pd-text-primary)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--pd-border)] bg-[var(--pd-surface-raised)]">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-blue-100 text-blue-700">
+            <div className="p-2 rounded-lg bg-[var(--pd-ai-wash)] text-[var(--pd-ai)] border border-[var(--pd-ai)]/20">
               <FileText className="h-5 w-5" />
             </div>
             <div>
-              <h2 id="extracted-text-title" className="text-lg font-semibold text-slate-900 leading-tight">
+              <h2 id="extracted-text-title" className="text-base sm:text-lg font-semibold text-[var(--pd-text-primary)] leading-tight">
                 {artifactName}
               </h2>
-              <p className="text-xs text-slate-500">
-                Extracted via {extraction.extractor_name} •{" "}
-                {extraction.word_count.toLocaleString()} words •{" "}
+              <p className="text-xs text-[var(--pd-text-muted)] font-mono">
+                Extracted via {extraction.extractor_name} &bull;{" "}
+                {extraction.word_count.toLocaleString()} words &bull;{" "}
                 {extraction.character_count.toLocaleString()} characters
-                {extraction.page_count ? ` • ${extraction.page_count} pages` : ""}
+                {extraction.page_count ? ` \u2022 ${extraction.page_count} pages` : ""}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            className="p-1.5 rounded-lg text-[var(--pd-text-muted)] hover:text-white hover:bg-[var(--pd-surface)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-ai)]"
+            title="Close modal"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Modal Sub-bar: Metrics & Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-2.5 bg-slate-100/70 border-b border-slate-200 text-xs text-slate-600">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-2.5 bg-[var(--pd-surface)]/90 border-b border-[var(--pd-border)] text-xs text-[var(--pd-text-muted)]">
           <div className="flex items-center gap-3">
             {extraction.sha256_hash && (
-              <span className="flex items-center gap-1 font-mono text-[11px] text-slate-500" title="SHA-256 Content Hash">
+              <span className="flex items-center gap-1 font-mono text-[11px] text-[var(--pd-text-muted)]" title="SHA-256 Content Hash">
                 <Hash className="h-3.5 w-3.5" />
                 {extraction.sha256_hash.slice(0, 16)}...
               </span>
             )}
-            <Badge variant="outline" className="text-[11px]">
+            <Badge variant="outline" className="text-[11px] font-mono bg-[var(--pd-surface-raised)] border-[var(--pd-border)] text-[var(--pd-text-body)]">
               {extraction.sections.length} Outline Sections
             </Badge>
           </div>
@@ -176,17 +177,17 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
               size="sm"
               onClick={handleCopy}
               disabled={isLoadingText || !fullText}
-              className="h-8 gap-1.5 text-xs"
+              className="h-8 gap-1.5 text-xs font-mono bg-[var(--pd-surface-raised)] border-[var(--pd-border)] text-[var(--pd-text-body)] hover:text-white hover:border-[var(--pd-border-hover)]"
             >
               {copied ? (
                 <>
-                  <Check className="h-3.5 w-3.5 text-emerald-600" />
-                  Copied
+                  <Check className="h-3.5 w-3.5 text-[var(--pd-mint)]" />
+                  <span>Copied</span>
                 </>
               ) : (
                 <>
                   <Copy className="h-3.5 w-3.5" />
-                  Copy Text
+                  <span>Copy Text</span>
                 </>
               )}
             </Button>
@@ -195,10 +196,10 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
               size="sm"
               onClick={handleDownload}
               disabled={isLoadingText || !fullText}
-              className="h-8 gap-1.5 text-xs"
+              className="h-8 gap-1.5 text-xs font-mono bg-[var(--pd-surface-raised)] border-[var(--pd-border)] text-[var(--pd-text-body)] hover:text-white hover:border-[var(--pd-border-hover)]"
             >
               <Download className="h-3.5 w-3.5" />
-              Download .txt
+              <span>Download .txt</span>
             </Button>
           </div>
         </div>
@@ -207,20 +208,20 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
         <div className="flex-1 flex overflow-hidden min-h-0">
           {/* Outline Sidebar (if sections exist) */}
           {extraction.sections.length > 0 && (
-            <div className="w-64 border-r border-slate-200 p-4 bg-slate-50/50 overflow-y-auto overscroll-contain min-h-0 hidden md:block">
-              <h3 className="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2 flex items-center gap-1.5">
-                <BookOpen className="h-3.5 w-3.5" />
-                Outline & Headings
+            <div className="w-64 border-r border-[var(--pd-border)] p-4 bg-[var(--pd-surface-raised)]/30 overflow-y-auto overscroll-contain min-h-0 hidden md:block">
+              <h3 className="text-xs font-semibold uppercase text-[var(--pd-text-muted)] tracking-wider mb-2 flex items-center gap-1.5 font-mono">
+                <BookOpen className="h-3.5 w-3.5 text-[var(--pd-ai)]" />
+                Outline &amp; Headings
               </h3>
               <ul className="space-y-1 text-xs">
                 {extraction.sections.map((sec, idx) => (
                   <li
                     key={idx}
-                    className="p-1.5 rounded hover:bg-slate-200/60 text-slate-700 truncate cursor-default transition-colors"
+                    className="p-1.5 rounded hover:bg-[var(--pd-surface-raised)] text-[var(--pd-text-body)] hover:text-[var(--pd-text-primary)] truncate cursor-default transition-colors"
                     title={sec.title}
                     style={{ paddingLeft: `${Math.max(6, sec.level * 10)}px` }}
                   >
-                    <span className="font-medium text-slate-800">• </span>
+                    <span className="font-medium text-[var(--pd-text-muted)]">&bull; </span>
                     {sec.title}
                   </li>
                 ))}
@@ -229,34 +230,39 @@ export const ExtractedTextViewerModal: React.FC<ExtractedTextViewerModalProps> =
           )}
 
           {/* Text Content Pane */}
-          <div className="flex-1 p-6 overflow-y-auto overscroll-contain min-h-0 bg-white font-mono text-xs leading-relaxed text-slate-800 whitespace-pre-wrap selection:bg-blue-100">
+          <div className="flex-1 p-6 overflow-y-auto overscroll-contain min-h-0 bg-[var(--pd-canvas)] font-mono text-xs leading-relaxed text-[var(--pd-text-primary)] whitespace-pre-wrap selection:bg-[var(--pd-ai-wash)] selection:text-white">
             {isLoadingText ? (
-              <div className="flex flex-col items-center justify-center h-full py-16 text-slate-400 space-y-2">
-                <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+              <div className="flex flex-col items-center justify-center h-full py-16 text-[var(--pd-text-muted)] space-y-2">
+                <Loader2 className="h-6 w-6 animate-spin text-[var(--pd-ai)]" />
                 <span>Loading extracted text from disk...</span>
               </div>
             ) : error ? (
-              <div className="p-4 rounded-lg bg-rose-50 text-rose-700 border border-rose-200">
+              <div className="p-4 rounded-xl bg-[var(--pd-coral-wash)] text-[var(--pd-coral)] border border-[var(--pd-coral)]/30">
                 {error}
               </div>
             ) : extraction.status === "skipped_unsupported_type" ? (
-              <div className="text-center py-16 text-slate-500">
+              <div className="text-center py-16 text-[var(--pd-text-muted)]">
                 {extraction.error_message || "Non-text artifact. Extraction was skipped."}
               </div>
             ) : extraction.status === "failed" ? (
-              <div className="p-4 rounded-lg bg-rose-50 text-rose-700 border border-rose-200">
+              <div className="p-4 rounded-xl bg-[var(--pd-coral-wash)] text-[var(--pd-coral)] border border-[var(--pd-coral)]/30">
                 <p className="font-semibold mb-1">Extraction Failed</p>
                 <p>{extraction.error_message || "An unknown error occurred during extraction."}</p>
               </div>
             ) : (
-              fullText || <span className="text-slate-400 italic">No text content extracted.</span>
+              fullText || <span className="text-[var(--pd-text-muted)] italic">No text content extracted.</span>
             )}
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-end px-6 py-3 border-t border-slate-200 bg-slate-50">
-          <Button variant="secondary" size="sm" onClick={onClose}>
+        <div className="flex items-center justify-end px-6 py-3 border-t border-[var(--pd-border)] bg-[var(--pd-surface-raised)]">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+            className="text-xs font-mono bg-[var(--pd-surface)] border-[var(--pd-border)] text-[var(--pd-text-body)] hover:text-white hover:bg-[var(--pd-surface-overlay)]"
+          >
             Close
           </Button>
         </div>

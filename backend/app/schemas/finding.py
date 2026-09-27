@@ -61,6 +61,10 @@ class FindingSummaryResponse(BaseModel):
     why_it_matters: str
     suggested_action: Optional[str] = None
     finding_hash: str
+    ai_interpretation_snippet: Optional[str] = Field(
+        default=None,
+        description="Optional AI contextual interpretation snippet if AI evaluation has run",
+    )
     created_at: datetime
     updated_at: datetime
 
@@ -80,6 +84,10 @@ class FindingDetailResponse(BaseModel):
     summary: str
     why_it_matters: str
     suggested_action: Optional[str] = None
+    ai_interpretation: Optional[str] = Field(
+        default=None,
+        description="Optional AI contextual reasoning and uncertainty notes for this finding",
+    )
     evidence_references: List[FindingEvidenceReference] = Field(default_factory=list)
     hydrated_evidence: List[HydratedEvidenceItem] = Field(default_factory=list)
     technical_details: Dict[str, Any] = Field(default_factory=dict)
@@ -110,6 +118,22 @@ class ProjectDiagnosisResponse(BaseModel):
     needs_attention_count: int = 0
     improvements_count: int = 0
     strengths_count: int = 0
+    ai_status: Optional[str] = Field(
+        default=None,
+        description="Status of deeper AI evaluation: completed, failed, running, unavailable, not_analyzed",
+    )
+    ai_summary: Optional[str] = Field(
+        default=None,
+        description="High-level AI reasoning summary synthesized across evidence",
+    )
+    ai_contradictions_count: int = Field(
+        default=0,
+        description="Number of cross-artifact contradictions identified by AI evaluation",
+    )
+    ai_evidence_gaps_count: int = Field(
+        default=0,
+        description="Number of evidence gaps identified by AI evaluation",
+    )
     top_findings: List[FindingSummaryResponse] = Field(default_factory=list)
     strengths: List[FindingSummaryResponse] = Field(default_factory=list)
 

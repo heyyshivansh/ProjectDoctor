@@ -16,7 +16,15 @@ TargetType = Literal[
     "requirement", "repository_file", "finding", "artifact", "traceability"
 ]
 EvidenceGapArea = Literal[
-    "scalability", "security", "testing", "deployment", "architecture"
+    "architecture",
+    "frontend",
+    "backend",
+    "implementation",
+    "security",
+    "testing",
+    "deployment",
+    "documentation",
+    "scalability",
 ]
 
 

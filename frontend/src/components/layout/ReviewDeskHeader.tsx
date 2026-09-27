@@ -1,12 +1,14 @@
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DiagnosisStatus } from '@/types/diagnosis';
+import { AnalysisStatusResponse } from '@/types/analysis';
 
 interface ReviewDeskHeaderProps {
   projectTitle: string;
   diagnosisStatus?: DiagnosisStatus | string;
-  isReevaluating?: boolean;
-  onReevaluate?: () => void;
+  analysisStatus?: AnalysisStatusResponse | null;
+  isAnalyzing?: boolean;
+  onAnalyze?: () => void;
   activeSection: string;
   onNavigate: (section: string) => void;
 }
@@ -20,11 +22,22 @@ const TABS = [
 export function ReviewDeskHeader({
   projectTitle,
   diagnosisStatus: _diagnosisStatus,
-  isReevaluating,
-  onReevaluate,
+  analysisStatus,
+  isAnalyzing,
+  onAnalyze,
   activeSection,
   onNavigate
 }: ReviewDeskHeaderProps) {
+  const isStale = analysisStatus?.is_stale;
+  const isRunning = isAnalyzing || analysisStatus?.status === "running";
+  const isNotStarted = analysisStatus?.status === "not_started";
+
+  const buttonLabel = isRunning
+    ? "Evaluating..."
+    : isNotStarted
+    ? "Analyze Project"
+    : "Re-analyze";
+
   return (
     <header className="sticky top-0 z-30 h-14 bg-[var(--pd-canvas)]/80 backdrop-blur-xl border-b border-[var(--pd-border)]">
       <div className="max-w-[1520px] w-full mx-auto px-6 sm:px-12 lg:px-16 h-full flex items-center justify-between">
@@ -69,18 +82,35 @@ export function ReviewDeskHeader({
           })}
         </nav>
 
-        {/* Far Right: Re-evaluate */}
-        {onReevaluate && (
-          <div className="flex items-center ml-4 pl-4 border-l border-[var(--pd-border)] shrink-0">
+        {/* Far Right: Analyze / Re-analyze */}
+        {onAnalyze && (
+          <div className="flex items-center ml-4 pl-4 border-l border-[var(--pd-border)] shrink-0 gap-2">
+            {isStale && (
+              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+                Stale
+              </span>
+            )}
             <button
-              onClick={onReevaluate}
-              disabled={isReevaluating}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] hover:bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] hover:border-[var(--pd-border-hover)] transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[var(--pd-ai)]"
-              title="Re-evaluate project"
-              aria-label="Re-evaluate project"
+              onClick={onAnalyze}
+              disabled={isRunning}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[var(--pd-ai)]",
+                isNotStarted
+                  ? "bg-white text-black hover:bg-slate-200 font-medium shadow-sm"
+                  : "text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] hover:bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] hover:border-[var(--pd-border-hover)]"
+              )}
+              title={buttonLabel}
+              aria-label={buttonLabel}
             >
-              <RefreshCw className={cn("w-3.5 h-3.5", isReevaluating && "animate-spin text-[var(--pd-ai)]")} />
-              <span>Re-evaluate</span>
+              {isRunning ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-[var(--pd-ai)]" />
+              ) : isNotStarted ? (
+                <Sparkles className="w-3.5 h-3.5 text-violet-600" />
+              ) : (
+                <RefreshCw className="w-3.5 h-3.5" />
+              )}
+              <span>{buttonLabel}</span>
             </button>
           </div>
         )}

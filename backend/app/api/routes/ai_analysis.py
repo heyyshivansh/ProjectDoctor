@@ -8,13 +8,18 @@ from app.services.project_service import ProjectService
 from app.services.ai.service import AIAnalysisService
 from app.services.ai.base import (
     BaseAIProvider,
+    AIProviderConfigurationError,
     GeminiConfigurationError,
     GeminiRateLimitError,
     GeminiTimeoutError,
     GeminiServiceUnavailableError,
+    OpenRouterConfigurationError,
+    OpenRouterRateLimitError,
+    OpenRouterTimeoutError,
+    OpenRouterServiceUnavailableError,
     AIAnalysisGenerationError,
 )
-from app.services.ai.gemini_client import GeminiProvider
+from app.services.ai.factory import get_configured_ai_provider
 from app.services.analysis.citation_validator import CitationIntegrityError
 from app.schemas.ai_analysis import (
     AIAnalysisResponse,
@@ -38,7 +43,7 @@ def _verify_project_exists(db: Session, project_id: uuid.UUID):
 
 def get_ai_provider() -> BaseAIProvider:
     """Dependency provider for the AI reasoning client (overridable in tests)."""
-    return GeminiProvider()
+    return get_configured_ai_provider()
 
 
 @router.get(
@@ -117,22 +122,22 @@ def generate_project_ai_analysis(
             cached=was_cached,
             analysis=analysis_resp,
         )
-    except GeminiConfigurationError as e:
+    except (AIProviderConfigurationError, GeminiConfigurationError, OpenRouterConfigurationError) as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e),
         )
-    except GeminiRateLimitError as e:
+    except (GeminiRateLimitError, OpenRouterRateLimitError) as e:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail=str(e),
         )
-    except GeminiTimeoutError as e:
+    except (GeminiTimeoutError, OpenRouterTimeoutError) as e:
         raise HTTPException(
             status_code=status.HTTP_504_GATEWAY_TIMEOUT,
             detail=str(e),
         )
-    except GeminiServiceUnavailableError as e:
+    except (GeminiServiceUnavailableError, OpenRouterServiceUnavailableError) as e:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=str(e),
@@ -156,6 +161,85 @@ def generate_project_ai_analysis(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Unexpected error during AI evaluation: {str(e)}",
+        )
+
+
+@router.post(
+    "/ai-analysis/retry",
+    response_model=AIAnalysisGenerationResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Retry AI project evaluation only",
+)
+def retry_project_ai_analysis(
+    project_id: uuid.UUID,
+    snapshot_id: Optional[uuid.UUID] = Query(
+        default=None,
+        description="Optional snapshot UUID to retry AI evaluation for",
+    ),
+    db: Session = Depends(get_db),
+    provider: BaseAIProvider = Depends(get_ai_provider),
+) -> AIAnalysisGenerationResponse:
+    """Explicitly retry only the AI deeper reasoning stage without re-running deterministic pipelines."""
+    _verify_project_exists(db, project_id)
+
+    try:
+        analysis_resp, was_cached = AIAnalysisService.retry_analysis(
+            db=db,
+            project_id=project_id,
+            snapshot_id=snapshot_id,
+            provider=provider,
+        )
+        return AIAnalysisGenerationResponse(
+            status="completed" if analysis_resp.status == "completed" else analysis_resp.status,
+            message="AI project evaluation completed successfully via retry.",
+            cached=was_cached,
+            analysis=analysis_resp,
+        )
+    except (AIProviderConfigurationError, GeminiConfigurationError, OpenRouterConfigurationError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except (GeminiRateLimitError, OpenRouterRateLimitError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=str(e),
+        )
+    except (GeminiTimeoutError, OpenRouterTimeoutError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail=str(e),
+        )
+    except (GeminiServiceUnavailableError, OpenRouterServiceUnavailableError) as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(e),
+        )
+    except CitationIntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"AI output rejected: {str(e)}",
+        )
+    except AIAnalysisGenerationError as e:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"AI generation failed: {str(e)}",
+        )
+    except ValueError as e:
+        err_msg = str(e)
+        if "already" in err_msg.lower():
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=err_msg,
+            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=err_msg,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Unexpected error during AI evaluation retry: {str(e)}",
         )
 
 

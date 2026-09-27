@@ -18,7 +18,7 @@ def get_database_url() -> str:
 db_url = get_database_url()
 is_sqlite = db_url.startswith("sqlite")
 
-connect_args = {"check_same_thread": False} if is_sqlite else {}
+connect_args = {"check_same_thread": False, "timeout": 30.0} if is_sqlite else {}
 
 engine = create_engine(
     db_url,
@@ -29,9 +29,10 @@ engine = create_engine(
 if is_sqlite:
     @event.listens_for(engine, "connect")
     def set_sqlite_pragma(dbapi_connection, connection_record):
-        """Enforce foreign key constraints on SQLite."""
+        """Enforce foreign key constraints and WAL journal mode on SQLite."""
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.execute("PRAGMA journal_mode=WAL")
         cursor.close()
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

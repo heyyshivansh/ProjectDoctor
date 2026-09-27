@@ -281,3 +281,67 @@ def test_traceability_integration_triggers_diagnosis(client: TestClient, db_sess
     assert diag_resp.status_code == 200
     diag_data = diag_resp.json()
     assert diag_data["total_findings"] > 0
+
+
+def test_diagnosis_and_findings_ai_enrichment(client, db_session: Session, project_with_traceability_api: Project):
+    """Verify that diagnosis and finding detail responses are enriched with AI reasoning data when AI analysis exists."""
+    project = project_with_traceability_api
+
+    # Generate deterministic diagnosis
+    diag_gen_resp = client.post(f"/api/projects/{project.id}/diagnosis/generate?force=true")
+    assert diag_gen_resp.status_code == 200
+    diag_data = diag_gen_resp.json()["diagnosis"]
+    assert diag_data["ai_status"] is None
+
+    # Find one finding
+    top_finding = diag_data["top_findings"][0]
+    finding_id = top_finding["id"]
+    finding_title = top_finding["title"]
+
+    # Now create an AI analysis with diagnostic interpretations matching this finding
+    from app.models.ai_analysis import AIAnalysis
+    ai_analysis = AIAnalysis(
+        project_id=project.id,
+        snapshot_id=uuid.UUID(diag_data["snapshot_id"]),
+        commit_sha=diag_data["commit_sha"],
+        status="completed",
+        model_provider="gemini",
+        model_name="gemini-3.8-flash",
+        prompt_version="cp8-v1.0",
+        evidence_hash="test_ev_hash",
+        analysis_summary="This project has good core architecture but missing test verification.",
+        structured_result={
+            "contradictions": [{"headline": "Missing auth tests"}],
+            "evidence_gaps": [{"area": "testing"}],
+            "diagnostic_interpretations": [
+                {
+                    "finding_id": finding_id,
+                    "finding_title": finding_title,
+                    "project_context_impact": "This gap directly impacts API endpoint security in production.",
+                    "uncertainty_note": "Could not inspect external auth provider configuration.",
+                }
+            ],
+        },
+    )
+    db_session.add(ai_analysis)
+    db_session.commit()
+
+    # Read diagnosis again: should now be enriched
+    enriched_resp = client.get(f"/api/projects/{project.id}/diagnosis")
+    assert enriched_resp.status_code == 200
+    enriched_data = enriched_resp.json()
+    assert enriched_data["ai_status"] == "completed"
+    assert enriched_data["ai_summary"] == "This project has good core architecture but missing test verification."
+    assert enriched_data["ai_contradictions_count"] == 1
+    assert enriched_data["ai_evidence_gaps_count"] == 1
+
+    # Check finding snippet
+    enriched_top = next(f for f in enriched_data["top_findings"] if f["id"] == finding_id)
+    assert enriched_top["ai_interpretation_snippet"] == "This gap directly impacts API endpoint security in production."
+
+    # Check finding detail endpoint
+    detail_resp = client.get(f"/api/projects/{project.id}/findings/{finding_id}")
+    assert detail_resp.status_code == 200
+    detail_data = detail_resp.json()
+    assert "This gap directly impacts API endpoint security in production." in detail_data["ai_interpretation"]
+    assert "Uncertainty Note: Could not inspect external auth provider configuration." in detail_data["ai_interpretation"]

@@ -52,37 +52,58 @@ class PdfExtractor(BaseDocumentExtractor):
         total_pages = len(reader.pages)
         pages_to_extract = min(total_pages, MAX_PDF_PAGES)
         extracted_pages: List[str] = []
-        sections: List[DocumentSection] = []
+        page_offsets = []
+        page_previews = {}
         current_char_offset = 0
 
         for page_idx in range(pages_to_extract):
+            p_num = page_idx + 1
             try:
                 page = reader.pages[page_idx]
                 page_text = page.extract_text() or ""
             except Exception as e:
-                page_text = f"[Error extracting text from page {page_idx + 1}: {str(e)}]"
+                page_text = f"[Error extracting text from page {p_num}: {str(e)}]"
 
-            page_header = f"--- Page {page_idx + 1} ---\n"
+            page_header = f"--- Page {p_num} ---\n"
             full_page_content = page_header + page_text + "\n\n"
 
             start_char = current_char_offset
             end_char = start_char + len(full_page_content)
 
-            section_preview = page_text.strip()[:100] if page_text.strip() else f"Page {page_idx + 1}"
-            sections.append(
-                DocumentSection(
-                    title=f"Page {page_idx + 1}",
-                    level=1,
-                    start_char=start_char,
-                    end_char=end_char,
-                    text_preview=section_preview,
-                )
-            )
+            section_preview = page_text.strip()[:100] if page_text.strip() else f"Page {p_num}"
+            page_offsets.append((p_num, start_char, end_char))
+            page_previews[p_num] = (section_preview, start_char, end_char)
 
             extracted_pages.append(full_page_content)
             current_char_offset = end_char
 
         raw_text = "".join(extracted_pages)
+
+        # Detect semantic headings across document with page awareness
+        from app.services.documents.section_detector import detect_headings
+        detected_sections = detect_headings(raw_text, page_offsets=page_offsets)
+
+        # Hybrid policy: Semantic sections coexist with page-level fallback coverage
+        # Pages lacking semantic headings retain their Page X fallback section
+        pages_with_headings = {s.page for s in detected_sections if s.page is not None}
+        final_sections: List[DocumentSection] = list(detected_sections)
+
+        for p_num, p_start, p_end in page_offsets:
+            if p_num not in pages_with_headings:
+                preview, s_char, e_char = page_previews[p_num]
+                final_sections.append(
+                    DocumentSection(
+                        title=f"Page {p_num}",
+                        level=1,
+                        start_char=s_char,
+                        end_char=e_char,
+                        text_preview=preview,
+                        page=p_num,
+                    )
+                )
+
+        final_sections.sort(key=lambda s: s.start_char)
+        sections = final_sections
 
         # Document metadata
         pdf_metadata = {}

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   RefreshCw,
   Sparkles,
@@ -10,11 +10,13 @@ import {
   HelpCircle,
   ShieldAlert,
   Server,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import type { ProjectDetail } from '@/types/project';
-import type { ProjectUnderstanding } from '@/types/understanding';
+  ExternalLink,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import type { ProjectDetail } from "@/types/project";
+import type { ProjectUnderstanding } from "@/types/understanding";
+import { FocusedCapabilityExplorer } from "./FocusedCapabilityExplorer";
 
 export interface ProjectUnderstandViewProps {
   project: ProjectDetail;
@@ -22,15 +24,16 @@ export interface ProjectUnderstandViewProps {
   isGenerating: boolean;
   error: string | null;
   onGenerateUnderstanding: () => void;
+  onInspectArtifact?: (artifactId: string) => void;
+  onOpenAnalysis?: () => void;
 }
 
-type SceneKey = 'audience' | 'capabilities' | 'architecture' | 'technology';
+type SceneKey = "capabilities" | "audience" | "architecture";
 
 const SCENES: { key: SceneKey; label: string; number: string; icon: React.ElementType }[] = [
-  { key: 'audience', label: 'Audience', number: '01', icon: Users },
-  { key: 'capabilities', label: 'Capabilities', number: '02', icon: Boxes },
-  { key: 'architecture', label: 'Architecture', number: '03', icon: Layers },
-  { key: 'technology', label: 'Technology', number: '04', icon: Cpu },
+  { key: "capabilities", label: "Core Capabilities", number: "01", icon: Boxes },
+  { key: "audience", label: "Target Audience", number: "02", icon: Users },
+  { key: "architecture", label: "Architecture & Stack", number: "03", icon: Layers },
 ];
 
 export function ProjectUnderstandView({
@@ -39,28 +42,28 @@ export function ProjectUnderstandView({
   isGenerating,
   error,
   onGenerateUnderstanding,
+  onInspectArtifact,
+  onOpenAnalysis,
 }: ProjectUnderstandViewProps) {
-  const [activeScene, setActiveScene] = useState<SceneKey>('audience');
-  const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
+  const [activeScene, setActiveScene] = useState<SceneKey>("capabilities");
 
-  // Keyboard navigation: 1-4, ArrowLeft, ArrowRight
+  // Keyboard navigation: 1-3, ArrowLeft, ArrowRight
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (
         document.activeElement &&
-        ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)
+        ["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)
       ) {
         return;
       }
 
-      if (e.key === '1') setActiveScene('audience');
-      else if (e.key === '2') setActiveScene('capabilities');
-      else if (e.key === '3') setActiveScene('architecture');
-      else if (e.key === '4') setActiveScene('technology');
-      else if (e.key === 'ArrowLeft') {
+      if (e.key === "1") setActiveScene("capabilities");
+      else if (e.key === "2") setActiveScene("audience");
+      else if (e.key === "3") setActiveScene("architecture");
+      else if (e.key === "ArrowLeft") {
         const idx = SCENES.findIndex((s) => s.key === activeScene);
         if (idx > 0) setActiveScene(SCENES[idx - 1].key);
-      } else if (e.key === 'ArrowRight') {
+      } else if (e.key === "ArrowRight") {
         const idx = SCENES.findIndex((s) => s.key === activeScene);
         if (idx < SCENES.length - 1) setActiveScene(SCENES[idx + 1].key);
       }
@@ -69,8 +72,8 @@ export function ProjectUnderstandView({
   );
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
   // EMPTY STATE (When understanding has not been generated)
@@ -84,11 +87,10 @@ export function ProjectUnderstandView({
 
           <div className="space-y-2">
             <h2 className="text-xl sm:text-2xl font-sans font-semibold text-[var(--pd-text-primary)]">
-              Project Doctor hasn&apos;t synthesized your project scope yet.
+              Project scope has not been synthesized yet
             </h2>
             <p className="text-sm font-sans text-[var(--pd-text-body)] leading-relaxed max-w-lg mx-auto">
-              Synthesize an understanding of your project by extracting core purpose, target audience,
-              claimed capabilities, and architecture directly from your uploaded documents.
+              Synthesize what Project Doctor understands about your system boundaries, intended audience, and claimed capabilities from your uploaded project specifications.
             </p>
           </div>
 
@@ -104,8 +106,8 @@ export function ProjectUnderstandView({
               disabled={isGenerating}
               className="gap-2 bg-[var(--pd-ai)] hover:bg-[var(--pd-ai-hover)] text-white text-xs font-mono px-6 py-2.5 rounded-lg shadow-sm"
             >
-              <RefreshCw className={cn('w-4 h-4', isGenerating && 'animate-spin')} />
-              <span>{isGenerating ? 'Synthesizing Scope...' : 'Generate Understanding'}</span>
+              <RefreshCw className={cn("w-4 h-4", isGenerating && "animate-spin")} />
+              <span>{isGenerating ? "Synthesizing Scope..." : "Generate Understanding"}</span>
             </Button>
           </div>
         </div>
@@ -113,22 +115,25 @@ export function ProjectUnderstandView({
     );
   }
 
-  // Primary Understanding Hero Text (compacted to 2-3 lines desktop)
+  // Hero headline
   const heroText =
     understanding.problem ||
     project.problem_statement ||
     project.description ||
-    'Software platform for verified technical project requirements.';
+    "Software platform for verified technical project requirements.";
   const specCount = understanding.source_artifact_ids?.length || project.artifacts?.length || 0;
+  const userProvList: any[] = Array.isArray(understanding.provenance?.target_users)
+    ? understanding.provenance.target_users
+    : [];
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-200 text-left">
-      {/* ─── 1. COMPACT UNDERSTANDING HERO (Fits in ~120px) ─── */}
-      <div className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 sm:p-7 space-y-3">
+    <div className="space-y-6 animate-in fade-in duration-200 text-left">
+      {/* ─── 1. COMPACT UNDERSTANDING HERO ─── */}
+      <div className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 sm:p-7 space-y-3 shadow-pd-card">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--pd-ai)]">
+          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[var(--pd-ai)] font-semibold">
             <span className="w-2 h-2 rounded-full bg-[var(--pd-ai)]" />
-            <span>I think you&apos;re building...</span>
+            <span>Project Scope &bull; What You&apos;re Building</span>
           </div>
 
           <Button
@@ -138,21 +143,20 @@ export function ProjectUnderstandView({
             disabled={isGenerating}
             className="border-[var(--pd-border)] text-[var(--pd-text-body)] hover:text-[var(--pd-text-primary)] hover:border-[var(--pd-border-hover)] bg-[var(--pd-surface-raised)] text-xs font-mono h-8 shrink-0"
           >
-            <RefreshCw className={cn('w-3.5 h-3.5 mr-1.5', isGenerating && 'animate-spin text-[var(--pd-ai)]')} />
-            <span>{isGenerating ? 'Refreshing...' : 'Refresh Understanding'}</span>
+            <RefreshCw className={cn("w-3.5 h-3.5 mr-1.5", isGenerating && "animate-spin text-[var(--pd-ai)]")} />
+            <span>{isGenerating ? "Refreshing..." : "Refresh Understanding"}</span>
           </Button>
         </div>
 
-        {/* 2-3 Lines Desktop Max */}
         <h1 className="text-xl sm:text-2xl lg:text-3xl font-sans font-semibold text-[var(--pd-text-primary)] tracking-tight leading-snug line-clamp-3">
           {heroText}
         </h1>
 
-        <div className="flex flex-wrap items-center gap-3 pt-1 text-xs font-mono text-[var(--pd-text-muted)] border-t border-[var(--pd-border)]">
-          <span>Synthesized strictly from project metadata &amp; {specCount} specification document(s)</span>
+        <div className="flex flex-wrap items-center gap-3 pt-2 text-xs font-mono text-[var(--pd-text-muted)] border-t border-[var(--pd-border)]">
+          <span>Synthesized from project metadata &amp; {specCount} specification document{specCount === 1 ? "" : "s"}</span>
           {understanding.total_words_analyzed > 0 && (
             <>
-              <span>•</span>
+              <span>&bull;</span>
               <span>{understanding.total_words_analyzed.toLocaleString()} words analyzed</span>
             </>
           )}
@@ -169,15 +173,16 @@ export function ProjectUnderstandView({
             return (
               <button
                 key={scene.key}
+                type="button"
                 onClick={() => setActiveScene(scene.key)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-ai)]',
+                  "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-mono uppercase tracking-wider transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-ai)]",
                   isActive
-                    ? 'bg-[var(--pd-surface-raised)] text-[var(--pd-text-primary)] border border-[var(--pd-border-hover)] shadow-sm font-semibold'
-                    : 'text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] hover:bg-[var(--pd-surface-raised)]/50'
+                    ? "bg-[var(--pd-surface-raised)] text-[var(--pd-text-primary)] border border-[var(--pd-border-hover)] shadow-sm font-semibold"
+                    : "text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] hover:bg-[var(--pd-surface-raised)]/50"
                 )}
               >
-                <span className={cn('text-[11px]', isActive ? 'text-[var(--pd-ai)] font-bold' : 'text-[var(--pd-text-faint)]')}>
+                <span className={cn("text-[11px]", isActive ? "text-[var(--pd-ai)] font-bold" : "text-[var(--pd-text-faint)]")}>
                   {scene.number}
                 </span>
                 <SceneIcon className="w-3.5 h-3.5" />
@@ -188,7 +193,7 @@ export function ProjectUnderstandView({
         </nav>
 
         <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-[var(--pd-text-muted)]">
-          <kbd className="px-1.5 py-0.5 rounded bg-[var(--pd-surface-raised)] border border-[var(--pd-border)]">1-4</kbd>
+          <kbd className="px-1.5 py-0.5 rounded bg-[var(--pd-surface-raised)] border border-[var(--pd-border)]">1-3</kbd>
           <span>or</span>
           <kbd className="px-1.5 py-0.5 rounded bg-[var(--pd-surface-raised)] border border-[var(--pd-border)]">&larr;</kbd>
           <kbd className="px-1.5 py-0.5 rounded bg-[var(--pd-surface-raised)] border border-[var(--pd-border)]">&rarr;</kbd>
@@ -196,141 +201,98 @@ export function ProjectUnderstandView({
         </div>
       </div>
 
-      {/* ─── 3. HORIZONTAL SCENE THEATER ─── */}
+      {/* ─── 3. INTERACTIVE SCENE SURFACE ─── */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeScene}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.22, ease: 'easeOut' }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
           className="min-h-[380px]"
         >
-          {/* SCENE 1: AUDIENCE */}
-          {activeScene === 'audience' && (
+          {/* SCENE 1: CAPABILITIES (FOCUSED EXPLORER) */}
+          {activeScene === "capabilities" && (
+            <FocusedCapabilityExplorer
+              modules={understanding.modules || []}
+              requirementsSummary={understanding.requirements_summary}
+              provenance={understanding.provenance}
+              artifacts={project.artifacts || []}
+              onInspectArtifact={onInspectArtifact}
+            />
+          )}
+
+          {/* SCENE 2: TARGET AUDIENCE */}
+          {activeScene === "audience" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between px-1">
                 <span className="text-xs font-mono uppercase tracking-wider text-[var(--pd-text-muted)] font-medium">
-                  01 / Target Audience &amp; Beneficiaries
+                  Target Audience &amp; Beneficiaries
                 </span>
                 <span className="text-xs font-mono text-[var(--pd-text-muted)]">
-                  {understanding.target_users?.length || 0} identified personas
+                  {understanding.target_users?.length || 0} identified persona{understanding.target_users?.length === 1 ? "" : "s"}
                 </span>
               </div>
 
               {understanding.target_users && understanding.target_users.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {understanding.target_users.map((user, idx) => {
-                    const isHovered = hoveredCardId === `user-${idx}`;
+                    // Match document citation for this persona
+                    const prov = userProvList.find(
+                      (p) => String(p.value).trim().toLowerCase() === String(user).trim().toLowerCase()
+                    );
+                    const matchedArt = prov?.artifact_id
+                      ? (project.artifacts || []).find((a) => a.id === prov.artifact_id)
+                      : null;
+
                     return (
-                      <motion.div
+                      <div
                         key={idx}
-                        whileHover={{ y: -6, scale: 1.015 }}
-                        transition={{ duration: 0.18 }}
-                        onMouseEnter={() => setHoveredCardId(`user-${idx}`)}
-                        onMouseLeave={() => setHoveredCardId(null)}
-                        className={cn(
-                          'group relative bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 sm:p-7 flex flex-col justify-between min-h-[220px] transition-all duration-200 cursor-default',
-                          'hover:border-[var(--pd-ai)]/40 hover:shadow-pd-glow-violet',
-                          hoveredCardId && !isHovered ? 'opacity-65' : 'opacity-100'
-                        )}
+                        className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 flex flex-col justify-between min-h-[220px] shadow-pd-card"
                       >
                         <div className="space-y-3">
-                          <div className="w-10 h-10 rounded-xl bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] flex items-center justify-center text-[var(--pd-text-muted)] group-hover:text-[var(--pd-ai)] group-hover:border-[var(--pd-ai)]/30 transition-colors">
+                          <div className="w-10 h-10 rounded-xl bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] flex items-center justify-center text-[var(--pd-ai)]">
                             <Users className="w-5 h-5" />
                           </div>
 
-                          <h3 className="text-lg sm:text-xl font-semibold text-[var(--pd-text-primary)] leading-tight">
-                            {user}
-                          </h3>
-
-                          <p className="text-xs sm:text-sm text-[var(--pd-text-body)] leading-relaxed">
-                            {isHovered
-                              ? `Identified from uploaded specifications as an intended operator or beneficiary of ${project.title}.`
-                              : `Primary user class identified in project scope.`}
-                          </p>
-                        </div>
-
-                        <div className="pt-3 border-t border-[var(--pd-border)] flex items-center justify-between text-xs font-mono text-[var(--pd-text-muted)]">
-                          <span>Target User Class</span>
-                          <span className="opacity-0 group-hover:opacity-100 text-[var(--pd-ai)] transition-opacity">↗</span>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              ) : (
-                /* Meaningful Empty State: Never fabricate personas */
-                <div className="p-8 sm:p-10 rounded-2xl bg-[var(--pd-surface)] border border-[var(--pd-border)] space-y-3 max-w-2xl">
-                  <div className="flex items-center gap-2.5 text-[var(--pd-amber)]">
-                    <HelpCircle className="w-5 h-5" />
-                    <h3 className="text-base sm:text-lg font-semibold text-[var(--pd-text-primary)]">
-                      Target audience isn&apos;t clearly defined yet.
-                    </h3>
-                  </div>
-                  <p className="text-sm font-sans text-[var(--pd-text-body)] leading-relaxed">
-                    Project Doctor couldn&apos;t identify a specific audience from the supplied project documents.
-                  </p>
-                  <p className="text-xs font-mono text-[var(--pd-text-muted)] pt-2 border-t border-[var(--pd-border)]">
-                    Tip: Add a dedicated &quot;User Classes and Characteristics&quot; section to your SRS to ground evaluation.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* SCENE 2: CAPABILITIES */}
-          {activeScene === 'capabilities' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between px-1">
-                <span className="text-xs font-mono uppercase tracking-wider text-[var(--pd-text-muted)] font-medium">
-                  02 / Claimed System Capabilities
-                </span>
-                <span className="text-xs font-mono text-[var(--pd-text-muted)]">
-                  {understanding.modules?.length || 0} core capabilities
-                </span>
-              </div>
-
-              {understanding.modules && understanding.modules.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                  {understanding.modules.map((mod, idx) => {
-                    const isHovered = hoveredCardId === `mod-${idx}`;
-                    return (
-                      <motion.div
-                        key={idx}
-                        whileHover={{ y: -6, scale: 1.015 }}
-                        transition={{ duration: 0.18 }}
-                        onMouseEnter={() => setHoveredCardId(`mod-${idx}`)}
-                        onMouseLeave={() => setHoveredCardId(null)}
-                        className={cn(
-                          'group relative bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 sm:p-7 flex flex-col justify-between min-h-[220px] transition-all duration-200 cursor-default',
-                          'hover:border-[var(--pd-ai)]/40 hover:shadow-pd-glow-violet',
-                          hoveredCardId && !isHovered ? 'opacity-65' : 'opacity-100'
-                        )}
-                      >
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-mono px-2 py-0.5 rounded bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] text-[var(--pd-text-muted)]">
-                              Capability {idx + 1}
+                          <div className="space-y-1">
+                            <span className="text-xs font-mono uppercase tracking-wider text-[var(--pd-text-muted)]">
+                              Persona {idx + 1}
                             </span>
+                            <h3 className="text-lg font-semibold text-[var(--pd-text-primary)] leading-tight">
+                              {user}
+                            </h3>
                           </div>
 
-                          <h3 className="text-lg sm:text-xl font-semibold text-[var(--pd-text-primary)] leading-snug">
-                            {mod}
-                          </h3>
-
-                          <p className="text-xs sm:text-sm text-[var(--pd-text-body)] leading-relaxed">
-                            {isHovered && understanding.requirements_summary
-                              ? understanding.requirements_summary
-                              : `Extracted capability area verified against candidate implementation evidence.`}
+                          <p className="text-xs font-sans text-[var(--pd-text-body)] leading-relaxed">
+                            Intended operator or beneficiary identified from project documentation.
                           </p>
                         </div>
 
-                        <div className="pt-3 border-t border-[var(--pd-border)] flex items-center justify-between text-xs font-mono text-[var(--pd-text-muted)]">
-                          <span>{isHovered ? 'Specification Provenance' : 'Verified in Review Desk'}</span>
-                          <span className="opacity-0 group-hover:opacity-100 text-[var(--pd-ai)] transition-opacity">↗</span>
+                        <div className="pt-3 border-t border-[var(--pd-border)] space-y-2">
+                          {prov ? (
+                            <div className="flex items-center justify-between text-xs font-mono text-[var(--pd-text-muted)]">
+                              <span className="truncate max-w-[180px]" title={matchedArt?.original_filename || "Specification"}>
+                                Source: {matchedArt?.original_filename || "Specification"}
+                              </span>
+                              {prov.artifact_id && onInspectArtifact && (
+                                <button
+                                  type="button"
+                                  onClick={() => onInspectArtifact(prov.artifact_id)}
+                                  className="text-[var(--pd-ai)] hover:text-white transition-colors flex items-center gap-1 shrink-0"
+                                >
+                                  <span>View</span>
+                                  <ExternalLink className="w-3 h-3" />
+                                </button>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-xs font-mono text-[var(--pd-text-muted)]">
+                              Source: Project description
+                            </span>
+                          )}
                         </div>
-                      </motion.div>
+                      </div>
                     );
                   })}
                 </div>
@@ -339,56 +301,59 @@ export function ProjectUnderstandView({
                   <div className="flex items-center gap-2.5 text-[var(--pd-amber)]">
                     <HelpCircle className="w-5 h-5" />
                     <h3 className="text-base sm:text-lg font-semibold text-[var(--pd-text-primary)]">
-                      Capabilities not explicitly extracted.
+                      Target audience is not clearly defined yet
                     </h3>
                   </div>
                   <p className="text-sm font-sans text-[var(--pd-text-body)] leading-relaxed">
-                    No functional modules or system capabilities were identified in uploaded specifications.
+                    Project Doctor could not identify specific user classes or intended beneficiaries from your supplied documents.
+                  </p>
+                  <p className="text-xs font-mono text-[var(--pd-text-muted)] pt-2 border-t border-[var(--pd-border)]">
+                    Tip: Add a dedicated &quot;User Classes &amp; Characteristics&quot; section to your SRS to ground technical evaluation.
                   </p>
                 </div>
               )}
             </div>
           )}
 
-          {/* SCENE 3: ARCHITECTURE (Strictly Evidence-Backed: Never Invented) */}
-          {activeScene === 'architecture' && (
-            <div className="space-y-4">
+          {/* SCENE 3: ARCHITECTURE & TECHNOLOGY */}
+          {activeScene === "architecture" && (
+            <div className="space-y-5">
               <div className="flex items-center justify-between px-1">
                 <span className="text-xs font-mono uppercase tracking-wider text-[var(--pd-text-muted)] font-medium">
-                  03 / Architecture Topology &amp; Component Boundaries
+                  Documented System Architecture &amp; Technology Stack
                 </span>
                 <span className="text-xs font-mono text-[var(--pd-text-muted)]">
-                  Strictly deterministic evidence
+                  Evidence-backed structure
                 </span>
               </div>
 
               {understanding.architecture_overview || project.architecture_summary ? (
                 <div className="space-y-4">
-                  {/* Authentic Architecture Statement */}
-                  <div className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 sm:p-8 space-y-3">
-                    <div className="flex items-center gap-2 text-xs font-mono text-[var(--pd-text-muted)] uppercase tracking-wider">
+                  {/* Architecture Topology Statement */}
+                  <div className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 sm:p-7 space-y-3 shadow-pd-card">
+                    <div className="flex items-center gap-2 text-xs font-mono text-[var(--pd-text-muted)] uppercase tracking-wider font-semibold">
                       <Server className="w-4 h-4 text-[var(--pd-ai)]" />
                       <span>Documented System Architecture</span>
                     </div>
 
-                    <p className="text-base sm:text-lg font-sans text-[var(--pd-text-body)] leading-relaxed">
+                    <p className="text-base font-sans text-[var(--pd-text-body)] leading-relaxed">
                       {understanding.architecture_overview || project.architecture_summary}
                     </p>
                   </div>
 
-                  {/* Discrete Components if Supported (NO INVENTED ARROWS) */}
+                  {/* Discrete Dependencies & Hosting if Available */}
                   {(understanding.dependencies?.length > 0 || understanding.deployment) && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {understanding.dependencies && understanding.dependencies.length > 0 && (
                         <div className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-xl p-5 space-y-2">
                           <span className="text-xs font-mono text-[var(--pd-text-muted)] uppercase tracking-wider">
-                            Documented Dependencies
+                            Documented Dependencies &amp; External Services
                           </span>
                           <div className="flex flex-wrap gap-2 pt-1">
                             {understanding.dependencies.map((dep, idx) => (
                               <span
                                 key={idx}
-                                className="px-2.5 py-1 rounded-lg bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] text-xs font-mono text-[var(--pd-text-body)]"
+                                className="px-2.5 py-1 rounded-lg bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] text-xs font-mono text-[var(--pd-text-primary)]"
                               >
                                 {dep}
                               </span>
@@ -409,88 +374,42 @@ export function ProjectUnderstandView({
                       )}
                     </div>
                   )}
+
+                  {/* Technology Stack Grid */}
+                  <div className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 space-y-3 shadow-pd-card">
+                    <div className="flex items-center gap-2 text-xs font-mono text-[var(--pd-text-muted)] uppercase tracking-wider font-semibold">
+                      <Cpu className="w-4 h-4 text-[var(--pd-ai)]" />
+                      <span>Detected Technology Stack</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {(understanding.tech_stack?.length
+                        ? understanding.tech_stack
+                        : project.tech_stack || []
+                      ).map((tech, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1.5 rounded-xl bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] text-xs font-mono text-[var(--pd-text-primary)] font-medium"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ) : (
-                /* Honest Missing Topology State: Never invent Frontend -> API -> Database */
                 <div className="p-8 sm:p-10 rounded-2xl bg-[var(--pd-surface)] border border-[var(--pd-border)] space-y-3 max-w-2xl">
                   <div className="flex items-center gap-2.5 text-[var(--pd-amber)]">
                     <ShieldAlert className="w-5 h-5" />
                     <h3 className="text-base sm:text-lg font-semibold text-[var(--pd-text-primary)]">
-                      Architecture topology isn&apos;t clearly defined in the supplied project evidence.
+                      Architecture topology is not explicitly detailed
                     </h3>
                   </div>
                   <p className="text-sm font-sans text-[var(--pd-text-body)] leading-relaxed">
-                    Project Doctor could not locate an explicit architectural topology or component relationship map
-                    in your uploaded documents.
+                    Project Doctor could not locate an explicit architectural topology or component relationship map in your uploaded documents.
                   </p>
                   <p className="text-xs font-mono text-[var(--pd-text-muted)] pt-2 border-t border-[var(--pd-border)]">
-                    Tip: Add a system architecture diagram or component overview section to your project documentation.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* SCENE 4: TECHNOLOGY */}
-          {activeScene === 'technology' && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between px-1">
-                <span className="text-xs font-mono uppercase tracking-wider text-[var(--pd-text-muted)] font-medium">
-                  04 / Detected Technology Stack &amp; Runtime Tools
-                </span>
-                <span className="text-xs font-mono text-[var(--pd-text-muted)]">
-                  {understanding.tech_stack?.length || project.tech_stack?.length || 0} technologies
-                </span>
-              </div>
-
-              {(understanding.tech_stack && understanding.tech_stack.length > 0) ||
-              (project.tech_stack && project.tech_stack.length > 0) ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                  {(understanding.tech_stack?.length ? understanding.tech_stack : project.tech_stack || []).map(
-                    (tech, idx) => {
-                      const isHovered = hoveredCardId === `tech-${idx}`;
-                      return (
-                        <motion.div
-                          key={idx}
-                          whileHover={{ y: -6, scale: 1.015 }}
-                          transition={{ duration: 0.18 }}
-                          onMouseEnter={() => setHoveredCardId(`tech-${idx}`)}
-                          onMouseLeave={() => setHoveredCardId(null)}
-                          className={cn(
-                            'group relative bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 flex flex-col justify-between min-h-[160px] transition-all duration-200 cursor-default',
-                            'hover:border-[var(--pd-ai)]/40 hover:shadow-pd-glow-violet',
-                            hoveredCardId && !isHovered ? 'opacity-65' : 'opacity-100'
-                          )}
-                        >
-                          <div className="space-y-2">
-                            <div className="w-8 h-8 rounded-lg bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] flex items-center justify-center text-[var(--pd-text-muted)] group-hover:text-[var(--pd-ai)] transition-colors">
-                              <Cpu className="w-4 h-4" />
-                            </div>
-
-                            <h3 className="text-base font-semibold text-[var(--pd-text-primary)]">
-                              {tech}
-                            </h3>
-                          </div>
-
-                          <div className="pt-2 border-t border-[var(--pd-border)] flex items-center justify-between text-xs font-mono text-[var(--pd-text-muted)]">
-                            <span>{isHovered ? 'Extracted Stack Item' : 'Runtime Stack'}</span>
-                            <span className="opacity-0 group-hover:opacity-100 text-[var(--pd-ai)] transition-opacity">↗</span>
-                          </div>
-                        </motion.div>
-                      );
-                    }
-                  )}
-                </div>
-              ) : (
-                <div className="p-8 sm:p-10 rounded-2xl bg-[var(--pd-surface)] border border-[var(--pd-border)] space-y-3 max-w-2xl">
-                  <div className="flex items-center gap-2.5 text-[var(--pd-amber)]">
-                    <HelpCircle className="w-5 h-5" />
-                    <h3 className="text-base sm:text-lg font-semibold text-[var(--pd-text-primary)]">
-                      Technology stack not specified.
-                    </h3>
-                  </div>
-                  <p className="text-sm font-sans text-[var(--pd-text-body)] leading-relaxed">
-                    No programming languages or frameworks were explicitly identified in the documentation.
+                    Tip: Add a system architecture section or component diagram description to your project documentation.
                   </p>
                 </div>
               )}
@@ -498,6 +417,28 @@ export function ProjectUnderstandView({
           )}
         </motion.div>
       </AnimatePresence>
+
+      {/* ─── 4. BOTTOM FORWARD CALL TO ACTION ─── */}
+      {onOpenAnalysis && (
+        <div className="pt-4 border-t border-[var(--pd-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 shadow-pd-card">
+          <div className="space-y-1">
+            <h4 className="text-base font-semibold text-[var(--pd-text-primary)]">
+              Ready to verify these claims against code?
+            </h4>
+            <p className="text-xs sm:text-sm text-[var(--pd-text-body)]">
+              Run technical analysis to compare stated capabilities and audience requirements with repository implementation evidence.
+            </p>
+          </div>
+
+          <Button
+            onClick={onOpenAnalysis}
+            className="gap-2 bg-white text-black hover:bg-slate-200 text-xs font-mono px-5 py-2.5 rounded-lg font-medium shadow-sm shrink-0 self-start sm:self-auto"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-violet-600" />
+            <span>Analyze Project</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

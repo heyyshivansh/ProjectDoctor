@@ -43,24 +43,10 @@ class TextExtractor(BaseDocumentExtractor):
                     error_message=f"Encoding error reading text file: {str(e)}",
                 )
 
-        sections: List[DocumentSection] = []
         is_markdown = file_path.lower().endswith(".md")
 
-        if is_markdown:
-            for match in self.HEADING_REGEX.finditer(text):
-                hashes, title = match.groups()
-                level = len(hashes)
-                start_char = match.start()
-                end_char = match.end()
-                sections.append(
-                    DocumentSection(
-                        title=title.strip()[:150],
-                        level=level,
-                        start_char=start_char,
-                        end_char=end_char,
-                        text_preview=title.strip()[:100],
-                    )
-                )
+        from app.services.documents.section_detector import detect_headings
+        sections = detect_headings(text)
 
         metadata = {
             "encoding": encoding_used,

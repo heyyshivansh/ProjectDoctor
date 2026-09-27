@@ -3,10 +3,10 @@ import { useParams, Link, useSearchParams } from "react-router-dom";
 import { getProject } from "@/services/projects";
 import {
   getProjectDiagnosis,
-  generateProjectDiagnosis,
   getFindingDetail,
 } from "@/services/diagnosis";
-import { ProjectDetail } from "@/types/project";
+import { ProjectDetail, Artifact } from "@/types/project";
+import { DocumentExtraction } from "@/types/document";
 import {
   ProjectDiagnosis,
   FindingSummary,
@@ -23,14 +23,22 @@ import { VerifiedStrengthsShowcase } from "@/components/desk/VerifiedStrengthsSh
 import { SourceEvidenceDrawer } from "@/components/evidence/SourceEvidenceDrawer";
 import { ProjectOverviewView } from "@/components/overview/ProjectOverviewView";
 import { ProjectUnderstandView } from "@/components/understanding/ProjectUnderstandView";
+import { ExtractedTextViewerModal } from "@/components/documents/ExtractedTextViewerModal";
 
 import { getRepository } from "@/services/repository";
 import {
   getProjectUnderstanding,
   generateProjectUnderstanding,
+  getArtifactExtraction,
 } from "@/services/documents";
+import {
+  getProjectAnalysisStatus,
+  triggerProjectAnalysis,
+} from "@/services/analysis";
 import { RepositoryConnection } from "@/types/repository";
 import { ProjectUnderstanding } from "@/types/understanding";
+import { AnalysisStatusResponse } from "@/types/analysis";
+import { AnalysisWorkspaceModal } from "@/components/analysis/AnalysisWorkspaceModal";
 
 import { Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -52,7 +60,13 @@ export const ReviewDeskPage: React.FC = () => {
   const [diagnosis, setDiagnosis] = useState<ProjectDiagnosis | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [isReevaluating, setIsReevaluating] = useState(false);
+
+  // Feature 2: Analysis Orchestration State
+  const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatusResponse | null>(null);
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(
+    searchParams.get("analysis") === "true"
+  );
+  const [isStartingAnalysis, setIsStartingAnalysis] = useState(false);
 
   // Active navigation tab: "overview" | "understand" | "diagnosis"
   const activeSection = searchParams.get("tab") || "overview";
@@ -86,6 +100,35 @@ export const ReviewDeskPage: React.FC = () => {
   const [isGeneratingUnderstanding, setIsGeneratingUnderstanding] = useState(false);
   const [understandingError, setUnderstandingError] = useState<string | null>(null);
   const [repoConnection, setRepoConnection] = useState<RepositoryConnection | null>(null);
+
+  // Document Text Viewer Modal State
+  const [viewingArtifactModal, setViewingArtifactModal] = useState<{
+    artifact: Artifact;
+    extraction: DocumentExtraction;
+  } | null>(null);
+
+  const handleInspectArtifact = async (artifactId: string) => {
+    if (!projectId || !project) return;
+    const art = project.artifacts?.find((a) => a.id === artifactId) || ({
+      id: artifactId,
+      project_id: projectId,
+      stored_filename: artifactId,
+      original_filename: "Specification Document",
+      file_type: "document",
+      mime_type: "application/pdf",
+      file_size_bytes: 0,
+      status: "uploaded",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    } as unknown as Artifact);
+
+    try {
+      const extraction = await getArtifactExtraction(projectId, artifactId);
+      setViewingArtifactModal({ artifact: art, extraction });
+    } catch (err) {
+      console.error("Failed to load artifact extraction:", err);
+    }
+  };
 
   // Initial Load: Project, Diagnosis, Repository & Understanding in parallel (strictly read-only)
   const loadDeskData = useCallback(async () => {
@@ -171,19 +214,89 @@ export const ReviewDeskPage: React.FC = () => {
     };
   }, [projectId, activeFinding]);
 
-  // Re-evaluation Handler
-  const handleReevaluate = async () => {
+  // Analysis status refresh and polling
+  const refreshAnalysisStatus = useCallback(async () => {
     if (!projectId) return;
-    setIsReevaluating(true);
     try {
-      const res = await generateProjectDiagnosis(projectId, true);
-      setDiagnosis(res.diagnosis);
-      setActiveFindingIndex(0);
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to regenerate diagnosis");
-    } finally {
-      setIsReevaluating(false);
+      const status = await getProjectAnalysisStatus(projectId);
+      setAnalysisStatus(status);
+    } catch {
+      setAnalysisStatus(null);
     }
+  }, [projectId]);
+
+  useEffect(() => {
+    refreshAnalysisStatus();
+  }, [refreshAnalysisStatus]);
+
+  // Active polling when analysis is running
+  useEffect(() => {
+    if (!projectId) return;
+    if (analysisStatus?.status !== "running") return;
+
+    const interval = setInterval(async () => {
+      try {
+        const latest = await getProjectAnalysisStatus(projectId);
+        setAnalysisStatus(latest);
+        if (latest.status === "completed") {
+          const [diagResult, undResult] = await Promise.allSettled([
+            getProjectDiagnosis(projectId),
+            getProjectUnderstanding(projectId),
+          ]);
+          if (diagResult.status === "fulfilled") setDiagnosis(diagResult.value);
+          if (undResult.status === "fulfilled") setUnderstanding(undResult.value);
+        }
+      } catch (err) {
+        console.error("Failed to poll analysis status", err);
+      }
+    }, 1500);
+
+    return () => clearInterval(interval);
+  }, [projectId, analysisStatus?.status]);
+
+  // Action: Trigger full 7-stage project evaluation
+  const handleStartAnalysis = async (force: boolean = false) => {
+    if (!projectId) return;
+    setIsAnalysisModalOpen(true);
+    setIsStartingAnalysis(true);
+    try {
+      const initial = await triggerProjectAnalysis(projectId, force);
+      setAnalysisStatus(initial);
+    } catch (err) {
+      console.error("Failed to trigger project analysis", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to start project evaluation.";
+
+      const isPreflight =
+        errorMessage.toLowerCase().includes("repository") ||
+        errorMessage.toLowerCase().includes("documentation") ||
+        errorMessage.toLowerCase().includes("prerequisite");
+
+      setAnalysisStatus((prev) => ({
+        project_id: projectId,
+        project_title: project?.title || "your project",
+        status: isPreflight ? "insufficient_evidence" : "failed",
+        current_stage: null,
+        current_stage_label: null,
+        stages: prev?.stages || [],
+        is_stale: false,
+        stale_reason: null,
+        critical_count: prev?.critical_count || 0,
+        needs_attention_count: prev?.needs_attention_count || 0,
+        strengths_count: prev?.strengths_count || 0,
+        analyzed_at: prev?.analyzed_at || null,
+        commit_sha: prev?.commit_sha || null,
+        message: errorMessage,
+        ai_status: prev?.ai_status || null,
+      }));
+    } finally {
+      setIsStartingAnalysis(false);
+    }
+  };
+
+  const handleReviewFindings = () => {
+    setIsAnalysisModalOpen(false);
+    setActiveSection("diagnosis");
   };
 
   if (isLoading) {
@@ -216,8 +329,9 @@ export const ReviewDeskPage: React.FC = () => {
       <ReviewDeskHeader
         projectTitle={project.title}
         diagnosisStatus={diagnosis?.status}
-        isReevaluating={isReevaluating}
-        onReevaluate={handleReevaluate}
+        analysisStatus={analysisStatus}
+        isAnalyzing={analysisStatus?.status === "running" || isStartingAnalysis}
+        onAnalyze={() => handleStartAnalysis(analysisStatus?.is_stale || false)}
         activeSection={activeSection}
         onNavigate={setActiveSection}
       />
@@ -230,9 +344,12 @@ export const ReviewDeskPage: React.FC = () => {
             repoConnection={repoConnection}
             understanding={understanding}
             diagnosis={diagnosis}
+            analysisStatus={analysisStatus}
+            onOpenAnalysis={() => handleStartAnalysis(analysisStatus?.is_stale || false)}
             onNavigate={setActiveSection}
             onGenerateUnderstanding={handleGenerateUnderstanding}
             isGeneratingUnderstanding={isGeneratingUnderstanding}
+            onInspectArtifact={handleInspectArtifact}
           />
         )}
 
@@ -244,14 +361,20 @@ export const ReviewDeskPage: React.FC = () => {
             isGenerating={isGeneratingUnderstanding}
             error={understandingError}
             onGenerateUnderstanding={handleGenerateUnderstanding}
+            onInspectArtifact={handleInspectArtifact}
+            onOpenAnalysis={() => handleStartAnalysis(analysisStatus?.is_stale || false)}
           />
         )}
 
         {/* VIEW 3: DIAGNOSIS & REVIEW DESK */}
         {activeSection === "diagnosis" && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            {/* Triage Status Header: What needs attention without repeated project identity */}
-            <DiagnosisTriageHeader diagnosis={diagnosis} />
+            {/* Triage Status Header */}
+            <DiagnosisTriageHeader
+              diagnosis={diagnosis}
+              analysisStatus={analysisStatus}
+              onReanalyze={() => handleStartAnalysis(true)}
+            />
 
             {/* Dominant Key Finding Investigation Workspace */}
             {sortedFindings.length > 0 ? (
@@ -265,7 +388,9 @@ export const ReviewDeskPage: React.FC = () => {
             ) : (
               <div className="p-10 text-center rounded-2xl bg-[var(--pd-surface)] border border-[var(--pd-border)] space-y-3">
                 <p className="text-lg font-sans font-semibold text-[var(--pd-text-primary)]">No findings generated yet.</p>
-                <p className="text-sm font-mono text-[var(--pd-text-muted)]">Click &ldquo;Re-evaluate&rdquo; in the top bar to analyze this project.</p>
+                <p className="text-sm font-mono text-[var(--pd-text-muted)]">
+                  Click &ldquo;Analyze Project&rdquo; in the top bar to evaluate your documentation and repository.
+                </p>
               </div>
             )}
 
@@ -274,7 +399,6 @@ export const ReviewDeskPage: React.FC = () => {
               <VerifiedStrengthsShowcase
                 strengths={diagnosis.strengths}
                 onOpenEvidence={(strength) => {
-                  // If the strength exists in sorted findings, activate it and open evidence drawer
                   const matchIndex = sortedFindings.findIndex(f => f.id === strength.id);
                   if (matchIndex !== -1) {
                     setActiveFindingIndex(matchIndex);
@@ -293,6 +417,28 @@ export const ReviewDeskPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Feature 2: Focused Analysis Workspace Modal */}
+      <AnalysisWorkspaceModal
+        isOpen={isAnalysisModalOpen}
+        onClose={() => setIsAnalysisModalOpen(false)}
+        statusResponse={analysisStatus}
+        onReviewFindings={handleReviewFindings}
+        onRetry={() => handleStartAnalysis(true)}
+        isStarting={isStartingAnalysis}
+      />
+
+      {/* Document Text Viewer Modal */}
+      {viewingArtifactModal && (
+        <ExtractedTextViewerModal
+          projectId={projectId!}
+          artifactId={viewingArtifactModal.artifact.id}
+          artifactName={viewingArtifactModal.artifact.original_filename}
+          extraction={viewingArtifactModal.extraction}
+          isOpen={Boolean(viewingArtifactModal)}
+          onClose={() => setViewingArtifactModal(null)}
+        />
+      )}
     </ReviewDeskLayout>
   );
 };

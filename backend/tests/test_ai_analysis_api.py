@@ -139,3 +139,66 @@ def test_get_ai_analysis_by_id_not_found_returns_404(client, project_with_requir
     res = client.get(f"/api/projects/{project_with_requirements.id}/ai-analysis/{random_id}")
     assert res.status_code == 404
     assert "not found" in res.json()["detail"].lower()
+
+
+def test_retry_ai_analysis_without_findings_returns_400(client, project_with_requirements):
+    """Retrying AI evaluation without existing deterministic findings returns 400."""
+    res = client.post(f"/api/projects/{project_with_requirements.id}/ai-analysis/retry")
+    assert res.status_code == 400
+    assert "requires deterministic diagnosis findings" in res.json()["detail"]
+
+
+def test_retry_ai_analysis_success_with_findings(client, db_session, project_with_requirements):
+    """Retrying AI evaluation with findings succeeds and executes freshly."""
+    from app.models.finding import Finding
+
+    p_id = project_with_requirements.id
+    finding = Finding(
+        project_id=p_id,
+        finding_type="requirement_gap",
+        severity="major",
+        title="Unverified Core Requirement",
+        summary="Requirement lacks code evidence",
+        why_it_matters="Core functionality is unverifiable",
+        finding_hash="test_finding_hash_123",
+        evidence_references=[],
+        technical_details={},
+    )
+    db_session.add(finding)
+    db_session.commit()
+
+    res = client.post(f"/api/projects/{p_id}/ai-analysis/retry")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "completed"
+    assert data["cached"] is False
+    assert data["analysis"]["result"] is not None
+
+
+def test_retry_ai_analysis_concurrent_lock_returns_409(client, db_session, project_with_requirements):
+    """Retrying AI evaluation while a retry is already in progress returns 409 Conflict."""
+    from app.models.finding import Finding
+    from app.services.ai.service import AIAnalysisService
+
+    p_id = project_with_requirements.id
+    finding = Finding(
+        project_id=p_id,
+        finding_type="requirement_gap",
+        severity="major",
+        title="Unverified Core Requirement",
+        summary="Requirement lacks code evidence",
+        why_it_matters="Core functionality is unverifiable",
+        finding_hash="test_finding_hash_456",
+        evidence_references=[],
+        technical_details={},
+    )
+    db_session.add(finding)
+    db_session.commit()
+
+    AIAnalysisService._ACTIVE_RETRIES.add(p_id)
+    try:
+        res = client.post(f"/api/projects/{p_id}/ai-analysis/retry")
+        assert res.status_code == 409
+        assert "already" in res.json()["detail"].lower()
+    finally:
+        AIAnalysisService._ACTIVE_RETRIES.discard(p_id)

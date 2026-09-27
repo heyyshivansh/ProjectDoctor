@@ -1,11 +1,14 @@
+import threading
 import uuid
-from typing import List, Optional, Tuple
+from typing import List, Optional, Set, Tuple
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.models.project import Project
 from app.models.github_repository import GitHubRepository, RepositorySnapshot
 from app.models.requirement import Requirement
+from app.models.finding import Finding
 from app.models.ai_analysis import AIAnalysis
 from app.schemas.ai_analysis import (
     AIAnalysisResult,
@@ -13,14 +16,19 @@ from app.schemas.ai_analysis import (
     AIAnalysisSummaryItem,
 )
 from app.services.analysis.ai_evidence_builder import AIEvidencePackageBuilder
+from app.services.analysis.ai_evidence_selector import AIEvidenceSelector
 from app.services.analysis.evidence_hasher import compute_evidence_hash
 from app.services.analysis.citation_validator import CitationValidator
 from app.services.ai.base import BaseAIProvider
 from app.services.ai.gemini_client import GeminiProvider, PROMPT_VERSION_V1
+from app.services.ai.factory import get_configured_ai_provider
 
 
 class AIAnalysisService:
     """Orchestrates evidence packaging, canonical hashing, caching, reasoning, and persistence."""
+
+    _ACTIVE_RETRIES: Set[uuid.UUID] = set()
+    _RETRY_LOCK = threading.Lock()
 
     @classmethod
     def get_analysis(
@@ -223,24 +231,35 @@ class AIAnalysisService:
                     True,
                 )
 
-        # 5. Invoke provider reasoning
-        active_provider = provider or GeminiProvider()
-        ai_result = active_provider.analyze_project(
+        # 5. Bound evidence package within configured AI input budget
+        bounded_evidence = AIEvidenceSelector.select_bounded_evidence(
             evidence=evidence_package,
+            max_input_tokens=settings.AI_INPUT_MAX_TOKENS,
+        )
+
+        # 6. Invoke provider reasoning with bounded evidence
+        active_provider = provider or get_configured_ai_provider()
+        ai_result = active_provider.analyze_project(
+            evidence=bounded_evidence,
             prompt_version=prompt_version,
         )
 
-        # 6. Validate citation integrity against the actual evidence package
-        CitationValidator.validate_citation_integrity(ai_result, evidence_package)
+        # 7. Validate citation integrity against the actual bounded evidence package
+        CitationValidator.validate_citation_integrity(ai_result, bounded_evidence)
 
-        # 7. Persist atomic analysis record
+        succeeded_model = (
+            getattr(active_provider, "last_succeeded_model", None)
+            or getattr(active_provider, "model_name", None)
+            or "unknown"
+        )
+
         new_analysis = AIAnalysis(
             project_id=project_id,
             snapshot_id=snapshot.id if snapshot else None,
             commit_sha=snapshot.commit_sha if snapshot else None,
             status="completed",
             model_provider=getattr(active_provider, "provider_name", "gemini"),
-            model_name=getattr(active_provider, "model_name", "gemini-3.8-flash"),
+            model_name=succeeded_model,
             prompt_version=prompt_version,
             evidence_hash=ev_hash,
             analysis_summary=ai_result.analysis_summary,
@@ -336,3 +355,67 @@ class AIAnalysisService:
             )
             for a in records
         ]
+
+    @classmethod
+    def retry_analysis(
+        cls,
+        db: Session,
+        project_id: uuid.UUID,
+        snapshot_id: Optional[uuid.UUID] = None,
+        provider: Optional[BaseAIProvider] = None,
+        prompt_version: str = PROMPT_VERSION_V1,
+    ) -> Tuple[AIAnalysisResponse, bool]:
+        """
+        Explicitly retry only the AI evaluation stage over existing deterministic evidence.
+        Prevents duplicate concurrent retries for the same project.
+        """
+        with cls._RETRY_LOCK:
+            if project_id in cls._ACTIVE_RETRIES:
+                raise ValueError("An AI evaluation is already actively running for this project.")
+            cls._ACTIVE_RETRIES.add(project_id)
+
+        try:
+            project = db.get(Project, project_id)
+            if not project:
+                raise ValueError(f"Project '{project_id}' not found.")
+
+            has_findings = (
+                db.scalar(
+                    sa.select(sa.func.count(Finding.id)).where(Finding.project_id == project_id)
+                )
+                > 0
+            )
+            if not has_findings:
+                raise ValueError(
+                    "Project Doctor requires deterministic diagnosis findings before running deeper AI evaluation. "
+                    "Please run full project analysis first."
+                )
+
+            analysis_resp, was_cached = cls.generate_analysis(
+                db=db,
+                project_id=project_id,
+                snapshot_id=snapshot_id,
+                force=True,
+                provider=provider,
+                prompt_version=prompt_version,
+            )
+
+            # Update in-memory orchestrator active run if tracked
+            from app.services.analysis.orchestrator import ProjectAnalysisOrchestrator
+            with ProjectAnalysisOrchestrator._LOCK:
+                run = ProjectAnalysisOrchestrator._ACTIVE_ANALYSES.get(project_id)
+                if run:
+                    run["ai_status"] = "completed"
+
+            return analysis_resp, was_cached
+
+        except Exception as exc:
+            from app.services.analysis.orchestrator import ProjectAnalysisOrchestrator
+            with ProjectAnalysisOrchestrator._LOCK:
+                run = ProjectAnalysisOrchestrator._ACTIVE_ANALYSES.get(project_id)
+                if run:
+                    run["ai_status"] = "unavailable"
+            raise
+        finally:
+            with cls._RETRY_LOCK:
+                cls._ACTIVE_RETRIES.discard(project_id)

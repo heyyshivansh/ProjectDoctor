@@ -23,6 +23,10 @@ from app.services.ai.base import (
 class MockAIProvider(BaseAIProvider):
     """Deterministic, offline AI provider for automated testing."""
 
+    provider_name: str = "mock"
+    model_name: str = "mock-reasoning-model"
+    last_succeeded_model: Optional[str] = "mock-reasoning-model"
+
     def __init__(
         self,
         should_timeout: bool = False,
@@ -30,12 +34,16 @@ class MockAIProvider(BaseAIProvider):
         should_fail_schema: bool = False,
         should_fail_citation: bool = False,
         custom_result: Optional[AIAnalysisResult] = None,
+        model_name: str = "mock-reasoning-model",
     ):
         self.should_timeout = should_timeout
         self.should_rate_limit = should_rate_limit
         self.should_fail_schema = should_fail_schema
         self.should_fail_citation = should_fail_citation
         self.custom_result = custom_result
+        self.model_name = model_name
+        self.provider_name = "mock"
+        self.last_succeeded_model = model_name
         self.call_count = 0
 
     def analyze_project(

@@ -18,6 +18,7 @@ from app.models.traceability import (
     RequirementTraceabilityLink,
 )
 from app.models.finding import Finding
+from app.models.ai_analysis import AIAnalysis
 from app.schemas.finding import (
     FindingEvidenceReference,
     HydratedEvidenceItem,
@@ -213,16 +214,57 @@ class DiagnosticService:
 
         latest_analyzed = max((f.updated_at for f in all_findings), default=datetime.now(timezone.utc))
 
-        top_findings_list = [
-            FindingSummaryResponse.model_validate(f)
-            for f in findings_sorted
-            if f.severity != "strength"
-        ]
-        strengths_list = [
-            FindingSummaryResponse.model_validate(f)
-            for f in findings_sorted
-            if f.severity == "strength"
-        ]
+        # Check for completed or recent AI analysis
+        ai_stmt = sa.select(AIAnalysis).where(AIAnalysis.project_id == project_id)
+        if snapshot:
+            ai_stmt = ai_stmt.where(
+                sa.or_(AIAnalysis.snapshot_id == snapshot.id, AIAnalysis.snapshot_id.is_(None))
+            )
+        ai_stmt = ai_stmt.order_by(AIAnalysis.created_at.desc())
+        latest_ai = db.scalars(ai_stmt).first()
+
+        ai_status: Optional[str] = None
+        ai_summary: Optional[str] = None
+        ai_contradictions_count: int = 0
+        ai_evidence_gaps_count: int = 0
+        interp_lookup: Dict[str, Dict[str, Any]] = {}
+
+        if latest_ai:
+            ai_status = latest_ai.status
+            if latest_ai.status == "completed" and isinstance(latest_ai.structured_result, dict):
+                ai_summary = latest_ai.analysis_summary
+                contradictions = latest_ai.structured_result.get("contradictions") or []
+                ai_contradictions_count = len(contradictions)
+                gaps = latest_ai.structured_result.get("evidence_gaps") or []
+                ai_evidence_gaps_count = len(gaps)
+                for interp in (latest_ai.structured_result.get("diagnostic_interpretations") or []):
+                    if isinstance(interp, dict):
+                        fid = interp.get("finding_id")
+                        if fid:
+                            interp_lookup[str(fid)] = interp
+                        ftitle = (interp.get("finding_title") or "").strip().lower()
+                        if ftitle:
+                            interp_lookup[ftitle] = interp
+
+        top_findings_list: List[FindingSummaryResponse] = []
+        for f in findings_sorted:
+            if f.severity == "strength":
+                continue
+            dto = FindingSummaryResponse.model_validate(f)
+            match = interp_lookup.get(str(f.id)) or interp_lookup.get((f.title or "").strip().lower())
+            if match:
+                dto.ai_interpretation_snippet = match.get("project_context_impact")
+            top_findings_list.append(dto)
+
+        strengths_list: List[FindingSummaryResponse] = []
+        for f in findings_sorted:
+            if f.severity != "strength":
+                continue
+            dto = FindingSummaryResponse.model_validate(f)
+            match = interp_lookup.get(str(f.id)) or interp_lookup.get((f.title or "").strip().lower())
+            if match:
+                dto.ai_interpretation_snippet = match.get("project_context_impact")
+            strengths_list.append(dto)
 
         return ProjectDiagnosisResponse(
             project_id=project.id,
@@ -239,6 +281,10 @@ class DiagnosticService:
             needs_attention_count=needs_attention_count,
             improvements_count=improvements_count,
             strengths_count=strengths_count,
+            ai_status=ai_status,
+            ai_summary=ai_summary,
+            ai_contradictions_count=ai_contradictions_count,
+            ai_evidence_gaps_count=ai_evidence_gaps_count,
             top_findings=top_findings_list,
             strengths=strengths_list,
         )
@@ -861,6 +907,39 @@ class DiagnosticService:
             if ref.get("target_id")
         ]
 
+        # Check for matching AI interpretation
+        ai_interpretation_text: Optional[str] = None
+        ai_stmt = sa.select(AIAnalysis).where(
+            AIAnalysis.project_id == project_id,
+            AIAnalysis.status == "completed",
+        )
+        if finding.snapshot_id:
+            ai_stmt = ai_stmt.where(
+                sa.or_(AIAnalysis.snapshot_id == finding.snapshot_id, AIAnalysis.snapshot_id.is_(None))
+            )
+        ai_stmt = ai_stmt.order_by(AIAnalysis.created_at.desc())
+        latest_ai = db.scalars(ai_stmt).first()
+
+        if latest_ai and isinstance(latest_ai.structured_result, dict):
+            interps = latest_ai.structured_result.get("diagnostic_interpretations") or []
+            target_fid_str = str(finding.id)
+            target_title_norm = (finding.title or "").strip().lower()
+            for interp in interps:
+                if not isinstance(interp, dict):
+                    continue
+                fid = interp.get("finding_id")
+                ftitle = (interp.get("finding_title") or "").strip().lower()
+                if (fid and str(fid) == target_fid_str) or (ftitle and ftitle == target_title_norm):
+                    impact = interp.get("project_context_impact")
+                    uncertainty = interp.get("uncertainty_note")
+                    if impact and uncertainty:
+                        ai_interpretation_text = f"{impact}\n\nUncertainty Note: {uncertainty}"
+                    elif impact:
+                        ai_interpretation_text = impact
+                    elif uncertainty:
+                        ai_interpretation_text = f"Uncertainty Note: {uncertainty}"
+                    break
+
         return FindingDetailResponse(
             id=finding.id,
             project_id=finding.project_id,
@@ -872,6 +951,7 @@ class DiagnosticService:
             summary=finding.summary,
             why_it_matters=finding.why_it_matters,
             suggested_action=finding.suggested_action,
+            ai_interpretation=ai_interpretation_text,
             evidence_references=parsed_references,
             hydrated_evidence=hydrated_items,
             technical_details=finding.technical_details,
@@ -909,7 +989,37 @@ class DiagnosticService:
 
         stmt = stmt.order_by(Finding.created_at.desc()).offset(offset).limit(limit)
         findings = list(db.scalars(stmt).all())
-        return [FindingSummaryResponse.model_validate(f) for f in findings]
+
+        # Check for completed AI analysis
+        ai_stmt = sa.select(AIAnalysis).where(
+            AIAnalysis.project_id == project_id,
+            AIAnalysis.status == "completed",
+        )
+        if snapshot_id:
+            ai_stmt = ai_stmt.where(
+                sa.or_(AIAnalysis.snapshot_id == snapshot_id, AIAnalysis.snapshot_id.is_(None))
+            )
+        ai_stmt = ai_stmt.order_by(AIAnalysis.created_at.desc())
+        latest_ai = db.scalars(ai_stmt).first()
+        interp_lookup: Dict[str, Dict[str, Any]] = {}
+        if latest_ai and isinstance(latest_ai.structured_result, dict):
+            for interp in (latest_ai.structured_result.get("diagnostic_interpretations") or []):
+                if isinstance(interp, dict):
+                    fid = interp.get("finding_id")
+                    if fid:
+                        interp_lookup[str(fid)] = interp
+                    ftitle = (interp.get("finding_title") or "").strip().lower()
+                    if ftitle:
+                        interp_lookup[ftitle] = interp
+
+        result_list: List[FindingSummaryResponse] = []
+        for f in findings:
+            dto = FindingSummaryResponse.model_validate(f)
+            match = interp_lookup.get(str(f.id)) or interp_lookup.get((f.title or "").strip().lower())
+            if match:
+                dto.ai_interpretation_snippet = match.get("project_context_impact")
+            result_list.append(dto)
+        return result_list
 
     @classmethod
     def _resolve_snapshot(

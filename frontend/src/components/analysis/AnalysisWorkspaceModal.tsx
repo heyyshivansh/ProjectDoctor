@@ -1,0 +1,478 @@
+import React from "react";
+import {
+  CheckCircle2,
+  Loader2,
+  Circle,
+  AlertTriangle,
+  AlertCircle,
+  ArrowRight,
+  X,
+  ShieldAlert,
+  Sparkles,
+  RefreshCw,
+  Info,
+} from "lucide-react";
+import { AnalysisStatusResponse, AnalysisStageInfo } from "@/types/analysis";
+
+interface AnalysisWorkspaceModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  statusResponse: AnalysisStatusResponse | null;
+  onReviewFindings: () => void;
+  onRetry: () => void;
+  isStarting?: boolean;
+}
+
+interface CheckedItem {
+  key: string;
+  label: string;
+  detail: string;
+  isAiUnavailable?: boolean;
+}
+
+const buildCheckedItems = (
+  stages: AnalysisStageInfo[],
+  aiStatus?: string | null
+): CheckedItem[] => {
+  const stageMap = new Map(stages.map((s) => [s.stage, s]));
+
+  const stageDocs = stageMap.get("STAGE_DOCUMENTS");
+  const stageUnd = stageMap.get("STAGE_UNDERSTANDING");
+  const stageReq = stageMap.get("STAGE_REQUIREMENTS");
+  const stageRepo = stageMap.get("STAGE_REPOSITORY");
+  const stageTrace = stageMap.get("STAGE_TRACEABILITY");
+  const stageDiag = stageMap.get("STAGE_DIAGNOSIS");
+  const stageAi = stageMap.get("STAGE_AI_REVIEW");
+
+  const isAiUnavailable = aiStatus === "unavailable" || stageAi?.status === "failed";
+
+  return [
+    {
+      key: "docs",
+      label: "Project documentation",
+      detail: stageDocs?.detail || "Specification documents verified",
+    },
+    {
+      key: "understanding",
+      label: "Project understanding",
+      detail: stageUnd?.detail || "Using existing project understanding",
+    },
+    {
+      key: "requirements",
+      label: "Verifiable project claims",
+      detail: stageReq?.detail || "Verified project claims",
+    },
+    {
+      key: "repository",
+      label: "GitHub repository",
+      detail: stageRepo?.detail || "Repository snapshot verified",
+    },
+    {
+      key: "traceability",
+      label: "Implementation evidence",
+      detail: stageTrace?.detail || "Verified implementation evidence matches claims",
+    },
+    {
+      key: "diagnosis",
+      label: "Deterministic evaluation",
+      detail: stageDiag?.detail || "Deterministic diagnosis rules evaluated",
+    },
+    {
+      key: "ai",
+      label: isAiUnavailable ? "Deeper AI review unavailable" : "Deeper AI interpretation",
+      detail: isAiUnavailable
+        ? "Core evaluation completed without deeper AI review"
+        : stageAi?.detail || "Deeper AI review included",
+      isAiUnavailable,
+    },
+  ];
+};
+
+export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
+  isOpen,
+  onClose,
+  statusResponse,
+  onReviewFindings,
+  onRetry,
+  isStarting = false,
+}) => {
+  if (!isOpen) return null;
+
+  const status = statusResponse?.status || (isStarting ? "running" : "not_started");
+  const stages: AnalysisStageInfo[] = statusResponse?.stages || [];
+  const projectTitle = statusResponse?.project_title || "your project";
+  const isRunning = status === "running" || isStarting;
+  const isCompleted = status === "completed";
+  const isInterrupted = status === "interrupted";
+  const isFailed = status === "failed";
+  const isInsufficient = status === "insufficient_evidence";
+
+  const checkedItems = buildCheckedItems(stages, statusResponse?.ai_status);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md transition-all duration-300 animate-in fade-in"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      <div
+        className="relative w-full max-w-2xl bg-[#141720] border border-white/[0.08] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.75)] rounded-2xl p-6 sm:p-7 text-white flex flex-col gap-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Top bar with status eyebrow and dismiss */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {isRunning && (
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#9D7BFC] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#9D7BFC]"></span>
+              </span>
+            )}
+            <span className="text-[11px] font-mono tracking-widest uppercase text-slate-400">
+              {isRunning && "Project Doctor is Investigating"}
+              {isCompleted && "Evaluation Complete"}
+              {isInterrupted && "Evaluation Stopped"}
+              {isFailed && "Evaluation Error"}
+              {isInsufficient && "Prerequisites Missing"}
+              {!isRunning && !isCompleted && !isInterrupted && !isFailed && !isInsufficient && "Project Doctor"}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/[0.05] transition-colors"
+            title="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* ------------------------------------------------------------------ */}
+        {/* PHASE 1: INVESTIGATION (RUNNING STATE) */}
+        {/* ------------------------------------------------------------------ */}
+        {isRunning && (
+          <div className="flex flex-col gap-5">
+            <div>
+              <h2 id="modal-title" className="text-xl font-semibold text-white tracking-tight">
+                Project Doctor is investigating
+              </h2>
+              <p className="text-sm text-slate-400 mt-1">
+                Comparing your documentation with what your repository can demonstrate.
+              </p>
+            </div>
+
+            {/* Stages Progress List */}
+            <div className="space-y-2 py-1">
+              {stages.map((stage) => {
+                const isActive = stage.status === "active";
+                const isDone = stage.status === "completed";
+                const isStageFailed = stage.status === "failed";
+
+                return (
+                  <div
+                    key={stage.stage}
+                    className={`flex items-start gap-3 p-2.5 rounded-xl transition-all duration-200 ${
+                      isActive
+                        ? "bg-white/[0.04] border border-[#9D7BFC]/30 shadow-[0_0_15px_-3px_rgba(157,123,252,0.15)]"
+                        : "border border-transparent"
+                    }`}
+                  >
+                    <div className="mt-0.5 flex-shrink-0">
+                      {isDone && (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      )}
+                      {isActive && (
+                        <Loader2 className="w-4 h-4 text-[#9D7BFC] animate-spin" />
+                      )}
+                      {!isDone && !isActive && !isStageFailed && (
+                        <Circle className="w-4 h-4 text-slate-600" />
+                      )}
+                      {isStageFailed && (
+                        <AlertTriangle className="w-4 h-4 text-rose-400" />
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span
+                          className={`text-sm font-medium ${
+                            isActive
+                              ? "text-white"
+                              : isDone
+                              ? "text-slate-200"
+                              : "text-slate-500"
+                          }`}
+                        >
+                          {stage.label}
+                        </span>
+
+                        {isDone && stage.detail && (
+                          <span className="text-xs font-mono text-slate-400 truncate max-w-[260px]">
+                            {stage.detail}
+                          </span>
+                        )}
+                      </div>
+
+                      {isActive && (
+                        <p className="text-xs text-slate-400 mt-0.5 animate-pulse">
+                          {stage.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Run in Background action */}
+            <div className="pt-2 flex justify-end">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] rounded-xl transition-colors"
+              >
+                Run in Background
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* PHASE 2: COMPLETION SUMMARY */}
+        {/* ------------------------------------------------------------------ */}
+        {isCompleted && (
+          <div className="flex flex-col gap-6 animate-in fade-in duration-300">
+            {/* Header */}
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 text-emerald-400">
+                <CheckCircle2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 id="modal-title" className="text-xl font-semibold text-white tracking-tight">
+                  Evaluation Complete
+                </h2>
+                <p className="text-sm text-slate-400 mt-1">
+                  Project Doctor finished evaluating {projectTitle}.
+                </p>
+              </div>
+            </div>
+
+            {/* What Was Checked Section */}
+            <div className="space-y-2.5">
+              <h3 className="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-semibold">
+                What Was Checked
+              </h3>
+              <div className="bg-black/25 border border-white/[0.06] rounded-xl p-3.5 space-y-2 divide-y divide-white/[0.04]">
+                {checkedItems.map((item) => (
+                  <div
+                    key={item.key}
+                    className="flex items-center justify-between gap-3 text-xs pt-2 first:pt-0"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {item.isAiUnavailable ? (
+                        <span className="w-4 h-4 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-[10px] font-bold flex-shrink-0">
+                          !
+                        </span>
+                      ) : (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      )}
+                      <span
+                        className={`font-medium truncate ${
+                          item.isAiUnavailable ? "text-amber-300/90" : "text-slate-200"
+                        }`}
+                      >
+                        {item.label}
+                      </span>
+                    </div>
+
+                    <span className="text-[11px] font-mono text-slate-400 truncate max-w-[280px] flex-shrink-0 text-right">
+                      {item.detail}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Verdict summary counts */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-3.5 rounded-xl bg-rose-500/[0.06] border border-rose-500/20 flex flex-col gap-1">
+                <span className="text-2xl font-bold text-rose-400">
+                  {statusResponse?.critical_count ?? 0}
+                </span>
+                <span className="text-xs font-medium text-slate-300">Critical Concerns</span>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-amber-500/[0.06] border border-amber-500/20 flex flex-col gap-1">
+                <span className="text-2xl font-bold text-amber-400">
+                  {statusResponse?.needs_attention_count ?? 0}
+                </span>
+                <span className="text-xs font-medium text-slate-300">Areas Needing Attention</span>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/20 flex flex-col gap-1">
+                <span className="text-2xl font-bold text-emerald-400">
+                  {statusResponse?.strengths_count ?? 0}
+                </span>
+                <span className="text-xs font-medium text-slate-300">Verified Strengths</span>
+              </div>
+            </div>
+
+            {/* AI Status Explanation Banner */}
+            {statusResponse?.ai_status === "completed" && (
+              <div className="p-3 rounded-xl bg-violet-500/[0.06] border border-violet-500/20 flex items-center gap-2.5 text-xs text-violet-300">
+                <Sparkles className="w-3.5 h-3.5 text-[#9D7BFC] flex-shrink-0" />
+                <span>Deeper AI review included.</span>
+              </div>
+            )}
+
+            {statusResponse?.ai_status === "unavailable" && (
+              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.08] flex items-start gap-2.5 text-xs text-slate-400">
+                <Info className="w-3.5 h-3.5 text-amber-400/90 flex-shrink-0 mt-0.5" />
+                <span>
+                  Core evaluation completed. The deeper AI review wasn't available this time, so the findings are based on verified project evidence and deterministic checks.
+                </span>
+              </div>
+            )}
+
+            {/* Primary Actions */}
+            <div className="flex items-center justify-end gap-3 pt-1">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2.5 text-xs font-medium text-slate-400 hover:text-white rounded-xl transition-colors"
+              >
+                Dismiss
+              </button>
+
+              <button
+                type="button"
+                onClick={onReviewFindings}
+                className="px-5 py-2.5 text-xs font-medium bg-white text-black hover:bg-slate-200 rounded-xl transition-all shadow-lg flex items-center gap-2 font-medium"
+              >
+                <span>Review Findings</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* 3. INTERRUPTED STATE */}
+        {/* ------------------------------------------------------------------ */}
+        {isInterrupted && (
+          <div className="flex flex-col gap-5 py-2">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0 text-amber-400">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 id="modal-title" className="text-xl font-semibold text-white tracking-tight">
+                  Evaluation Stopped
+                </h2>
+                <p className="text-sm text-slate-300 mt-1">
+                  The evaluation stopped before it finished. You can safely try again.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] text-xs text-slate-400">
+              The backend process restarted during active execution. No data was corrupted, and you can re-run the evaluation immediately.
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2.5 text-xs font-medium text-slate-400 hover:text-white rounded-xl transition-colors"
+              >
+                Close
+              </button>
+
+              <button
+                type="button"
+                onClick={onRetry}
+                className="px-5 py-2.5 text-xs font-medium bg-[#9D7BFC] text-white hover:bg-[#8B65F9] rounded-xl transition-all shadow-lg flex items-center gap-2"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Try Again</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* 4. FAILED STATE */}
+        {/* ------------------------------------------------------------------ */}
+        {isFailed && (
+          <div className="flex flex-col gap-5 py-2">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0 text-rose-400">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 id="modal-title" className="text-xl font-semibold text-white tracking-tight">
+                  Evaluation Could Not Complete
+                </h2>
+                <p className="text-sm text-slate-300 mt-1">
+                  {statusResponse?.message || "An unexpected error occurred during evaluation. You can safely try again."}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2.5 text-xs font-medium text-slate-400 hover:text-white rounded-xl transition-colors"
+              >
+                Close
+              </button>
+
+              <button
+                type="button"
+                onClick={onRetry}
+                className="px-5 py-2.5 text-xs font-medium bg-white text-black hover:bg-slate-200 rounded-xl transition-all shadow-lg flex items-center gap-2"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Try Again</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ------------------------------------------------------------------ */}
+        {/* 5. INSUFFICIENT EVIDENCE STATE */}
+        {/* ------------------------------------------------------------------ */}
+        {isInsufficient && (
+          <div className="flex flex-col gap-5 py-2">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0 text-amber-400">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 id="modal-title" className="text-xl font-semibold text-white tracking-tight">
+                  Prerequisites Missing
+                </h2>
+                <p className="text-sm text-slate-300 mt-1">
+                  {statusResponse?.message || "Project Doctor needs documentation and a connected repository to evaluate your project."}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-5 py-2.5 text-xs font-medium bg-white text-black hover:bg-slate-200 rounded-xl transition-all"
+              >
+                Got It
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

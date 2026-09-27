@@ -11,15 +11,19 @@ class DocumentSection:
     start_char: int = 0
     end_char: int = 0
     text_preview: str = ""
+    page: Optional[int] = None  # 1-indexed page where the section heading begins
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        d = {
             "title": self.title,
             "level": self.level,
             "start_char": self.start_char,
             "end_char": self.end_char,
             "text_preview": self.text_preview,
         }
+        if self.page is not None:
+            d["page"] = self.page
+        return d
 
 
 @dataclass

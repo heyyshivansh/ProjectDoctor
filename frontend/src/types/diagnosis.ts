@@ -44,6 +44,7 @@ export interface FindingSummary {
   summary: string;
   why_it_matters: string;
   suggested_action?: string | null;
+  ai_interpretation_snippet?: string | null;
   finding_hash: string;
   created_at: string;
   updated_at: string;
@@ -60,6 +61,7 @@ export interface FindingDetail {
   summary: string;
   why_it_matters: string;
   suggested_action?: string | null;
+  ai_interpretation?: string | null;
   evidence_references: FindingEvidenceReference[];
   hydrated_evidence: HydratedEvidenceItem[];
   technical_details: Record<string, any>;

@@ -171,7 +171,7 @@ export const FocusedCapabilityExplorer: React.FC<FocusedCapabilityExplorerProps>
                         variant="outline"
                         size="sm"
                         onClick={() => onInspectArtifact(activeProv.artifact_id)}
-                        className="gap-1.5 text-xs font-mono bg-[var(--pd-surface-raised)] border-[var(--pd-border)] text-[var(--pd-text-primary)] hover:border-[var(--pd-ai)] hover:text-white shrink-0 self-start sm:self-auto"
+                        className="gap-1.5 text-xs font-mono bg-[var(--pd-surface-raised)] border-[var(--pd-border)] text-[var(--pd-text-primary)] hover:bg-[var(--pd-ai)] hover:border-[var(--pd-ai)] hover:text-white shrink-0 self-start sm:self-auto transition-colors"
                       >
                         <ExternalLink className="w-3.5 h-3.5 text-[var(--pd-ai)]" />
                         <span>Inspect Source Spec</span>

@@ -4,78 +4,88 @@
 
 @layer base {
   :root {
-    /* ── Canvas & Foundations (Elegant Dark Charcoal / Graphite) ── */
-    --pd-canvas: #0B0D11;
-    --pd-canvas-subtle: #10131A;
-    --pd-surface: #141720;
-    --pd-surface-raised: #1A1E29;
-    --pd-surface-overlay: #222735;
-    --pd-surface-glass: rgba(20, 23, 32, 0.85);
+    /* ── Palette anchors ── */
+    --pd-emerald: #064E3B;
+    --pd-champagne: #F8E7C9;
+    --pd-champagne-light: #FDF6EE;
 
-    /* ── Hairline Borders & Dividers ── */
-    --pd-border: rgba(255, 255, 255, 0.08);
-    --pd-border-hover: rgba(255, 255, 255, 0.16);
-    --pd-border-focus: rgba(157, 123, 252, 0.40);
+    /* ── Canvas & Foundations (Warm Light) ── */
+    --pd-canvas: #F8E7C9;
+    --pd-canvas-subtle: #F3E0B8;
+    --pd-surface: #FEFCF8;
+    --pd-surface-raised: #FDF6EE;
+    --pd-surface-overlay: #FAF0E2;
+    --pd-surface-glass: rgba(253, 246, 238, 0.92);
 
-    /* ── Editorial Typography (Warm White & Soft Grey) ── */
-    --pd-text-primary: #F1F5F9;
-    --pd-text-body: #94A3B8;
-    --pd-text-muted: #64748B;
-    --pd-text-faint: #475569;
+    /* ── Hairline Borders & Dividers (Emerald-tinted) ── */
+    --pd-border: rgba(6, 78, 59, 0.10);
+    --pd-border-hover: rgba(6, 78, 59, 0.22);
+    --pd-border-focus: rgba(6, 78, 59, 0.45);
 
-    /* ── AI / Understanding Accent (Restrained Muted Violet) ── */
-    --pd-ai: #9D7BFC;
-    --pd-ai-hover: #8B5CF6;
-    --pd-ai-wash: rgba(157, 123, 252, 0.08);
-    --pd-ai-glow: rgba(157, 123, 252, 0.18);
+    /* ── Legacy aliases for backward compatibility ── */
+    --pd-hairline: rgba(6, 78, 59, 0.10);      /* = pd-border */
+    --pd-accent: #064E3B;                        /* = pd-ai / emerald ink */
 
-    /* ── Verified / Strengths (Muted Mint) ── */
-    --pd-mint: #34D399;
-    --pd-mint-wash: rgba(52, 211, 153, 0.08);
-    --pd-mint-glow: rgba(52, 211, 153, 0.18);
 
-    /* ── Critical Concerns (Muted Coral) ── */
-    --pd-coral: #FB7185;
-    --pd-coral-wash: rgba(251, 113, 133, 0.08);
-    --pd-coral-glow: rgba(251, 113, 133, 0.18);
+    /* ── Editorial Typography (Emerald hierarchy) ── */
+    --pd-text-primary: #0D2B22;
+    --pd-text-body: #2D5246;
+    --pd-text-muted: #5A7A6E;
+    --pd-text-faint: #8BA89E;
 
-    /* ── Attention / Investigation (Muted Amber) ── */
-    --pd-amber: #FBBF24;
-    --pd-amber-wash: rgba(251, 191, 36, 0.08);
-    --pd-amber-glow: rgba(251, 191, 36, 0.18);
+    /* ── Primary / AI Accent (Emerald Ink) ── */
+    --pd-ai: #064E3B;
+    --pd-ai-hover: #043D2F;
+    --pd-ai-wash: rgba(6, 78, 59, 0.07);
+    --pd-ai-glow: rgba(6, 78, 59, 0.15);
 
-    /* ── Technical / Repository (Restrained Neutral Slate) ── */
-    --pd-tech: #94A3B8;
-    --pd-tech-wash: rgba(148, 163, 184, 0.08);
+    /* ── Verified / Evidence-supported (Restrained Teal-green) ── */
+    --pd-mint: #059669;
+    --pd-mint-wash: rgba(5, 150, 105, 0.08);
+    --pd-mint-glow: rgba(5, 150, 105, 0.15);
 
-    /* ── Standard Tailwind Theme Integration (Dark) ── */
-    --background: 220 20% 5%;
-    --foreground: 210 40% 96%;
+    /* ── Critical Concerns (Accessible warm red) ── */
+    --pd-coral: #DC2626;
+    --pd-coral-wash: rgba(220, 38, 38, 0.08);
+    --pd-coral-glow: rgba(220, 38, 38, 0.15);
 
-    --card: 220 23% 10%;
-    --card-foreground: 210 40% 96%;
+    /* ── Attention / Investigation (Warm amber) ── */
+    --pd-amber: #B45309;
+    --pd-amber-wash: rgba(180, 83, 9, 0.08);
+    --pd-amber-glow: rgba(180, 83, 9, 0.15);
 
-    --popover: 220 23% 10%;
-    --popover-foreground: 210 40% 96%;
+    /* ── Technical / Repository (Neutral slate) ── */
+    --pd-tech: #64748B;
+    --pd-tech-wash: rgba(100, 116, 139, 0.08);
 
-    --primary: 255 94% 74%;
-    --primary-foreground: 210 40% 98%;
+    /* ── Standard Tailwind Theme Integration (Light Warm) ── */
+    --background: 38 67% 92%;
+    --foreground: 160 70% 10%;
 
-    --secondary: 220 22% 13%;
-    --secondary-foreground: 210 40% 96%;
+    --card: 38 50% 97%;
+    --card-foreground: 160 70% 10%;
 
-    --muted: 220 22% 13%;
-    --muted-foreground: 215 20% 50%;
+    --popover: 38 50% 97%;
+    --popover-foreground: 160 70% 10%;
 
-    --accent: 220 22% 15%;
-    --accent-foreground: 210 40% 96%;
+    --primary: 160 87% 16%;
+    --primary-foreground: 38 67% 95%;
 
-    --destructive: 350 89% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --secondary: 38 60% 88%;
+    --secondary-foreground: 160 70% 15%;
 
-    --border: 220 20% 12%;
-    --input: 220 20% 12%;
-    --ring: 255 94% 74%;
+    --muted: 38 50% 92%;
+    --muted-foreground: 160 30% 45%;
+
+    --accent: 38 50% 90%;
+    --accent-foreground: 160 70% 15%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 160 30% 88%;
+    --input: 160 30% 88%;
+    --ring: 160 87% 16%;
 
     --radius: 0.75rem;
   }
@@ -101,26 +111,26 @@
   }
 }
 
-/* Noise texture overlay for tactile depth */
+/* Subtle warm noise texture */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.02;
+  opacity: 0.015;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 256px 256px;
 }
 
-/* Custom Scrollbar — Dark Charcoal */
+/* Custom Scrollbar — Warm light */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--pd-canvas);
+  background: var(--pd-canvas-subtle);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--pd-text-faint);

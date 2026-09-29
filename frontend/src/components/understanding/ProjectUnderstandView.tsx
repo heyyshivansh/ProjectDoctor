@@ -432,9 +432,9 @@ export function ProjectUnderstandView({
 
           <Button
             onClick={onOpenAnalysis}
-            className="gap-2 bg-white text-black hover:bg-slate-200 text-xs font-mono px-5 py-2.5 rounded-lg font-medium shadow-sm shrink-0 self-start sm:self-auto"
+            className="gap-2 bg-[var(--pd-ai)] text-white hover:bg-[var(--pd-ai-hover)] text-xs font-mono px-5 py-2.5 rounded-lg font-medium shadow-sm shrink-0 self-start sm:self-auto"
           >
-            <Sparkles className="w-3.5 h-3.5 text-violet-600" />
+            <Sparkles className="w-3.5 h-3.5" />
             <span>Analyze Project</span>
           </Button>
         </div>

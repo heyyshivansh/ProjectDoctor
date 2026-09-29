@@ -210,7 +210,7 @@ export const ProjectUnderstandingSummaryCard: React.FC<ProjectUnderstandingSumma
         <button
           type="button"
           onClick={onExploreUnderstanding}
-          className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[var(--pd-ai)] hover:text-white transition-colors ml-auto group focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-ai)] rounded"
+          className="inline-flex items-center gap-1.5 text-xs font-mono uppercase tracking-wider text-[var(--pd-ai)] hover:text-[var(--pd-text-primary)] transition-colors ml-auto group focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-ai)] rounded"
         >
           <span>Explore Detailed Capabilities &amp; Evidence</span>
           <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />

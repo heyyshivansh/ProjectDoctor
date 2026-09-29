@@ -110,7 +110,7 @@ export const EntryPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
                   <button
                     onClick={handleStartDiagnosis}
-                    className="bg-[var(--pd-ai)] text-white rounded-full px-8 py-3.5 font-medium hover:bg-[var(--pd-ai-hover)] transition-colors shadow-pd-glow-violet flex items-center gap-2"
+                    className="bg-[var(--pd-ai)] text-white rounded-full px-8 py-3.5 font-medium hover:bg-[var(--pd-ai-hover)] transition-colors shadow-pd-glow-emerald flex items-center gap-2"
                   >
                     Start diagnosis <span aria-hidden="true">&rarr;</span>
                   </button>

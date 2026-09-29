@@ -20,6 +20,7 @@ import {
   Check,
   ExternalLink,
   BookOpen,
+  Sparkles,
 } from "lucide-react";
 
 interface FindingDetailDrawerProps {
@@ -212,6 +213,19 @@ export const FindingDetailDrawer: React.FC<FindingDetailDrawerProps> = ({
                   </div>
                   <p className="text-xs text-blue-950 font-medium leading-relaxed">
                     {detail.suggested_action}
+                  </p>
+                </div>
+              )}
+
+              {/* AI Project Impact & Context */}
+              {detail.ai_interpretation && (
+                <div className="rounded-xl border border-purple-100 bg-purple-50/60 p-4 space-y-1.5">
+                  <div className="text-xs font-bold uppercase tracking-wider text-purple-900 flex items-center gap-1.5">
+                    <Sparkles className="h-4 w-4 text-purple-600" />
+                    AI Project Impact & Context
+                  </div>
+                  <p className="text-xs text-purple-950 font-medium leading-relaxed whitespace-pre-wrap">
+                    {detail.ai_interpretation}
                   </p>
                 </div>
               )}

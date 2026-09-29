@@ -45,10 +45,10 @@ DEFAULT_MAX_INPUT_TOKENS = 4500
 # Severity sorting weight for findings (lower number = higher priority)
 SEVERITY_WEIGHT = {
     "critical": 0,
-    "high": 1,
-    "medium": 2,
-    "low": 3,
-    "info": 4,
+    "major": 1,
+    "needs_attention": 2,
+    "improvement": 3,
+    "strength": 4,
 }
 
 # Traceability status priority for requirements (unimplemented/ambiguous first)
@@ -56,7 +56,8 @@ STATUS_PRIORITY = {
     "unmatched": 0,
     "ambiguous": 1,
     "candidate": 2,
-    "not_evaluated": 3,
+    "candidate_with_tests": 3,
+    "not_evaluated": 4,
 }
 
 
@@ -169,6 +170,9 @@ class AIEvidenceSelector:
             diagnostic_findings=[],
             evidence_counts={},
         )
+        # Re-bind working summary references to draft's internal dictionaries
+        bounded_repo_summary = draft.repository_summary
+        bounded_trace_summary = draft.traceability_summary
         _sync_counts(draft)
 
         base_estimate = estimate_prompt_tokens(draft)
@@ -205,7 +209,7 @@ class AIEvidenceSelector:
         sorted_requirements = sorted(
             evidence.requirements,
             key=lambda r: (
-                STATUS_PRIORITY.get(r.traceability_status, 4),
+                STATUS_PRIORITY.get(r.traceability_status, 5),
                 not r.is_ambiguous,
                 r.requirement_id,
             ),
@@ -232,7 +236,7 @@ class AIEvidenceSelector:
                 if ti.get("requirement_id") in selected_req_codes:
                     bounded_trace_summary["items"] = selected_trace_items + [ti]
                     _sync_counts(draft)
-                    if estimate_prompt_tokens(draft) <= (max_input_tokens - 100):
+                    if estimate_prompt_tokens(draft) <= (max_input_tokens - 200):
                         selected_trace_items.append(ti)
                     else:
                         bounded_trace_summary["items"] = selected_trace_items
@@ -248,11 +252,11 @@ class AIEvidenceSelector:
                 if str(snip.get("traceability_id")) in retained_trace_ids:
                     compact_snip = dict(snip)
                     raw_text = compact_snip.get("snippet", "")
-                    if len(raw_text) > 120:
-                        compact_snip["snippet"] = raw_text[:120] + "..."
+                    if len(raw_text) > 180:
+                        compact_snip["snippet"] = raw_text[:180] + "..."
                     bounded_trace_summary["candidate_snippets"] = selected_snippets + [compact_snip]
                     _sync_counts(draft)
-                    if estimate_prompt_tokens(draft) <= (max_input_tokens - 50):
+                    if estimate_prompt_tokens(draft) <= (max_input_tokens - 20):
                         selected_snippets.append(compact_snip)
                     else:
                         bounded_trace_summary["candidate_snippets"] = selected_snippets

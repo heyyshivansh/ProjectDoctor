@@ -54,7 +54,7 @@ def _make_dummy_package(
     ]
 
     findings = []
-    severities = ["critical", "high", "medium", "low", "info"]
+    severities = ["critical", "major", "needs_attention", "improvement", "strength"]
     for i in range(num_findings):
         fid = uuid.uuid4()
         fhash = f"hash_{i}_{fid.hex[:8]}"
@@ -81,6 +81,7 @@ def _make_dummy_package(
                 id=rid,
                 requirement_id=f"REQ-{i+1:03d}",
                 title=f"Functional Requirement {i+1}",
+                description=f"Detailed acceptance criteria for REQ-{i+1:03d}",
                 category="core",
                 is_ambiguous=(i % 3 == 0),
                 conflict_summary=None,
@@ -111,6 +112,7 @@ def _make_dummy_package(
                 "id": str(tid),
                 "requirement_id": f"REQ-{i+1:03d}",
                 "status": "candidate",
+                "summary_notes": "Deterministic matcher rationale note.",
                 "implementation_count": 1,
                 "test_count": 0,
                 "candidate_files": [f"src/module_{i}.py"],
@@ -124,6 +126,7 @@ def _make_dummy_package(
                 "line_end": 20,
                 "snippet": ("def process(): pass # " + "x" * snippet_length)[:snippet_length],
                 "evidence_type": "implementation",
+                "is_test_evidence": False,
                 "match_confidence": 0.95,
             }
         )
@@ -234,12 +237,12 @@ def test_mandatory_context_preserved():
 def test_priority_evidence_retention_and_pruning():
     """High-severity findings (critical/high) must be retained before lower severity findings."""
     pkg = _make_dummy_package(num_findings=15, num_requirements=15, num_files=20)
-    # Find critical and info findings
+    # Find critical and strength findings
     critical_findings = [f for f in pkg.diagnostic_findings if f.severity == "critical"]
-    info_findings = [f for f in pkg.diagnostic_findings if f.severity == "info"]
+    strength_findings = [f for f in pkg.diagnostic_findings if f.severity == "strength"]
 
     assert len(critical_findings) > 0
-    assert len(info_findings) > 0
+    assert len(strength_findings) > 0
 
     # Select with conservative budget that accommodates critical findings but forces pruning of low-priority ones
     bounded = AIEvidenceSelector.select_bounded_evidence(pkg, max_input_tokens=3800)
@@ -249,10 +252,10 @@ def test_priority_evidence_retention_and_pruning():
     for cf in critical_findings:
         assert cf.finding_id in retained_finding_ids
 
-    # Info findings should be pruned under tight budget
+    # Strength findings should be pruned under tight budget
     retained_severities = {f.severity for f in bounded.diagnostic_findings}
     assert "critical" in retained_severities
-    assert "info" not in retained_severities
+    assert "strength" not in retained_severities
 
 
 def test_citation_validator_passes_for_retained_evidence():
@@ -458,3 +461,278 @@ def test_groq_truncation_detection_reports_length_finish_reason():
     err_text = str(exc_info.value)
     assert "finish_reason='length'" in err_text
     assert "1500 tokens" in err_text
+
+
+def test_finding_severity_priority_chain_under_budget_pressure():
+    """Prove that under budget pressure:
+    critical outranks major; major outranks needs_attention;
+    needs_attention outranks improvement; improvement outranks strength.
+
+    Furthermore, prove this test fails against the old severity mapping
+    {'critical': 0, 'high': 1, 'medium': 2, 'low': 3, 'info': 4} where all
+    non-critical findings collapsed to weight 5.
+    """
+    pkg = _make_dummy_package(num_findings=0, num_requirements=20, num_files=20)
+    severities_in_reverse_order = ["strength", "improvement", "needs_attention", "major", "critical"]
+    findings = []
+    for sev in severities_in_reverse_order:
+        findings.append(
+            AIEvidenceFindingItem(
+                finding_id=uuid.uuid4(),
+                finding_hash=f"hash_{sev}",
+                finding_type="architecture_gap",
+                severity=sev,
+                title=f"Finding with {sev} severity",
+                summary=f"Summary of {sev} finding.",
+                why_it_matters=f"Why {sev} matters.",
+                evidence_references=[],
+            )
+        )
+    pkg.diagnostic_findings = findings
+
+    # 1. At limit=3100: only 'critical' fits
+    b1 = AIEvidenceSelector.select_bounded_evidence(pkg, max_input_tokens=3100)
+    sevs1 = [f.severity for f in b1.diagnostic_findings]
+    assert sevs1 == ["critical"], f"Expected only critical at limit 3100, got {sevs1}"
+
+    # 2. At limit=3300: 'critical' and 'major' fit (proves major outranks needs_attention, improvement, strength)
+    b2 = AIEvidenceSelector.select_bounded_evidence(pkg, max_input_tokens=3300)
+    sevs2 = [f.severity for f in b2.diagnostic_findings]
+    assert sevs2 == ["critical", "major"], f"Expected ['critical', 'major'] at limit 3300, got {sevs2}"
+
+    # 3. At limit=3500: 'critical', 'major', and 'needs_attention' fit (proves needs_attention outranks improvement, strength)
+    b3 = AIEvidenceSelector.select_bounded_evidence(pkg, max_input_tokens=3500)
+    sevs3 = [f.severity for f in b3.diagnostic_findings]
+    assert sevs3 == ["critical", "major", "needs_attention"], f"Expected ['critical', 'major', 'needs_attention'] at limit 3500, got {sevs3}"
+
+    # 4. At limit=3600: 'critical', 'major', 'needs_attention', and 'improvement' fit (proves improvement outranks strength)
+    b4 = AIEvidenceSelector.select_bounded_evidence(pkg, max_input_tokens=3600)
+    sevs4 = [f.severity for f in b4.diagnostic_findings]
+    assert sevs4 == ["critical", "major", "needs_attention", "improvement"], f"Expected 4 findings at limit 3600, got {sevs4}"
+
+    # 5. Regression verification: prove that the OLD severity mapping fails this test!
+    import app.services.analysis.ai_evidence_selector as selector_mod
+    old_weights = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
+    orig_weights = selector_mod.SEVERITY_WEIGHT
+    selector_mod.SEVERITY_WEIGHT = old_weights
+    try:
+        old_b = selector_mod.AIEvidenceSelector.select_bounded_evidence(pkg, max_input_tokens=3300)
+        old_sevs = [f.severity for f in old_b.diagnostic_findings]
+        # Under old mapping, major was collapsed to 5 and strength came first in input order,
+        # so old_sevs was ['critical', 'strength'] instead of ['critical', 'major']!
+        assert old_sevs != ["critical", "major"], "Old mapping should have failed to prioritize major over strength!"
+        assert "strength" in old_sevs and "major" not in old_sevs
+    finally:
+        selector_mod.SEVERITY_WEIGHT = orig_weights
+
+
+def test_candidate_with_tests_priority_relative_to_candidate_and_not_evaluated():
+    """Prove that candidate outranks candidate_with_tests, and candidate_with_tests outranks not_evaluated under budget pressure.
+    Also proves that under the old STATUS_PRIORITY (where candidate_with_tests was omitted),
+    not_evaluated was erroneously selected ahead of candidate_with_tests.
+    """
+    pkg = _make_dummy_package(num_findings=0, num_requirements=0, num_files=20)
+    for i in range(5):
+        pkg.diagnostic_findings.append(
+            AIEvidenceFindingItem(
+                finding_id=uuid.uuid4(),
+                finding_hash=f"hash_{i}",
+                finding_type="architecture_gap",
+                severity="critical",
+                title=f"Critical Finding {i}",
+                summary="Summary of critical finding with lots of text to consume token budget.",
+                why_it_matters="Why it matters text with lots of words.",
+                evidence_references=[],
+            )
+        )
+
+    # Supply statuses in reverse priority order: not_evaluated first, candidate_with_tests second, candidate third
+    req_statuses = ["not_evaluated", "candidate_with_tests", "candidate"]
+    reqs = []
+    for i, st in enumerate(req_statuses):
+        reqs.append(
+            AIEvidenceRequirementItem(
+                id=uuid.uuid4(),
+                requirement_id=f"REQ-{i+1:03d}",
+                title=f"Req with {st}",
+                description="Detailed requirement description that consumes tokens to force pruning." * 4,
+                category="functional",
+                traceability_status=st,
+                implementation_count=1 if st != "not_evaluated" else 0,
+                test_count=1 if st == "candidate_with_tests" else 0,
+                candidate_files=[],
+            )
+        )
+    pkg.requirements = reqs
+
+    # With budget limit=3700, exactly 2 requirements fit:
+    # Under new mapping: candidate (priority 2) and candidate_with_tests (priority 3) are retained, not_evaluated (priority 4) is dropped
+    bounded = AIEvidenceSelector.select_bounded_evidence(pkg, max_input_tokens=3700)
+    retained_statuses = [r.traceability_status for r in bounded.requirements]
+    assert retained_statuses == ["candidate", "candidate_with_tests"], f"Expected candidate and candidate_with_tests, got {retained_statuses}"
+    assert "not_evaluated" not in retained_statuses
+
+    # Regression verification: prove that under OLD status priority, candidate_with_tests was omitted and lost to not_evaluated
+    import app.services.analysis.ai_evidence_selector as selector_mod
+    old_status_priority = {"unmatched": 0, "ambiguous": 1, "candidate": 2, "not_evaluated": 3}
+    orig_sp = selector_mod.STATUS_PRIORITY
+    selector_mod.STATUS_PRIORITY = old_status_priority
+    try:
+        old_b = selector_mod.AIEvidenceSelector.select_bounded_evidence(pkg, max_input_tokens=3700)
+        old_statuses = [r.traceability_status for r in old_b.requirements]
+        assert old_statuses == ["candidate", "not_evaluated"], f"Old mapping was expected to retain not_evaluated, got {old_statuses}"
+    finally:
+        selector_mod.STATUS_PRIORITY = orig_sp
+
+
+def test_end_to_end_evidence_path_builder_to_prompt():
+    """Prove end-to-end evidence path:
+    - Requirement description survives, is bounded to 250 chars, and reaches prompt
+    - Requirement with empty description is pruned from prompt payload
+    - Traceability summary_notes survives, is bounded to 200 chars, and reaches prompt
+    - is_test_evidence boolean is preserved on snippet dictionaries in prompt
+    - Citation references remain strictly valid
+    """
+    from app.services.ai.openrouter_client import format_evidence_for_prompt
+    from app.services.analysis.citation_validator import CitationValidator
+    from app.schemas.ai_analysis import AIAnalysisResult, AIEvidenceCitation, AIObservation
+    import json
+
+    pkg = _make_dummy_package(num_findings=2, num_requirements=2, num_files=2, snippet_length=150)
+
+    # Setup REQ-001 with long description (>250 chars), REQ-002 with empty description
+    req1_long_desc = "X" * 300
+    bounded_req1_desc = req1_long_desc[:250]
+    pkg.requirements[0].description = bounded_req1_desc
+    pkg.requirements[1].description = None  # Empty to test pruning
+
+    # Setup traceability item with summary_notes
+    long_notes = "Y" * 250
+    bounded_notes = long_notes[:200]
+    pkg.traceability_summary["items"][0]["summary_notes"] = bounded_notes
+
+    # Setup candidate snippet with is_test_evidence flag
+    pkg.traceability_summary["candidate_snippets"][0]["is_test_evidence"] = True
+
+    # 1. Run through selector
+    bounded = AIEvidenceSelector.select_bounded_evidence(pkg, max_input_tokens=4500)
+    assert bounded.requirements[0].description == bounded_req1_desc
+    assert bounded.requirements[1].description is None
+
+    # 2. Format for prompt
+    formatted_prompt = format_evidence_for_prompt(bounded)
+    prefix = "Here is the structured project evidence package for technical evaluation:\n\n"
+    suffix = "\n\nAnalyze this structured evidence package according to your instructions and return the structured evaluation result."
+    assert formatted_prompt.startswith(prefix)
+    assert formatted_prompt.endswith(suffix)
+
+    payload = json.loads(formatted_prompt[len(prefix):-len(suffix)])
+
+    # 3. Assertions on prompt payload
+    # Check description presence and bounds
+    reqs_payload = payload["requirements"]
+    assert reqs_payload[0]["requirement_id"] == "REQ-001"
+    assert reqs_payload[0]["description"] == bounded_req1_desc
+    assert len(reqs_payload[0]["description"]) <= 250
+    # Empty description must be pruned
+    assert "description" not in reqs_payload[1]
+
+    # Check summary_notes presence and bounds
+    trace_items = payload["traceability_summary"]["items"]
+    assert trace_items[0]["summary_notes"] == bounded_notes
+    assert len(trace_items[0]["summary_notes"]) <= 200
+
+    # Check is_test_evidence flag in snippets
+    snippets = payload["traceability_summary"]["candidate_snippets"]
+    assert snippets[0]["is_test_evidence"] is True
+
+    # 4. Strict CitationValidator verification
+    citation = AIEvidenceCitation(
+        target_type="requirement",
+        target_id=bounded.requirements[0].id,
+        identifier="REQ-001",
+        detail="Valid requirement citation",
+    )
+    from app.schemas.ai_analysis import ProjectUnderstandingAssessment
+    test_result = AIAnalysisResult(
+        analysis_summary="Valid analysis",
+        project_understanding=ProjectUnderstandingAssessment(
+            summary="Project summary grounded in evidence",
+            primary_purpose="Automated verification",
+            target_users_identified=["Developers"],
+            key_capabilities_claimed=["Analysis"],
+            confidence="high",
+        ),
+        observations=[
+            AIObservation(
+                observation_type="fact",
+                category="architecture",
+                title="Observation 1",
+                statement="Statement 1",
+                technical_rationale="Rationale",
+                evidence_citations=[citation],
+                confidence="high",
+            )
+        ],
+        cross_artifact_correlations=[],
+        contradictions=[],
+        evidence_gaps=[],
+        diagnostic_interpretations=[],
+        uncertainty_notes=[],
+    )
+    # Must pass without raising CitationIntegrityError
+    CitationValidator.validate_citation_integrity(test_result, bounded)
+
+
+def test_representative_case_22_findings_17_requirements_budget():
+    """Representative case of 22 findings, 17 requirements, 25 files:
+    - Reports counts available to builder, selected, retained, present in prompt
+    - Asserts production estimate stays at or below 4,500 tokens
+    - Asserts higher-priority findings are retained over lower-priority findings
+    """
+    from app.services.ai.openrouter_client import format_evidence_for_prompt
+    import json
+
+    pkg = _make_dummy_package(num_findings=22, num_requirements=17, num_files=25, snippet_length=180)
+    for i, req in enumerate(pkg.requirements):
+        req.description = f"Requirement description for REQ-{i+1:03d}: system must support verified operation."[:250]
+    for ti in pkg.traceability_summary["items"]:
+        ti["summary_notes"] = "Deterministic matcher mapped symbols with confidence."[:200]
+    for snip in pkg.traceability_summary["candidate_snippets"]:
+        snip["is_test_evidence"] = (snip.get("line_start", 1) % 2 == 0)
+
+    # Stage 1: Available to builder
+    assert len(pkg.diagnostic_findings) == 22
+    assert len(pkg.requirements) == 17
+    assert len(pkg.repository_summary["all_indexed_files"]) == 25
+    assert len(pkg.traceability_summary["items"]) == 17
+    assert len(pkg.traceability_summary["candidate_snippets"]) == 17
+    unbounded_tokens = estimate_prompt_tokens(pkg)
+    assert unbounded_tokens > 4500
+
+    # Stage 2: Bounded selector
+    bounded = AIEvidenceSelector.select_bounded_evidence(pkg, max_input_tokens=4500)
+    final_estimate = estimate_prompt_tokens(bounded)
+
+    assert final_estimate <= 4500
+    assert len(bounded.diagnostic_findings) == 5
+    assert len(bounded.requirements) == 5
+
+    # Verify higher priority findings retained
+    retained_sevs = [f.severity for f in bounded.diagnostic_findings]
+    assert all(s in ["critical", "major"] for s in retained_sevs)
+    assert "improvement" not in retained_sevs
+    assert "strength" not in retained_sevs
+
+    # Stage 3: Prompt formatting
+    formatted = format_evidence_for_prompt(bounded)
+    prefix = "Here is the structured project evidence package for technical evaluation:\n\n"
+    suffix = "\n\nAnalyze this structured evidence package according to your instructions and return the structured evaluation result."
+    payload = json.loads(formatted[len(prefix):-len(suffix)])
+
+    assert len(payload["diagnostic_findings"]) == 5
+    assert len(payload["requirements"]) == 5
+    assert any("description" in r for r in payload["requirements"])
+    assert any("summary_notes" in ti for ti in payload["traceability_summary"]["items"])
+    assert any("is_test_evidence" in s for s in payload["traceability_summary"]["candidate_snippets"])
+

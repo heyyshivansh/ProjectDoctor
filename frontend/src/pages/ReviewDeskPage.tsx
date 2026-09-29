@@ -40,8 +40,10 @@ import { ProjectUnderstanding } from "@/types/understanding";
 import { AnalysisStatusResponse } from "@/types/analysis";
 import { AnalysisWorkspaceModal } from "@/components/analysis/AnalysisWorkspaceModal";
 
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, FileText, Github, Sparkles, LayoutDashboard, BrainCircuit, Activity, Stethoscope, TrendingUp, Shield, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dock, DockIcon, DockItem, DockLabel } from "@/components/core/dock";
+import { cn } from "@/lib/utils";
 
 const SEVERITY_WEIGHT: Record<FindingSeverity, number> = {
   critical: 1,
@@ -416,6 +418,125 @@ export const ReviewDeskPage: React.FC = () => {
             />
           </div>
         )}
+
+        {/* VIEW 4: ANALYZE */}
+        {activeSection === 'analyze' && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <div className="space-y-1">
+              <h2 className="text-2xl font-semibold text-[var(--pd-text-primary)]">Analyze {project.title}</h2>
+              <p className="text-sm text-[var(--pd-text-body)]">
+                Project Doctor compares your specification documents with the repository code to find what is implemented, what is missing, and what needs attention.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {(project.artifacts || []).map((artifact) => (
+                <div key={artifact.id} className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-xl p-4 space-y-2 shadow-pd-card">
+                  <div className="flex items-start gap-3">
+                    <FileText className="w-4 h-4 text-[var(--pd-text-muted)] shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-[var(--pd-text-primary)] truncate">{artifact.original_filename}</p>
+                      <p className="text-xs text-[var(--pd-text-muted)]">Specification Document</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {repoConnection && (
+                <div className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-xl p-4 space-y-2 shadow-pd-card">
+                  <div className="flex items-start gap-3">
+                    <Github className="w-4 h-4 text-[var(--pd-text-muted)] shrink-0 mt-0.5" />
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-[var(--pd-text-primary)] truncate">{repoConnection.owner}/{repoConnection.repo_name}</p>
+                      <p className="text-xs text-[var(--pd-text-muted)]">
+                        {repoConnection.current_snapshot ? `${repoConnection.current_snapshot.total_files} files` : 'GitHub Repository'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-pd-card">
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-[var(--pd-text-primary)]">
+                  {analysisStatus?.status === 'running' ? 'Analysis running\u2026' : 'Ready to analyze'}
+                </h3>
+                <p className="text-sm text-[var(--pd-text-body)]">
+                  {analysisStatus?.status === 'running'
+                    ? 'Project Doctor is actively comparing your documentation with repository evidence.'
+                    : 'Compare what your project claims with what your repository can demonstrate.'}
+                </p>
+              </div>
+              <Button
+                onClick={() => handleStartAnalysis(analysisStatus?.is_stale || false)}
+                disabled={analysisStatus?.status === 'running' || isStartingAnalysis}
+                className="bg-[var(--pd-ai)] hover:bg-[var(--pd-ai-hover)] text-white px-6 py-2.5 rounded-lg text-sm font-medium shadow-sm shrink-0"
+              >
+                {analysisStatus?.status === 'running' ? (
+                  <><Loader2 className="w-4 h-4 animate-spin mr-2" />Analyzing&hellip;</>
+                ) : (
+                  <><Sparkles className="w-4 h-4 mr-2" />Analyze Project</>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 5: IMPROVE */}
+        {activeSection === 'improve' && (
+          <div className="space-y-4 animate-in fade-in duration-200">
+            <div>
+              <h2 className="text-2xl font-semibold text-[var(--pd-text-primary)]">Improve</h2>
+              <p className="text-sm text-[var(--pd-text-body)] mt-1">Turn findings into actionable next steps.</p>
+            </div>
+            <div className="p-10 rounded-2xl bg-[var(--pd-surface)] border border-[var(--pd-border)] text-center space-y-3">
+              <p className="text-base font-semibold text-[var(--pd-text-primary)]">Improve is not available yet.</p>
+              <p className="text-sm text-[var(--pd-text-muted)]">
+                Run an analysis first to generate findings. Improve will help you address each finding with concrete actions.
+              </p>
+              {!diagnosis && (
+                <Button onClick={() => handleStartAnalysis(false)} className="bg-[var(--pd-ai)] text-white mt-2">
+                  <Sparkles className="w-4 h-4 mr-2" />Analyze Project
+                </Button>
+              )}
+              {diagnosis && (
+                <Button onClick={() => setActiveSection('diagnosis')} variant="outline" className="mt-2 border-[var(--pd-border)] text-[var(--pd-text-body)]">
+                  View Findings
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 6: DEFEND */}
+        {activeSection === 'defend' && (
+          <div className="space-y-4 animate-in fade-in duration-200">
+            <div>
+              <h2 className="text-2xl font-semibold text-[var(--pd-text-primary)]">Defend</h2>
+              <p className="text-sm text-[var(--pd-text-body)] mt-1">Prepare to explain your work with evidence.</p>
+            </div>
+            <div className="p-10 rounded-2xl bg-[var(--pd-surface)] border border-[var(--pd-border)] text-center space-y-3">
+              <p className="text-base font-semibold text-[var(--pd-text-primary)]">Defend is not available yet.</p>
+              <p className="text-sm text-[var(--pd-text-muted)]">
+                Defend will help you practice explaining your project capabilities with supporting repository evidence. It requires analysis to be completed first.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW 7: READINESS */}
+        {activeSection === 'readiness' && (
+          <div className="space-y-4 animate-in fade-in duration-200">
+            <div>
+              <h2 className="text-2xl font-semibold text-[var(--pd-text-primary)]">Readiness</h2>
+              <p className="text-sm text-[var(--pd-text-body)] mt-1">See what is well-supported and what needs more evidence.</p>
+            </div>
+            <div className="p-10 rounded-2xl bg-[var(--pd-surface)] border border-[var(--pd-border)] text-center space-y-3">
+              <p className="text-base font-semibold text-[var(--pd-text-primary)]">Readiness is not available yet.</p>
+              <p className="text-sm text-[var(--pd-text-muted)]">
+                Readiness will show qualitative evidence coverage and gaps across your capabilities. Run analysis to get started.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Feature 2: Focused Analysis Workspace Modal */}
@@ -439,6 +560,60 @@ export const ReviewDeskPage: React.FC = () => {
           onClose={() => setViewingArtifactModal(null)}
         />
       )}
+
+      {/* Persistent Navigation Dock */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 hidden sm:block">
+        <Dock className="bg-[var(--pd-surface-glass)] border border-[var(--pd-border)] shadow-pd-elevated backdrop-blur-xl">
+          <DockItem onClick={() => setActiveSection("overview")}>
+            <DockLabel>Overview</DockLabel>
+            <DockIcon>
+              <LayoutDashboard className={cn("w-5 h-5", activeSection === "overview" ? "text-[var(--pd-ai)]" : "text-[var(--pd-text-muted)]")} />
+            </DockIcon>
+          </DockItem>
+          
+          <DockItem onClick={() => setActiveSection("understand")}>
+            <DockLabel>Understand</DockLabel>
+            <DockIcon>
+              <BrainCircuit className={cn("w-5 h-5", activeSection === "understand" ? "text-[var(--pd-ai)]" : "text-[var(--pd-text-muted)]")} />
+            </DockIcon>
+          </DockItem>
+
+          <DockItem onClick={() => setActiveSection("analyze")}>
+            <DockLabel>Analyze</DockLabel>
+            <DockIcon>
+              <Activity className={cn("w-5 h-5", activeSection === "analyze" ? "text-[var(--pd-ai)]" : "text-[var(--pd-text-muted)]")} />
+            </DockIcon>
+          </DockItem>
+
+          <DockItem onClick={() => setActiveSection("diagnosis")}>
+            <DockLabel>Diagnosis</DockLabel>
+            <DockIcon>
+              <Stethoscope className={cn("w-5 h-5", activeSection === "diagnosis" ? "text-[var(--pd-ai)]" : "text-[var(--pd-text-muted)]")} />
+            </DockIcon>
+          </DockItem>
+
+          <DockItem onClick={() => setActiveSection("improve")}>
+            <DockLabel>Improve</DockLabel>
+            <DockIcon>
+              <TrendingUp className={cn("w-5 h-5", activeSection === "improve" ? "text-[var(--pd-ai)]" : "text-[var(--pd-text-muted)]")} />
+            </DockIcon>
+          </DockItem>
+
+          <DockItem onClick={() => setActiveSection("defend")}>
+            <DockLabel>Defend</DockLabel>
+            <DockIcon>
+              <Shield className={cn("w-5 h-5", activeSection === "defend" ? "text-[var(--pd-ai)]" : "text-[var(--pd-text-muted)]")} />
+            </DockIcon>
+          </DockItem>
+
+          <DockItem onClick={() => setActiveSection("readiness")}>
+            <DockLabel>Readiness</DockLabel>
+            <DockIcon>
+              <CheckCircle className={cn("w-5 h-5", activeSection === "readiness" ? "text-[var(--pd-ai)]" : "text-[var(--pd-text-muted)]")} />
+            </DockIcon>
+          </DockItem>
+        </Dock>
+      </div>
     </ReviewDeskLayout>
   );
 };

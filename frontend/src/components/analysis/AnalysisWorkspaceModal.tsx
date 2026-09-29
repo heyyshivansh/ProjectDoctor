@@ -111,13 +111,13 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md transition-all duration-300 animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm transition-all duration-300 animate-in fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
       <div
-        className="relative w-full max-w-2xl bg-[#141720] border border-white/[0.08] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.75)] rounded-2xl p-6 sm:p-7 text-white flex flex-col gap-6"
+        className="relative w-full max-w-2xl bg-[var(--pd-surface)] border border-[var(--pd-border)] shadow-pd-elevated rounded-2xl p-6 sm:p-7 flex flex-col gap-6"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top bar with status eyebrow and dismiss */}
@@ -125,11 +125,11 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
           <div className="flex items-center gap-2">
             {isRunning && (
               <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#9D7BFC] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#9D7BFC]"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--pd-ai)] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--pd-ai)]"></span>
               </span>
             )}
-            <span className="text-[11px] font-mono tracking-widest uppercase text-slate-400">
+            <span className="text-[11px] font-mono tracking-widest uppercase text-[var(--pd-text-muted)]">
               {isRunning && "Project Doctor is Investigating"}
               {isCompleted && "Evaluation Complete"}
               {isInterrupted && "Evaluation Stopped"}
@@ -142,7 +142,7 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/[0.05] transition-colors"
+            className="text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] p-1 rounded-lg hover:bg-[var(--pd-surface-raised)] transition-colors"
             title="Close"
           >
             <X className="w-4 h-4" />
@@ -155,10 +155,10 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
         {isRunning && (
           <div className="flex flex-col gap-5">
             <div>
-              <h2 id="modal-title" className="text-xl font-semibold text-white tracking-tight">
+              <h2 id="modal-title" className="text-xl font-semibold text-[var(--pd-text-primary)] tracking-tight">
                 Project Doctor is investigating
               </h2>
-              <p className="text-sm text-slate-400 mt-1">
+              <p className="text-sm text-[var(--pd-text-body)] mt-1">
                 Comparing your documentation with what your repository can demonstrate.
               </p>
             </div>
@@ -175,22 +175,22 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
                     key={stage.stage}
                     className={`flex items-start gap-3 p-2.5 rounded-xl transition-all duration-200 ${
                       isActive
-                        ? "bg-white/[0.04] border border-[#9D7BFC]/30 shadow-[0_0_15px_-3px_rgba(157,123,252,0.15)]"
+                        ? "bg-[var(--pd-ai-wash)] border border-[var(--pd-ai)]/20"
                         : "border border-transparent"
                     }`}
                   >
                     <div className="mt-0.5 flex-shrink-0">
                       {isDone && (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                        <CheckCircle2 className="w-4 h-4 text-[var(--pd-mint)]" />
                       )}
                       {isActive && (
-                        <Loader2 className="w-4 h-4 text-[#9D7BFC] animate-spin" />
+                        <Loader2 className="w-4 h-4 text-[var(--pd-ai)] animate-spin" />
                       )}
                       {!isDone && !isActive && !isStageFailed && (
-                        <Circle className="w-4 h-4 text-slate-600" />
+                        <Circle className="w-4 h-4 text-[var(--pd-text-faint)]" />
                       )}
                       {isStageFailed && (
-                        <AlertTriangle className="w-4 h-4 text-rose-400" />
+                        <AlertTriangle className="w-4 h-4 text-[var(--pd-coral)]" />
                       )}
                     </div>
 
@@ -199,24 +199,24 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
                         <span
                           className={`text-sm font-medium ${
                             isActive
-                              ? "text-white"
+                              ? "text-[var(--pd-text-primary)]"
                               : isDone
-                              ? "text-slate-200"
-                              : "text-slate-500"
+                              ? "text-[var(--pd-text-body)]"
+                              : "text-[var(--pd-text-faint)]"
                           }`}
                         >
                           {stage.label}
                         </span>
 
                         {isDone && stage.detail && (
-                          <span className="text-xs font-mono text-slate-400 truncate max-w-[260px]">
+                          <span className="text-xs font-mono text-[var(--pd-text-muted)] truncate max-w-[260px]">
                             {stage.detail}
                           </span>
                         )}
                       </div>
 
                       {isActive && (
-                        <p className="text-xs text-slate-400 mt-0.5 animate-pulse">
+                        <p className="text-xs text-[var(--pd-text-muted)] mt-0.5 animate-pulse">
                           {stage.description}
                         </p>
                       )}
@@ -231,7 +231,7 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-white bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.06] rounded-xl transition-colors"
+                className="px-4 py-2 text-xs font-medium text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] rounded-xl transition-colors"
               >
                 Run in Background
               </button>
@@ -246,14 +246,14 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
           <div className="flex flex-col gap-6 animate-in fade-in duration-300">
             {/* Header */}
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0 text-emerald-400">
+              <div className="w-10 h-10 rounded-xl bg-[var(--pd-mint-wash)] border border-[var(--pd-mint)]/20 flex items-center justify-center flex-shrink-0 text-[var(--pd-mint)]">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
-                <h2 id="modal-title" className="text-xl font-semibold text-white tracking-tight">
+                <h2 id="modal-title" className="text-xl font-semibold text-[var(--pd-text-primary)] tracking-tight">
                   Evaluation Complete
                 </h2>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className="text-sm text-[var(--pd-text-body)] mt-1">
                   Project Doctor finished evaluating {projectTitle}.
                 </p>
               </div>
@@ -261,10 +261,10 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
 
             {/* What Was Checked Section */}
             <div className="space-y-2.5">
-              <h3 className="text-[11px] font-mono uppercase tracking-wider text-slate-400 font-semibold">
+              <h3 className="text-[11px] font-mono uppercase tracking-wider text-[var(--pd-text-muted)] font-semibold">
                 What Was Checked
               </h3>
-              <div className="bg-black/25 border border-white/[0.06] rounded-xl p-3.5 space-y-2 divide-y divide-white/[0.04]">
+              <div className="bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] rounded-xl p-3.5 space-y-2 divide-y divide-[var(--pd-border)]">
                 {checkedItems.map((item) => (
                   <div
                     key={item.key}
@@ -272,22 +272,22 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       {item.isAiUnavailable ? (
-                        <span className="w-4 h-4 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-[10px] font-bold flex-shrink-0">
+                        <span className="w-4 h-4 rounded-full bg-[var(--pd-amber-wash)] border border-[var(--pd-amber)]/30 flex items-center justify-center text-[var(--pd-amber)] text-[10px] font-bold flex-shrink-0">
                           !
                         </span>
                       ) : (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                        <CheckCircle2 className="w-4 h-4 text-[var(--pd-mint)] flex-shrink-0" />
                       )}
                       <span
                         className={`font-medium truncate ${
-                          item.isAiUnavailable ? "text-amber-300/90" : "text-slate-200"
+                          item.isAiUnavailable ? "text-[var(--pd-amber)]" : "text-[var(--pd-text-body)]"
                         }`}
                       >
                         {item.label}
                       </span>
                     </div>
 
-                    <span className="text-[11px] font-mono text-slate-400 truncate max-w-[280px] flex-shrink-0 text-right">
+                    <span className="text-[11px] font-mono text-[var(--pd-text-muted)] truncate max-w-[280px] flex-shrink-0 text-right">
                       {item.detail}
                     </span>
                   </div>
@@ -297,39 +297,39 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
 
             {/* Verdict summary counts */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-xl bg-rose-500/[0.06] border border-rose-500/20 flex flex-col gap-1">
-                <span className="text-2xl font-bold text-rose-400">
+              <div className="p-3.5 rounded-xl bg-[var(--pd-coral-wash)] border border-[var(--pd-coral)]/20 flex flex-col gap-1">
+                <span className="text-2xl font-bold text-[var(--pd-coral)]">
                   {statusResponse?.critical_count ?? 0}
                 </span>
-                <span className="text-xs font-medium text-slate-300">Critical Concerns</span>
+                <span className="text-xs font-medium text-[var(--pd-text-body)]">Critical Concerns</span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-amber-500/[0.06] border border-amber-500/20 flex flex-col gap-1">
-                <span className="text-2xl font-bold text-amber-400">
+              <div className="p-3.5 rounded-xl bg-[var(--pd-amber-wash)] border border-[var(--pd-amber)]/20 flex flex-col gap-1">
+                <span className="text-2xl font-bold text-[var(--pd-amber)]">
                   {statusResponse?.needs_attention_count ?? 0}
                 </span>
-                <span className="text-xs font-medium text-slate-300">Areas Needing Attention</span>
+                <span className="text-xs font-medium text-[var(--pd-text-body)]">Areas Needing Attention</span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/20 flex flex-col gap-1">
-                <span className="text-2xl font-bold text-emerald-400">
+              <div className="p-3.5 rounded-xl bg-[var(--pd-mint-wash)] border border-[var(--pd-mint)]/20 flex flex-col gap-1">
+                <span className="text-2xl font-bold text-[var(--pd-mint)]">
                   {statusResponse?.strengths_count ?? 0}
                 </span>
-                <span className="text-xs font-medium text-slate-300">Verified Strengths</span>
+                <span className="text-xs font-medium text-[var(--pd-text-body)]">Verified Strengths</span>
               </div>
             </div>
 
             {/* AI Status Explanation Banner */}
             {statusResponse?.ai_status === "completed" && (
-              <div className="p-3 rounded-xl bg-violet-500/[0.06] border border-violet-500/20 flex items-center gap-2.5 text-xs text-violet-300">
-                <Sparkles className="w-3.5 h-3.5 text-[#9D7BFC] flex-shrink-0" />
+              <div className="p-3 rounded-xl bg-[var(--pd-ai-wash)] border border-[var(--pd-ai)]/20 flex items-center gap-2.5 text-xs text-[var(--pd-ai)]">
+                <Sparkles className="w-3.5 h-3.5 text-[var(--pd-ai)] flex-shrink-0" />
                 <span>Deeper AI review included.</span>
               </div>
             )}
 
             {statusResponse?.ai_status === "unavailable" && (
-              <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.08] flex items-start gap-2.5 text-xs text-slate-400">
-                <Info className="w-3.5 h-3.5 text-amber-400/90 flex-shrink-0 mt-0.5" />
+              <div className="p-3 rounded-xl bg-[var(--pd-ai-wash)] border border-[var(--pd-ai)]/20 flex items-start gap-2.5 text-xs text-[var(--pd-ai)]">
+                <Info className="w-3.5 h-3.5 text-[var(--pd-ai)] flex-shrink-0 mt-0.5" />
                 <span>
                   Core evaluation completed. The deeper AI review wasn't available this time, so the findings are based on verified project evidence and deterministic checks.
                 </span>
@@ -341,7 +341,7 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 text-xs font-medium text-slate-400 hover:text-white rounded-xl transition-colors"
+                className="px-4 py-2.5 text-xs font-medium text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] rounded-xl transition-colors"
               >
                 Dismiss
               </button>
@@ -349,7 +349,7 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
               <button
                 type="button"
                 onClick={onReviewFindings}
-                className="px-5 py-2.5 text-xs font-medium bg-white text-black hover:bg-slate-200 rounded-xl transition-all shadow-lg flex items-center gap-2 font-medium"
+                className="px-5 py-2.5 text-xs font-medium bg-[var(--pd-ai)] text-white hover:bg-[var(--pd-ai-hover)] rounded-xl transition-all shadow-lg flex items-center gap-2"
               >
                 <span>Review Findings</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -364,20 +364,20 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
         {isInterrupted && (
           <div className="flex flex-col gap-5 py-2">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0 text-amber-400">
+              <div className="w-10 h-10 rounded-xl bg-[var(--pd-amber-wash)] border border-[var(--pd-amber)]/20 flex items-center justify-center flex-shrink-0 text-[var(--pd-amber)]">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
-                <h2 id="modal-title" className="text-xl font-semibold text-white tracking-tight">
+                <h2 id="modal-title" className="text-xl font-semibold text-[var(--pd-text-primary)] tracking-tight">
                   Evaluation Stopped
                 </h2>
-                <p className="text-sm text-slate-300 mt-1">
+                <p className="text-sm text-[var(--pd-text-body)] mt-1">
                   The evaluation stopped before it finished. You can safely try again.
                 </p>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-white/[0.02] border border-white/[0.06] text-xs text-slate-400">
+            <div className="p-3.5 rounded-xl bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] text-xs text-[var(--pd-text-body)]">
               The backend process restarted during active execution. No data was corrupted, and you can re-run the evaluation immediately.
             </div>
 
@@ -385,7 +385,7 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 text-xs font-medium text-slate-400 hover:text-white rounded-xl transition-colors"
+                className="px-4 py-2.5 text-xs font-medium text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] rounded-xl transition-colors"
               >
                 Close
               </button>
@@ -393,7 +393,7 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
               <button
                 type="button"
                 onClick={onRetry}
-                className="px-5 py-2.5 text-xs font-medium bg-[#9D7BFC] text-white hover:bg-[#8B65F9] rounded-xl transition-all shadow-lg flex items-center gap-2"
+                className="px-5 py-2.5 text-xs font-medium bg-[var(--pd-ai)] text-white hover:bg-[var(--pd-ai-hover)] rounded-xl transition-all shadow-lg flex items-center gap-2"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Try Again</span>
@@ -408,14 +408,14 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
         {isFailed && (
           <div className="flex flex-col gap-5 py-2">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0 text-rose-400">
+              <div className="w-10 h-10 rounded-xl bg-[var(--pd-coral-wash)] border border-[var(--pd-coral)]/20 flex items-center justify-center flex-shrink-0 text-[var(--pd-coral)]">
                 <AlertCircle className="w-5 h-5" />
               </div>
               <div>
-                <h2 id="modal-title" className="text-xl font-semibold text-white tracking-tight">
+                <h2 id="modal-title" className="text-xl font-semibold text-[var(--pd-text-primary)] tracking-tight">
                   Evaluation Could Not Complete
                 </h2>
-                <p className="text-sm text-slate-300 mt-1">
+                <p className="text-sm text-[var(--pd-text-body)] mt-1">
                   {statusResponse?.message || "An unexpected error occurred during evaluation. You can safely try again."}
                 </p>
               </div>
@@ -425,7 +425,7 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 text-xs font-medium text-slate-400 hover:text-white rounded-xl transition-colors"
+                className="px-4 py-2.5 text-xs font-medium text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] rounded-xl transition-colors"
               >
                 Close
               </button>
@@ -433,7 +433,7 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
               <button
                 type="button"
                 onClick={onRetry}
-                className="px-5 py-2.5 text-xs font-medium bg-white text-black hover:bg-slate-200 rounded-xl transition-all shadow-lg flex items-center gap-2"
+                className="px-5 py-2.5 text-xs font-medium bg-[var(--pd-ai)] text-white hover:bg-[var(--pd-ai-hover)] rounded-xl transition-all shadow-lg flex items-center gap-2"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 <span>Try Again</span>
@@ -448,14 +448,14 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
         {isInsufficient && (
           <div className="flex flex-col gap-5 py-2">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0 text-amber-400">
+              <div className="w-10 h-10 rounded-xl bg-[var(--pd-amber-wash)] border border-[var(--pd-amber)]/20 flex items-center justify-center flex-shrink-0 text-[var(--pd-amber)]">
                 <ShieldAlert className="w-5 h-5" />
               </div>
               <div>
-                <h2 id="modal-title" className="text-xl font-semibold text-white tracking-tight">
+                <h2 id="modal-title" className="text-xl font-semibold text-[var(--pd-text-primary)] tracking-tight">
                   Prerequisites Missing
                 </h2>
-                <p className="text-sm text-slate-300 mt-1">
+                <p className="text-sm text-[var(--pd-text-body)] mt-1">
                   {statusResponse?.message || "Project Doctor needs documentation and a connected repository to evaluate your project."}
                 </p>
               </div>
@@ -465,7 +465,7 @@ export const AnalysisWorkspaceModal: React.FC<AnalysisWorkspaceModalProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-2.5 text-xs font-medium bg-white text-black hover:bg-slate-200 rounded-xl transition-all"
+                className="px-5 py-2.5 text-xs font-medium bg-[var(--pd-ai)] text-white hover:bg-[var(--pd-ai-hover)] rounded-xl transition-all"
               >
                 Got It
               </button>

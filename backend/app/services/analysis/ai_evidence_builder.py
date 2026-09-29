@@ -149,6 +149,7 @@ class AIEvidencePackageBuilder:
                         id=tr.id,
                         requirement_id="",  # Populated after requirement join
                         status=tr.status,
+                        summary_notes=tr.summary_notes.strip()[:200] if tr.summary_notes else None,
                         implementation_count=tr.implementation_count,
                         test_count=tr.test_count,
                         candidate_files=candidate_paths,
@@ -174,6 +175,7 @@ class AIEvidencePackageBuilder:
                             "line_end": link.line_end,
                             "snippet": link.code_snippet.strip()[:MAX_SNIPPET_LENGTH],
                             "evidence_type": link.evidence_type,
+                            "is_test_evidence": link.is_test_evidence,
                             "match_confidence": round(link.match_confidence, 2),
                         }
                     )
@@ -215,6 +217,7 @@ class AIEvidencePackageBuilder:
                     id=r.id,
                     requirement_id=r.requirement_id,
                     title=r.title.strip(),
+                    description=r.description.strip()[:250] if r.description else None,
                     category=r.category,
                     is_ambiguous=r.is_ambiguous,
                     conflict_summary=(r.conflict_summary or "").strip() or None,

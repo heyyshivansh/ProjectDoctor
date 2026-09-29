@@ -19,32 +19,32 @@ interface StatusConfig {
 const STATUS_MAP: Record<string, StatusConfig> = {
   looks_solid: {
     label: "Looks Solid",
-    containerStyles: "bg-[#56b68b]/10 text-[#56b68b] border-[#56b68b]/30 shadow-[0_0_12px_rgba(86,182,139,0.15)]",
-    dotStyles: "bg-[#56b68b] shadow-[0_0_8px_rgba(86,182,139,0.6)]",
+    containerStyles: "bg-[var(--pd-mint-wash)] text-[var(--pd-mint)] border-[var(--pd-mint)]/30",
+    dotStyles: "bg-[var(--pd-mint)]",
     ariaLabel: "Diagnosis state: Looks Solid",
   },
   needs_attention: {
     label: "Needs Attention",
-    containerStyles: "bg-[#e5a84b]/10 text-[#e5a84b] border-[#e5a84b]/30 shadow-[0_0_12px_rgba(229,168,75,0.15)]",
-    dotStyles: "bg-[#e5a84b] shadow-[0_0_8px_rgba(229,168,75,0.6)]",
+    containerStyles: "bg-[var(--pd-amber-wash)] text-[var(--pd-amber)] border-[var(--pd-amber)]/30",
+    dotStyles: "bg-[var(--pd-amber)]",
     ariaLabel: "Diagnosis state: Needs Attention",
   },
   significant_concern: {
     label: "Significant Concern",
-    containerStyles: "bg-[#e06c75]/10 text-[#e06c75] border-[#e06c75]/30 shadow-[0_0_12px_rgba(224,108,117,0.15)]",
-    dotStyles: "bg-[#e06c75] shadow-[0_0_8px_rgba(224,108,117,0.6)]",
+    containerStyles: "bg-[var(--pd-coral-wash)] text-[var(--pd-coral)] border-[var(--pd-coral)]/30",
+    dotStyles: "bg-[var(--pd-coral)]",
     ariaLabel: "Diagnosis state: Significant Concern",
   },
   not_enough_evidence_yet: {
     label: "Insufficient Evidence",
-    containerStyles: "bg-[#20232a] text-[#888e9b] border-[#262a33]",
-    dotStyles: "bg-[#888e9b]",
+    containerStyles: "bg-[var(--pd-surface-raised)] text-[var(--pd-text-muted)] border-[var(--pd-border)]",
+    dotStyles: "bg-[var(--pd-text-faint)]",
     ariaLabel: "Diagnosis state: Insufficient Evidence",
   },
   not_analyzed: {
     label: "Not Yet Analyzed",
-    containerStyles: "bg-[#181a1f] text-[#5d6370] border-[#262a33]",
-    dotStyles: "bg-[#5d6370]",
+    containerStyles: "bg-[var(--pd-surface-raised)] text-[var(--pd-text-faint)] border-[var(--pd-border)]",
+    dotStyles: "bg-[var(--pd-text-faint)]",
     ariaLabel: "Diagnosis state: Not Yet Analyzed",
   },
 };
@@ -62,8 +62,8 @@ export const QualitativeStatusBadge: React.FC<QualitativeStatusBadgeProps> = ({
 }) => {
   const config = STATUS_MAP[status] || {
     label: status.replace(/_/g, " "),
-    containerStyles: "bg-[#1b1f26] text-[#9aa0aa] border-[#2a2f38]",
-    dotStyles: "bg-[#9aa0aa]",
+    containerStyles: "bg-[var(--pd-surface-raised)] text-[var(--pd-text-muted)] border-[var(--pd-border)]",
+    dotStyles: "bg-[var(--pd-text-faint)]",
     ariaLabel: `Diagnosis state: ${status}`,
   };
 

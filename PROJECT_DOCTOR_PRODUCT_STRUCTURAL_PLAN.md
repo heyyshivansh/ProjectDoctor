@@ -1,81 +1,75 @@
-# Project Doctor --- Product Structural Plan (Student-First Direction)
+# Project Doctor — Product Structural Plan
 
-## 1. Direction Reset
+## 1. Product Direction
 
-Project Doctor is no longer organized primarily around technical
-checkpoints.
-
-Checkpoints may still exist internally as implementation milestones, but
-they are no longer the product's mental model.
+Project Doctor is an AI-assisted technical project evaluator for college students.
 
 The product is organized around the student's journey:
 
-> **Understand → Investigate → Diagnose → Improve → Defend → Readiness**
+> Understand → Investigate → Diagnose → Improve → Defend → Readiness
+
+Checkpoints are internal implementation milestones only. They are not the student's mental model of the product.
 
 ### Product definition
 
-> **Project Doctor is an AI-assisted project evaluator that examines a
-> student's uploaded project documents and GitHub repository, compares
-> what the project claims with what can actually be evidenced, explains
-> technical weaknesses and uncertainties, suggests concrete
-> improvements, and prepares the student for technical evaluation or
-> jury questions.**
+> Project Doctor examines a student's project documents and GitHub repository, compares what the project claims with what can actually be evidenced, explains technical weaknesses and uncertainties, suggests concrete improvements, and prepares the student for technical evaluation or jury questions.
 
-### Core principle
+### Product north star
 
-> **Deterministic systems establish facts. AI reasons over structured
-> evidence.**
+> Project Doctor investigates your project the way a technical evaluator would, then explains what it found, what you should fix, and how you should defend it.
 
-The student should experience one coherent evaluator, not a collection
-of database tables exposed through a UI.
+### Core architectural principle
 
-------------------------------------------------------------------------
+> Deterministic systems establish facts. AI reasons over structured evidence.
 
-## 2. Student Problem
+The student should experience one coherent evaluator, not a collection of backend systems exposed through a UI.
 
-A student usually does not want to manage:
+---
 
--   13 requirements
--   requirement IDs
--   traceability records
--   evidence hashes
--   diagnostic rule IDs
--   AI analysis records
--   repository classifications
+# 2. Student Problem
 
-Those are internal mechanisms.
+Students often know what they intended to build but do not know whether:
 
-The student wants answers to:
+- their implementation actually supports their claims
+- important functionality is missing
+- technical weaknesses exist
+- evidence is sufficient to prove a claim
+- a reviewer could challenge an assumption
+- a weakness matters technically
+- they know enough to defend the project
+- the project is ready for evaluation
 
-1.  What does my project actually appear to be?
-2.  Does my implementation support what I claim?
-3.  What is weak, missing, inconsistent, or unverified?
-4.  Why does it matter?
-5.  What should I fix first?
-6.  What questions could a reviewer or jury ask?
-7.  Am I ready to defend this project?
+Project Doctor should answer:
 
-Therefore, internal structures must be translated into student-facing
-concepts such as:
+1. What does my project actually appear to be?
+2. Does my implementation support what I claim?
+3. What is weak, missing, inconsistent, or unverified?
+4. Why does it matter?
+5. What should I fix?
+6. What evidence should I be ready to show?
+7. What questions could a reviewer or jury ask?
+8. Am I ready to defend this project?
 
--   capabilities
--   claims
--   strengths
--   problems
--   risks
--   unknowns
--   evidence
--   fixes
--   jury questions
--   readiness
+Internal mechanisms such as requirement IDs, evidence hashes, traceability records, diagnostic IDs, and AI analysis records should not become the primary student experience.
 
-------------------------------------------------------------------------
+Student-facing concepts should be:
+
+- capabilities
+- claims
+- strengths
+- problems
+- risks
+- unknowns
+- evidence
+- fixes
+- jury questions
+- readiness
+
+---
 
 # 3. Product Model
 
-The product should evolve toward this experience:
-
-``` text
+```text
                     PROJECT
                        |
           +------------+------------+
@@ -105,389 +99,305 @@ The product should evolve toward this experience:
                  READINESS
 ```
 
-------------------------------------------------------------------------
+---
 
-# 4. Primary User Flow
+# 4. Final Student Journey
 
-## Feature 1 --- Project Onboarding
+## Understand
 
-### Student experience
+The student sees what Project Doctor believes their project is.
 
-The student creates a project by providing:
+It should explain:
 
--   project name
--   problem statement
--   natural project description
--   tech stack
--   GitHub URL
--   optional goals or context
--   uploaded documents
+- project purpose
+- problem being solved
+- target users
+- major capabilities
+- technologies
+- architecture summary
 
-Formal requirement entry must not be mandatory.
+Important interaction:
 
-### Outcome
+> "This is what I think your project is."
 
-Project Doctor has enough material to begin understanding the project.
+The student should be able to identify misunderstandings before deeper analysis.
 
-### Frontend
+## Investigate
 
-Build a clear onboarding experience rather than a database-style form.
+The student starts one coherent project investigation through:
 
-The student should understand:
+> Analyze Project
 
-> "Give Project Doctor the material you already have."
+Project Doctor investigates documentation, GitHub, deterministic analysis, traceability, and AI reasoning.
 
-------------------------------------------------------------------------
+## Diagnose
 
-# 5. Feature 2 --- Project Understanding
+Diagnosis is the central product experience.
 
-After onboarding, Project Doctor produces a concise understanding:
+The student should see:
 
-### What we're building
+- Strengths
+- Problems
+- Risks
+- Unknowns
 
--   project purpose
--   problem being solved
--   target users
--   major capabilities
--   technologies
--   architecture summary
+Important conclusions should be explainable through evidence.
 
-### Important interaction
+The intended reasoning chain is:
 
-The student should be able to see:
-
-> **"This is what I think your project is."**
-
-The student can identify obvious misunderstandings before deeper
-analysis.
-
-### Internal machinery
-
-Existing document extraction, project understanding, and requirement
-extraction remain useful.
-
-However, requirements are normalized and grouped internally rather than
-presented as the primary UI.
-
-------------------------------------------------------------------------
-
-# 6. Feature 3 --- Project Investigation
-
-Primary CTA:
-
-> **Analyze Project**
-
-The system investigates evidence from:
-
-### Documentation
-
--   proposals
--   SRS
--   README
--   architecture documents
--   reports
--   uploaded PDFs and text documents
-
-### GitHub
-
--   repository structure
--   source files
--   configuration
--   entrypoints
--   tests
--   implementation evidence
--   commit snapshot
-
-### Deterministic analysis
-
-Existing traceability and diagnostic logic.
-
-### AI reasoning
-
-CP8 AI reasoning interprets the structured evidence without replacing
-deterministic facts.
-
-### Frontend requirement
-
-The investigation must be visible as a coherent product action.
-
-The student should not need to understand individual backend engines.
-
-------------------------------------------------------------------------
-
-# 7. Feature 4 --- Project Diagnosis
-
-This is the central product experience.
-
-The result should be presented as:
-
-## Strengths
-
-What the evidence supports well.
-
-## Problems
-
-Concrete inconsistencies, missing implementation, or technical
-weaknesses.
-
-## Risks
-
-Things that could become problems during evaluation or real use.
-
-## Unknowns
-
-Important things that cannot currently be verified from available
-evidence.
-
-Every important conclusion should allow the student to inspect
-supporting evidence.
-
-### Example
-
-> **Role-based authorization is claimed but not fully evidenced.**
-
-Why it matters:
-
-> A reviewer may ask how unauthorized users are prevented from accessing
-> protected operations.
-
-Evidence:
-
--   documented capability
--   relevant repository files
--   traceability status
--   tests or missing tests
-
-This is much more useful than showing a raw finding ID.
-
-------------------------------------------------------------------------
-
-# 8. Internal Requirements vs Student-Facing Capabilities
-
-Requirements remain an internal evidence structure.
-
-They should be:
-
--   extracted from documents
--   normalized
--   deduplicated
--   grouped
--   linked to evidence
--   linked to implementation
-
-The UI should generally show:
-
-> **Capabilities / Claims**
-
-rather than:
-
-> REQ-001, REQ-002, REQ-003...
-
-### Example
-
-Internal:
-
-``` text
-REQ-001
-REQ-004
-REQ-007
-REQ-011
+```text
+Claim
+  ↓
+Evidence
+  ↓
+Interpretation
+  ↓
+Impact
 ```
 
-Student-facing:
+## Improve
 
-``` text
-Document Verification
+Each important problem should eventually become an actionable improvement containing:
+
+- Problem
+- Why it matters
+- What to do
+- Priority
+- Evidence to add
+- Possible jury question
+
+## Defend
+
+Project Doctor should eventually provide a project-specific defense simulator based on actual project evidence.
+
+## Readiness
+
+The final readiness experience should summarize:
+
+- what is strong
+- what still needs attention
+- what should be fixed
+- what questions should be prepared for
+- what evidence remains missing
+
+Do not reduce readiness to a meaningless single score.
+
+---
+
+# 5. Evidence Model
+
+Evidence is a first-class product concept.
+
+### Specification evidence
+
+- project metadata
+- proposal
+- SRS
+- README
+- architecture documents
+
+### Implementation evidence
+
+- source files
+- routes
+- components
+- configuration
+- schema code
+- entrypoints
+
+### Test evidence
+
+- automated tests
+- test reports
+- reproducible verification
+
+A requirement quote is not implementation evidence.
+
+A repository file containing a similar word is not automatically proof that the requirement is implemented.
+
+A directory tree proves that a path exists. It does not prove that the implementation works.
+
+The system must preserve these distinctions.
+
+---
+
+# 6. AI Responsibilities
+
+AI is a reasoning layer, not the source of deterministic facts.
+
+AI should help with:
+
+- synthesizing project purpose
+- interpreting cross-document/repository relationships
+- comparing claims with implementation evidence
+- explaining technical implications
+- interpreting deterministic findings
+- identifying nuanced inconsistencies
+- expressing uncertainty
+- identifying evidence gaps
+- suggesting evidence that would reduce uncertainty
+- proposing improvements
+- generating project-specific jury questions
+- eventually evaluating student defense answers
+
+AI must not:
+
+- invent evidence
+- invent files
+- invent UUIDs
+- invent implementation
+- invent tests
+- establish deterministic facts
+- provide unsupported claims
+- repeat requirements unnecessarily
+- summarize the entire repository
+- provide generic software advice
+- praise without evidence
+- criticize without evidence
+- fill schema fields with irrelevant content
+- behave like a generic chatbot
+- create arbitrary project-quality scores
+
+When evidence is insufficient:
+
+> I cannot verify this from the available evidence.
+
+---
+
+# 7. Current Technical Foundation
+
+The current system already contains:
+
+- project onboarding
+- document/artifact processing
+- document extraction
+- project understanding
+- requirement extraction and provenance
+- GitHub integration
+- repository snapshots
+- repository classification
+- implementation evidence
+- traceability
+- deterministic diagnosis
+- AI evidence selection
+- AI reasoning
+- AI provider abstraction
+- Pydantic AI output validation
+- citation validation
+- AI persistence
+- retry/error handling
+- student-facing project/diagnosis frontend
+
+The current AI provider is Groq.
+
+Current model:
+
+> `openai/gpt-oss-120b`
+
+The provider is configurable and existing Gemini/OpenRouter support should be preserved unless deliberately changed.
+
+---
+
+# 8. AI Processing Architecture
+
+```text
+Project
+   ↓
+Documents + GitHub
+   ↓
+Deterministic extraction
+   ↓
+Requirements / Claims
+   ↓
+Repository evidence
+   ↓
+Deterministic findings
+   ↓
+Traceability
+   ↓
+Evidence Selection
+   ↓
+Bounded AI Evidence Package
+   ↓
+Canonical Project Doctor Prompt
+   ↓
+AI Provider
+   ↓
+Structured AIAnalysisResult
+   ↓
+Pydantic Validation
+   ↓
+Citation Validation
+   ↓
+Persistence
+   ↓
+Diagnosis UI
 ```
 
-With:
+---
 
--   what the project claims
--   what was found
--   confidence
--   implementation evidence
--   verification evidence
--   unresolved gaps
+# 9. Evidence Selection and Context Quality
 
-This prevents duplicated documentation text from becoming duplicated
-student-facing concepts.
+The AI should reason over a bounded, high-value evidence package.
 
-------------------------------------------------------------------------
+The system should prefer:
 
-# 9. Feature 5 --- Improvement Plan
+- important deterministic findings
+- relevant claims/requirements
+- requirement-to-implementation relationships
+- implementation evidence
+- test evidence
+- relevant repository structure
+- project context
 
-Diagnosis must lead to action.
+The goal is:
 
-Each important problem should become an actionable improvement.
+> Better evidence, not simply more evidence.
 
-### Student-facing structure
+Evidence selection should remain deterministic, bounded, reproducible, and citation-safe.
 
-**Problem**
+---
 
-What is wrong or uncertain.
+# 10. Frontend Direction
 
-**Why it matters**
+The established visual direction is:
 
-Technical and evaluation impact.
+- modern AI technical diagnostic platform
+- dark/obsidian visual language
+- polished cards
+- glassmorphism where appropriate
+- strong hierarchy
+- progressive disclosure
+- concise explanations
+- guided sections
+- meaningful visual summaries
+- subtle motion
+- premium but technical presentation
 
-**What to do**
+It must not feel like:
 
-Concrete improvement steps.
+- CRUD software
+- spreadsheet software
+- generic enterprise software
+- document management
+- GitHub analytics
+- generic chatbot UI
 
-**Priority**
+The student should feel:
 
-Why it should be handled now versus later.
+> I am getting my project evaluated.
 
-**Evidence to add**
+not:
 
-What would make the claim verifiable.
+> I am managing project records.
 
-**Possible jury question**
+The frontend should evolve incrementally. Do not perform another large frontend rewrite unless explicitly approved.
 
-What a reviewer may ask because of the weakness.
+---
 
-The improvement planner is a future feature, but its contract should be
-designed now so diagnosis feeds it naturally.
+# 11. Product Navigation
 
-------------------------------------------------------------------------
-
-# 10. Feature 6 --- Jury Preparation
-
-Project Doctor should generate project-specific evaluation questions
-from the actual project evidence.
-
-Categories may include:
-
--   architecture
--   implementation
--   database
--   security
--   scalability
--   testing
--   design decisions
--   technology choices
--   limitations
-
-The student answers.
-
-Project Doctor evaluates the answer against the project's actual
-evidence and identifies:
-
--   missing technical reasoning
--   unsupported claims
--   contradictions
--   weak explanations
--   evidence the student should mention
-
-This should not become a generic chatbot.
-
-It is a project-specific defense simulator.
-
-------------------------------------------------------------------------
-
-# 11. Feature 7 --- Readiness / Final Review
-
-The final experience should summarize:
-
-### What is strong
-
-### What still needs attention
-
-### What the student should fix before evaluation
-
-### Questions they should prepare for
-
-### Evidence that remains missing
-
-The readiness view should explain its conclusions.
-
-Avoid turning the product into a meaningless single score.
-
-If a readiness indicator is eventually used, it must be secondary to the
-underlying evidence and explanation.
-
-------------------------------------------------------------------------
-
-# 12. Frontend-First Feature Development Rule
-
-From this point forward:
-
-> **A feature is not considered complete when its backend exists. It is
-> complete when the student can use and understand the feature through
-> the frontend.**
-
-Each feature must include:
-
-1.  Student goal
-2.  Frontend flow
-3.  Backend/data requirements
-4.  Deterministic reasoning where applicable
-5.  AI reasoning where useful
-6.  Evidence presentation
-7.  Empty/loading/error states
-8.  Manual end-to-end verification
-
-### Example
-
-AI Analysis is not complete because:
-
-``` text
-POST /ai-analysis/generate
-```
-
-exists.
-
-It is complete when:
-
-``` text
-Student clicks Analyze Project
-        ↓
-Frontend shows analysis progress
-        ↓
-Backend investigates evidence
-        ↓
-AI reasons over structured evidence
-        ↓
-Frontend presents diagnosis
-        ↓
-Student can inspect evidence
-        ↓
-Student understands what to fix
-```
-
-------------------------------------------------------------------------
-
-# 13. Frontend Evolution Strategy
-
-The frontend is no longer frozen across the entire project.
-
-It should evolve **incrementally with each product feature**.
-
-Do not perform a giant frontend rewrite.
-
-For every new feature:
-
--   reuse existing components where possible
--   improve navigation only when necessary
--   preserve working interactions
--   avoid unrelated visual changes
--   update the UI immediately after the underlying feature is
-    implemented
--   manually verify the complete feature before moving on
-
-The frontend should become the visible expression of the product
-journey.
-
-------------------------------------------------------------------------
-
-# 14. Proposed Product Navigation
-
-The exact visual design can evolve, but the conceptual navigation should
-move toward:
-
-``` text
-Project Doctor
-
+```text
 Project
 ├── Overview
 ├── Understand
@@ -498,306 +408,129 @@ Project
 └── Readiness
 ```
 
-Secondary details such as documents, repository evidence, requirements,
-and traceability can remain accessible as supporting evidence rather
-than competing as top-level destinations.
+Documents, repository evidence, requirements, and traceability remain supporting evidence rather than competing top-level destinations.
 
-------------------------------------------------------------------------
+---
 
-# 15. Evidence as a First-Class UX Concept
+# 12. Development Principles
 
-Evidence should be available when a student asks:
+For every feature:
 
-> "Why did Project Doctor say this?"
+1. Start with the student problem.
+2. Define the student goal.
+3. Reuse existing systems.
+4. Establish facts deterministically.
+5. Add AI only where reasoning helps.
+6. Keep evidence traceable.
+7. Use progressive disclosure.
+8. Avoid arbitrary scoring.
+9. Update frontend and backend together when the feature is student-facing.
+10. Test automatically and verify manually.
 
-Every significant diagnosis should be explainable through:
+---
 
-``` text
-Claim
-   ↓
-Evidence
-   ↓
-Interpretation
-   ↓
-Impact
-```
+# 13. Current Development Focus
 
-The AI must not invent evidence.
+The current product-quality focus is:
 
-Deterministic systems establish what exists.
+> Evidence Selection & Context Quality
 
-AI explains what the evidence may mean.
+The purpose is to ensure the AI receives the right deterministic evidence before reasoning.
 
-------------------------------------------------------------------------
+The expected student-facing benefit is:
 
-# 16. AI's Role
+- more specific diagnosis
+- stronger claim-to-implementation comparisons
+- better evidence references
+- better identification of missing functionality
+- better handling of uncertainty
+- more useful improvement guidance
+- more project-specific jury questions
 
-AI should not be a generic assistant sitting beside the product.
+---
 
-AI should be embedded where reasoning is genuinely useful:
+# 14. Roadmap
 
-### AI should help with
+## Phase A — Foundation
 
--   synthesizing project purpose
--   interpreting cross-document/repository relationships
--   explaining technical implications
--   identifying nuanced inconsistencies
--   expressing uncertainty
--   proposing evidence that would reduce uncertainty
--   generating project-specific jury questions
--   evaluating student defense answers
--   turning findings into understandable improvement guidance
+- Project Overview
+- Project Understanding
+- Analyze Project
 
-### AI should not establish deterministic facts
+## Phase B — Diagnosis
 
-Examples:
+- Strengths
+- Problems
+- Risks
+- Unknowns
+- Evidence inspection
 
-AI should not decide that:
+## Phase C — Improvement
 
-> "File X exists."
+- prioritized fixes
+- concrete recommendations
+- evidence needed
+- verification after fixes
 
-The repository inspection establishes that.
+## Phase D — Defense
 
-AI may say:
+- project-specific jury questions
+- student answers
+- answer evaluation
+- weak-area drilling
 
-> "The presence of this authentication middleware supports the
-> documented authentication capability."
+## Phase E — Readiness
 
-Likewise:
+- final project review
+- remaining risks
+- remaining evidence gaps
+- jury preparation
+- final report
 
-AI should not decide CP7 severity.
+---
 
-CP7 establishes deterministic severity.
+# 15. Non-Goals
 
-AI explains why that finding matters in the project's context.
+Do not turn Project Doctor into:
 
-------------------------------------------------------------------------
+- generic document management
+- generic requirement management
+- generic GitHub analytics
+- generic chatbot
+- enterprise project management
+- metric-heavy dashboards
+- leaderboards
+- arbitrary AI scoring
+- requirement tables as the primary product
+- backend-only feature collections
 
-# 17. Existing System Mapping
+---
 
-Existing technical work is retained where it supports the new product.
+# 16. Definition of Success
 
-  Existing capability           New product role
-  ----------------------------- ----------------------------------
-  Project management            Project Onboarding
-  Artifact upload               Project Evidence
-  Document extraction           Project Understanding
-  Requirement extraction        Internal Claims/Capability model
-  GitHub integration            Project Investigation
-  Repository classification     Evidence collection
-  Requirement traceability      Implementation verification
-  CP7 diagnostic engine         Deterministic Diagnosis
-  CP8 AI reasoning              AI-assisted Diagnosis
-  Future planner                Improve
-  Future jury simulator         Jury
-  Final aggregation/reporting   Readiness
+A student should eventually be able to answer:
 
-This means existing work is not discarded. It is repositioned underneath
-a clearer student experience.
+> What does my project claim to do?
 
-------------------------------------------------------------------------
+> What did Project Doctor actually verify?
 
-# 18. New Feature-Based Roadmap
+> What is weak or uncertain?
 
-## Phase A --- Product Foundation
+> Why does that matter?
 
-### A1. Project Home / Overview
+> What should I fix?
 
-A student understands the state of their project immediately.
+> What will the jury probably ask?
 
-### A2. Project Understanding
+> What evidence should I be ready to show?
 
-Project Doctor summarizes what it thinks the project is.
+If Project Doctor cannot answer those questions clearly, adding more technology is not the solution.
 
-### A3. Analyze Project
+---
 
-One coherent investigation action.
+# 17. Product North Star
 
-------------------------------------------------------------------------
-
-## Phase B --- Diagnosis
-
-### B1. Strengths
-
-### B2. Problems
-
-### B3. Risks
-
-### B4. Unknowns
-
-### B5. Evidence inspection
-
-------------------------------------------------------------------------
-
-## Phase C --- Improvement
-
-### C1. Prioritized fixes
-
-### C2. Concrete recommendations
-
-### C3. Evidence needed
-
-### C4. Verification after fixes
-
-------------------------------------------------------------------------
-
-## Phase D --- Defense
-
-### D1. Project-specific jury questions
-
-### D2. Student answers
-
-### D3. Answer evaluation
-
-### D4. Weak-area drilling
-
-------------------------------------------------------------------------
-
-## Phase E --- Readiness
-
-### E1. Final project review
-
-### E2. Remaining risks
-
-### E3. Remaining evidence gaps
-
-### E4. Jury preparation summary
-
-### E5. Final report
-
-------------------------------------------------------------------------
-
-# 19. Development Workflow Going Forward
-
-The old checkpoint sequence is no longer the primary planning method.
-
-For each feature:
-
-### Step 1 --- Define the student experience
-
-What is the student trying to accomplish?
-
-### Step 2 --- Design the frontend
-
-What does the student see and interact with?
-
-### Step 3 --- Identify required backend capabilities
-
-Only build backend functionality required by the feature.
-
-### Step 4 --- Connect deterministic evidence
-
-Use existing deterministic systems wherever possible.
-
-### Step 5 --- Add AI reasoning
-
-Only where AI adds interpretation rather than replacing deterministic
-facts.
-
-### Step 6 --- Implement frontend + backend together
-
-The frontend must be updated as part of the feature.
-
-### Step 7 --- Test
-
-Automated tests plus manual feature verification.
-
-### Step 8 --- Commit
-
-Only after the complete student-facing feature works.
-
-------------------------------------------------------------------------
-
-# 20. Immediate Next Feature
-
-Do not start another AI backend checkpoint.
-
-The immediate next feature should be:
-
-# **Project Home + Project Understanding**
-
-The goal is to establish the student's mental model of Project Doctor.
-
-The student should be able to open their project and immediately see:
-
-``` text
-YOUR PROJECT
-
-What Project Doctor understands
---------------------------------
-Project purpose
-Target users
-Core capabilities
-Technology stack
-Architecture summary
-
-Evidence collected
---------------------------------
-Documents ✓
-GitHub ✓
-Requirements ✓
-Implementation evidence ✓
-
-Ready to investigate?
-
-[ Analyze Project ]
-```
-
-This becomes the bridge between the existing foundation and the new
-product direction.
-
-------------------------------------------------------------------------
-
-# 21. Non-Goals
-
-Do not build:
-
--   generic document management software
--   requirement-management software
--   generic GitHub analytics
--   generic chatbot
--   enterprise project management
--   a dashboard full of metrics
--   a leaderboard
--   arbitrary AI-generated project scores
--   a requirement table as the primary product
--   backend-only features without a student-facing purpose
-
-------------------------------------------------------------------------
-
-# 22. Definition of a Successful Project Doctor
-
-A student should be able to answer these questions after using Project
-Doctor:
-
-> **What does my project claim to do?**
-
-> **What did Project Doctor actually verify?**
-
-> **What is weak or uncertain?**
-
-> **Why does that matter?**
-
-> **What should I fix?**
-
-> **What will the jury probably ask me?**
-
-> **What evidence should I be ready to show?**
-
-If the product cannot answer those questions clearly, more backend
-complexity is not the solution.
-
-------------------------------------------------------------------------
-
-# 23. New Product North Star
-
-> **Project Doctor investigates your project the way a technical
-> evaluator would, then explains what it found, what you should fix, and
-> how you should defend it.**
-
-The student's mental model should always remain:
-
-``` text
+```text
 MY PROJECT
     ↓
 WHAT I CLAIM
@@ -813,4 +546,4 @@ WHAT I SHOULD FIX
 WHAT I SHOULD DEFEND
 ```
 
-That is the product.
+Project Doctor exists to make that journey clear, evidence-grounded, student-friendly, and useful.

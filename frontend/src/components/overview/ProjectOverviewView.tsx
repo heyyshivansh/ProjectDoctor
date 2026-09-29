@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AnalysisStatusResponse } from "@/types/analysis";
 import { ProjectUnderstandingSummaryCard } from "./ProjectUnderstandingSummaryCard";
+import { Spotlight } from "@/components/core/spotlight";
 
 interface ProjectOverviewViewProps {
   project: ProjectDetail;
@@ -145,7 +146,8 @@ export const ProjectOverviewView: React.FC<ProjectOverviewViewProps> = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Card A: Raw Specification Materials */}
-          <div className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-5 flex flex-col justify-between min-h-[180px] shadow-pd-card">
+          <div className="relative bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-5 flex flex-col justify-between min-h-[180px] shadow-pd-card">
+            <Spotlight size={200} className="blur-2xl" />
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="w-8 h-8 rounded-lg bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] flex items-center justify-center text-[var(--pd-ai)]">
@@ -178,7 +180,7 @@ export const ProjectOverviewView: React.FC<ProjectOverviewViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onInspectArtifact(artifacts[0].id)}
-                  className="text-[var(--pd-ai)] hover:text-white transition-colors flex items-center gap-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--pd-ai)] rounded"
+                  className="text-[var(--pd-ai)] hover:text-[var(--pd-ai-hover)] transition-colors flex items-center gap-1 focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--pd-ai)] rounded"
                 >
                   <span>Inspect Extracted Text</span>
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -190,7 +192,8 @@ export const ProjectOverviewView: React.FC<ProjectOverviewViewProps> = ({
           </div>
 
           {/* Card B: Raw Codebase Connection */}
-          <div className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-5 flex flex-col justify-between min-h-[180px] shadow-pd-card">
+          <div className="relative bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-5 flex flex-col justify-between min-h-[180px] shadow-pd-card">
+            <Spotlight size={200} className="blur-2xl" />
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="w-8 h-8 rounded-lg bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] flex items-center justify-center text-[var(--pd-text-muted)]">
@@ -229,7 +232,7 @@ export const ProjectOverviewView: React.FC<ProjectOverviewViewProps> = ({
                   href={repoConnection.repo_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[var(--pd-text-body)] hover:text-white transition-colors flex items-center gap-1"
+                  className="text-[var(--pd-text-body)] hover:text-[var(--pd-text-primary)] transition-colors flex items-center gap-1"
                 >
                   <span>View on GitHub</span>
                   <ExternalLink className="w-3.5 h-3.5" />
@@ -241,7 +244,8 @@ export const ProjectOverviewView: React.FC<ProjectOverviewViewProps> = ({
           </div>
 
           {/* Card C: Derived Stated Claims Ready to Verify */}
-          <div className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-5 flex flex-col justify-between min-h-[180px] shadow-pd-card">
+          <div className="relative bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-5 flex flex-col justify-between min-h-[180px] shadow-pd-card">
+            <Spotlight size={200} className="blur-2xl" />
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="w-8 h-8 rounded-lg bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] flex items-center justify-center text-[var(--pd-ai)]">
@@ -273,7 +277,7 @@ export const ProjectOverviewView: React.FC<ProjectOverviewViewProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigate("understand")}
-                className="text-[var(--pd-ai)] hover:text-white transition-colors flex items-center gap-1 group focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--pd-ai)] rounded"
+                className="text-[var(--pd-ai)] hover:text-[var(--pd-ai-hover)] transition-colors flex items-center gap-1 group focus:outline-none focus-visible:ring-1 focus-visible:ring-[var(--pd-ai)] rounded"
               >
                 <span>Explore Claims</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -284,7 +288,7 @@ export const ProjectOverviewView: React.FC<ProjectOverviewViewProps> = ({
       </div>
 
       {/* ─── 4. DOMINANT NEXT ACTION CARD (Visually Focused) ─── */}
-      <div className="bg-[var(--pd-surface)] border border-[var(--pd-ai)]/30 rounded-2xl p-6 sm:p-7 border-l-4 border-l-[var(--pd-ai)] space-y-3 shadow-pd-card">
+      <div className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 sm:p-7 space-y-3 shadow-pd-card">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <span className="text-xs font-mono uppercase tracking-wider text-[var(--pd-ai)] font-semibold flex items-center gap-1.5">
@@ -345,7 +349,7 @@ export const ProjectOverviewView: React.FC<ProjectOverviewViewProps> = ({
             ) : analysisStatus?.status === "interrupted" ? (
               <Button
                 onClick={onOpenAnalysis}
-                className="gap-2 bg-[#9D7BFC] hover:bg-[#8B65F9] text-white text-xs font-mono px-5 py-2.5 rounded-lg shadow-sm"
+                className="gap-2 bg-[var(--pd-ai)] hover:bg-[var(--pd-ai-hover)] text-white text-xs font-mono px-5 py-2.5 rounded-lg shadow-sm"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Try Again</span>
@@ -361,9 +365,9 @@ export const ProjectOverviewView: React.FC<ProjectOverviewViewProps> = ({
             ) : analysisStatus?.status === "not_started" ? (
               <Button
                 onClick={onOpenAnalysis}
-                className="gap-2 bg-white text-black hover:bg-slate-200 text-xs font-mono px-5 py-2.5 rounded-lg font-medium shadow-sm"
+                className="gap-2 bg-[var(--pd-ai)] hover:bg-[var(--pd-ai-hover)] text-white text-xs font-mono px-5 py-2.5 rounded-lg font-medium shadow-sm"
               >
-                <Sparkles className="w-3.5 h-3.5 text-violet-600" />
+                <Sparkles className="w-3.5 h-3.5" />
                 <span>Analyze Project</span>
               </Button>
             ) : hasDiagnosis ? (
@@ -371,7 +375,7 @@ export const ProjectOverviewView: React.FC<ProjectOverviewViewProps> = ({
                 <Button
                   onClick={onOpenAnalysis}
                   variant="outline"
-                  className="text-xs font-mono px-3.5 py-2 bg-[var(--pd-surface-raised)] border-[var(--pd-border)] text-[var(--pd-text-muted)] hover:text-white"
+                  className="text-xs font-mono px-3.5 py-2 bg-[var(--pd-surface-raised)] border-[var(--pd-border)] text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)]"
                 >
                   <span>Re-analyze</span>
                 </Button>
@@ -386,9 +390,9 @@ export const ProjectOverviewView: React.FC<ProjectOverviewViewProps> = ({
             ) : (
               <Button
                 onClick={onOpenAnalysis}
-                className="gap-2 bg-white text-black hover:bg-slate-200 text-xs font-mono px-5 py-2.5 rounded-lg font-medium shadow-sm"
+                className="gap-2 bg-[var(--pd-ai)] hover:bg-[var(--pd-ai-hover)] text-white text-xs font-mono px-5 py-2.5 rounded-lg font-medium shadow-sm"
               >
-                <Sparkles className="w-3.5 h-3.5 text-violet-600" />
+                <Sparkles className="w-3.5 h-3.5" />
                 <span>Analyze Project</span>
               </Button>
             )}

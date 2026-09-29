@@ -10,8 +10,8 @@ export interface TactileSurfaceProps extends HTMLMotionProps<"div"> {
 }
 
 /**
- * TactileSurface: Physical dark tactile surface wrapper with crisp 1px borders,
- * specular rim lighting, and spring micro-press physics.
+ * TactileSurface: Light warm surface wrapper with warm borders,
+ * subtle shadow and spring micro-press physics.
  */
 export const TactileSurface = React.forwardRef<HTMLDivElement, TactileSurfaceProps>(
   (
@@ -25,15 +25,15 @@ export const TactileSurface = React.forwardRef<HTMLDivElement, TactileSurfacePro
     ref
   ) => {
     const elevationStyles = {
-      flat: "bg-pd-surface border border-pd-hairline shadow-none",
+      flat: "bg-[var(--pd-surface)] border border-[var(--pd-border)] shadow-none",
       raised:
-        "bg-pd-surface border border-pd-hairline shadow-[0_4px_20px_rgba(0,0,0,0.5)] ring-1 ring-white/[0.04]",
+        "bg-[var(--pd-surface)] border border-[var(--pd-border)] shadow-pd-card",
       floating:
-        "bg-pd-surface/95 border border-pd-hairline shadow-pd-dossier ring-1 ring-white/[0.06] backdrop-blur-md",
+        "bg-[var(--pd-surface-glass)] border border-[var(--pd-border)] shadow-pd-elevated backdrop-blur-md",
     };
 
     const interactiveStyles = interactive
-      ? "cursor-pointer transition-all duration-200 hover:border-pd-accent/50 hover:shadow-[0_8px_32px_rgba(0,0,0,0.6),0_0_16px_rgba(201,138,75,0.12)] active:border-pd-accent"
+      ? "cursor-pointer transition-all duration-200 hover:border-[var(--pd-border-hover)] hover:shadow-pd-elevated active:border-[var(--pd-border-focus)]"
       : "";
 
     return (
@@ -42,7 +42,7 @@ export const TactileSurface = React.forwardRef<HTMLDivElement, TactileSurfacePro
         whileTap={interactive ? { scale: 0.988 } : undefined}
         transition={{ type: "spring", stiffness: 400, damping: 25 }}
         className={cn(
-          "rounded-2xl text-pd-text transition-colors relative overflow-hidden",
+          "rounded-2xl text-[var(--pd-text-primary)] transition-colors relative overflow-hidden",
           elevationStyles[elevation],
           interactiveStyles,
           className

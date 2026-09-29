@@ -1,7 +1,8 @@
-import { ArrowLeft, RefreshCw, Sparkles } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Sparkles, PlayCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DiagnosisStatus } from '@/types/diagnosis';
 import { AnalysisStatusResponse } from '@/types/analysis';
+import { ScrollProgress } from '@/components/core/scroll-progress';
 
 interface ReviewDeskHeaderProps {
   projectTitle: string;
@@ -16,7 +17,11 @@ interface ReviewDeskHeaderProps {
 const TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'understand', label: 'Understand' },
+  { id: 'analyze', label: 'Analyze' },
   { id: 'diagnosis', label: 'Diagnosis' },
+  { id: 'improve', label: 'Improve' },
+  { id: 'defend', label: 'Defend' },
+  { id: 'readiness', label: 'Readiness' },
 ];
 
 export function ReviewDeskHeader({
@@ -26,91 +31,100 @@ export function ReviewDeskHeader({
   isAnalyzing,
   onAnalyze,
   activeSection,
-  onNavigate
+  onNavigate,
 }: ReviewDeskHeaderProps) {
   const isStale = analysisStatus?.is_stale;
-  const isRunning = isAnalyzing || analysisStatus?.status === "running";
-  const isNotStarted = analysisStatus?.status === "not_started";
+  const isRunning = isAnalyzing || analysisStatus?.status === 'running';
+  const isNotStarted = analysisStatus?.status === 'not_started';
 
   const buttonLabel = isRunning
-    ? "Evaluating..."
+    ? 'Evaluating…'
     : isNotStarted
-    ? "Analyze Project"
-    : "Re-analyze";
+    ? 'Analyze Project'
+    : 'Re-analyze';
 
   return (
-    <header className="sticky top-0 z-30 h-14 bg-[var(--pd-canvas)]/80 backdrop-blur-xl border-b border-[var(--pd-border)]">
-      <div className="max-w-[1520px] w-full mx-auto px-6 sm:px-12 lg:px-16 h-full flex items-center justify-between">
+    <header className="sticky top-0 z-30 bg-[var(--pd-surface)]/95 backdrop-blur-xl border-b border-[var(--pd-border)]">
+      {/* Top scroll progress bar */}
+      <div className="absolute top-0 left-0 w-full h-0.5 bg-[var(--pd-border)]">
+        <ScrollProgress className="bg-[var(--pd-ai)]" />
+      </div>
+
+      <div className="max-w-[1520px] w-full mx-auto px-4 sm:px-8 lg:px-12 h-14 flex items-center gap-3">
         {/* Left: Back + Project Name */}
-        <div className="flex items-center h-full gap-4 shrink-0">
+        <div className="flex items-center gap-3 shrink-0">
           <a
             href="/"
-            className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-ai)] rounded"
+            className="flex items-center gap-1.5 text-xs font-medium text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-border-focus)] rounded"
             aria-label="Back to Projects"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Projects</span>
+            <span className="hidden sm:inline">Projects</span>
           </a>
           <div className="w-px h-4 bg-[var(--pd-border)]" />
-          <h1 className="font-sans font-semibold text-sm text-[var(--pd-text-primary)] truncate max-w-xs">
+          <h1 className="font-sans font-semibold text-sm text-[var(--pd-text-primary)] truncate max-w-[120px] sm:max-w-[200px] lg:max-w-xs">
             {projectTitle}
           </h1>
         </div>
 
-        {/* Center/Right: Navigation Tabs */}
+        {/* Center: Navigation tabs — horizontally scrollable */}
         <nav
           aria-label="Project navigation"
-          className="flex items-center gap-1.5 h-full ml-4"
+          className="flex-1 overflow-x-auto scrollbar-none"
+          style={{ scrollbarWidth: 'none' }}
         >
-          {TABS.map((tab) => {
-            const isActive = activeSection === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => onNavigate(tab.id)}
-                aria-current={isActive ? 'page' : undefined}
-                className={cn(
-                  "relative flex items-center h-8 px-4 text-xs font-mono uppercase tracking-wider rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-ai)]",
-                  isActive
-                    ? "bg-[var(--pd-ai)]/15 text-violet-300 border border-violet-500/30 font-semibold"
-                    : "text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] hover:bg-[var(--pd-surface-raised)]"
-                )}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
+          <div className="flex items-center gap-0.5 min-w-max">
+            {TABS.map((tab) => {
+              const isActive = activeSection === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => onNavigate(tab.id)}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={cn(
+                    'relative flex items-center h-7 px-3 text-xs font-medium rounded-full transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-border-focus)] whitespace-nowrap',
+                    isActive
+                      ? 'bg-[var(--pd-ai)] text-white shadow-sm'
+                      : 'text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] hover:bg-[var(--pd-ai-wash)]'
+                  )}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
         </nav>
 
-        {/* Far Right: Analyze / Re-analyze */}
+        {/* Right: Stale badge + Analyze button */}
         {onAnalyze && (
-          <div className="flex items-center ml-4 pl-4 border-l border-[var(--pd-border)] shrink-0 gap-2">
-            {isStale && (
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+          <div className="flex items-center gap-2 shrink-0">
+            {isStale && !isRunning && (
+              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-[var(--pd-amber-wash)] border border-[var(--pd-amber)]/30 text-[var(--pd-amber)]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--pd-amber)] animate-pulse" />
                 Stale
               </span>
             )}
             <button
               onClick={onAnalyze}
               disabled={isRunning}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-[var(--pd-ai)]",
-                isNotStarted
-                  ? "bg-white text-black hover:bg-slate-200 font-medium shadow-sm"
-                  : "text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] hover:bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] hover:border-[var(--pd-border-hover)]"
-              )}
-              title={buttonLabel}
               aria-label={buttonLabel}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-border-focus)]',
+                isNotStarted
+                  ? 'bg-[var(--pd-ai)] text-white hover:bg-[var(--pd-ai-hover)] shadow-sm'
+                  : isRunning
+                  ? 'bg-[var(--pd-ai-wash)] text-[var(--pd-ai)] border border-[var(--pd-border)]'
+                  : 'text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] hover:bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] hover:border-[var(--pd-border-hover)]'
+              )}
             >
               {isRunning ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin text-[var(--pd-ai)]" />
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
               ) : isNotStarted ? (
-                <Sparkles className="w-3.5 h-3.5 text-violet-600" />
+                <PlayCircle className="w-3.5 h-3.5" />
               ) : (
-                <RefreshCw className="w-3.5 h-3.5" />
+                <Sparkles className="w-3.5 h-3.5" />
               )}
-              <span>{buttonLabel}</span>
+              <span className="hidden sm:inline">{buttonLabel}</span>
             </button>
           </div>
         )}

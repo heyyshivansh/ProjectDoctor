@@ -200,7 +200,7 @@ export const KeyFindingPager: React.FC<KeyFindingPagerProps> = ({
 
           {/* LEVEL 2: WHY DOES IT MATTER? */}
           {whyItMatters && (
-            <div className="border-l-2 border-[var(--pd-ai)]/40 pl-4 py-1 space-y-1 bg-[var(--pd-canvas-subtle)]/40 rounded-r-lg">
+            <div className="border-l-2 border-[var(--pd-ai)]/40 pl-4 py-1 space-y-1 bg-[var(--pd-surface-raised)] rounded-r-lg">
               <span className="text-xs font-mono uppercase tracking-wider text-[var(--pd-text-muted)] font-medium">
                 Why This Matters For Evaluation
               </span>

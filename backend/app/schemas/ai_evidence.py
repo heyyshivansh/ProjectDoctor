@@ -11,6 +11,7 @@ class AIEvidenceRequirementItem(BaseModel):
     id: uuid.UUID
     requirement_id: str = Field(description="Human-readable code e.g. REQ-001")
     title: str
+    description: Optional[str] = None
     category: str
     is_ambiguous: bool = False
     conflict_summary: Optional[str] = None
@@ -38,6 +39,7 @@ class AIEvidenceTraceabilityItem(BaseModel):
     id: uuid.UUID
     requirement_id: str
     status: str
+    summary_notes: Optional[str] = None
     implementation_count: int
     test_count: int
     candidate_files: List[str] = Field(default_factory=list)

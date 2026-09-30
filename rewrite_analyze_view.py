@@ -1,4 +1,6 @@
-import React from 'react';
+import re
+
+code = '''import React from 'react';
 import { FileText, Github, Loader2, AlertCircle, CheckCircle2, ChevronRight, Check, X, ShieldAlert, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProjectDetail } from '@/types/project';
@@ -37,7 +39,7 @@ const getStageWording = (stageCode: string, status: string, originalLabel: strin
   if (status === 'completed' || status === 'stale') return wording.completed;
   if (status === 'active') return wording.running;
   if (status === 'failed') return wording.failed;
-  if (status === 'unavailable' || status === 'skipped') return `AI review ${status}`
+  if (status === 'unavailable' || status === 'skipped') return \AI review \\;
   return wording.pending;
 };
 
@@ -162,7 +164,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-[var(--pd-text-primary)] truncate">{repoConnection.owner}/{repoConnection.repo_name}</p>
                 <p className="text-xs text-[var(--pd-text-muted)]">
-                  {repoConnection.current_snapshot ? `${repoConnection.current_snapshot.total_files} files` : 'GitHub Repository'}
+                  {repoConnection.current_snapshot ? \\ files\ : 'GitHub Repository'}
                 </p>
               </div>
             </div>
@@ -269,3 +271,7 @@ export const AnalyzeView: React.FC<AnalyzeViewProps> = ({
     </div>
   );
 };
+'''
+
+with open('frontend/src/components/analyze/AnalyzeView.tsx', 'w', encoding='utf-8') as f:
+    f.write(code)

@@ -16,7 +16,7 @@ export type AnalysisStageCode =
   | "STAGE_DIAGNOSIS"
   | "STAGE_AI_REVIEW";
 
-export type StageProgressStatus = "pending" | "active" | "completed" | "failed" | "skipped";
+export type StageProgressStatus = "pending" | "active" | "completed" | "failed" | "skipped" | "unavailable";
 
 export interface AnalysisStageInfo {
   stage: AnalysisStageCode | string;

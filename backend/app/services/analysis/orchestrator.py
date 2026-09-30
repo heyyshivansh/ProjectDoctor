@@ -367,15 +367,31 @@ class ProjectAnalysisOrchestrator:
 
         # Construct stages marked as completed
         completed_stages = []
+
         for stage_code, label, desc in STAGE_DEFINITIONS:
+
+            status_val = "completed"
+
+            if stage_code == STAGE_AI_REVIEW and ai_status:
+
+                status_val = ai_status
+
             completed_stages.append(
+
                 AnalysisStageInfo(
+
                     stage=stage_code,
+
                     label=label,
+
                     description=desc,
-                    status="completed",
+
+                    status=status_val,
+
                     detail=stage_details_map.get(stage_code, "Evaluated"),
+
                 )
+
             )
 
         eval_status = "stale" if is_stale else "completed"

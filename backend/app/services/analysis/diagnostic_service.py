@@ -334,6 +334,17 @@ class DiagnosticService:
         # -------------------------------------------------------------
         # RULES GATED ON TRACEABILITY (RULE-01, RULE-02, RULE-03, RULE-08)
         # -------------------------------------------------------------
+        
+        import re
+        def get_clean_req_title(req) -> str:
+            t = req.title or ""
+            # Strip parser artifacts like "--- page 1 ---"
+            t = re.sub(r'(?i)---\s*page\s+\d+\s*---', '', t).strip()
+            # If the title is too long or empty, fallback to the identifier
+            if not t or len(t) > 100:
+                t = req.requirement_id
+            return t
+
         if has_traceability and snapshot:
             req_by_id = {r.id: r for r in requirements}
 
@@ -341,6 +352,8 @@ class DiagnosticService:
                 req = req_by_id.get(trace.requirement_id)
                 if not req:
                     continue
+
+                clean_title = get_clean_req_title(req)
 
                 # RULE-01: Requirement without candidate implementation evidence
                 if trace.status == "unmatched":
@@ -354,17 +367,17 @@ class DiagnosticService:
                             commit_sha=snapshot.commit_sha,
                             finding_type="requirement_gap",
                             severity="major",
-                            title=f"Requirement without clear implementation evidence ({req.title})",
+                            title=f"Implementation not yet linked to requirement ({clean_title})",
                             summary=(
-                                f"Project Doctor searched the repository snapshot at commit {snapshot.commit_sha[:7]} "
-                                f"but could not locate candidate implementation evidence matching '{req.title}'."
+                                f"No repository files are currently linked to the requirement '{clean_title}'. "
+                                "Note that missing linked evidence does not prove the feature is absent from the codebase, but indicates it cannot yet be automatically verified."
                             ),
                             why_it_matters=(
                                 "Why this matters for evaluation: Evaluators verify whether claimed project requirements "
                                 "are present in code. Missing implementation evidence is a common issue during technical reviews."
                             ),
                             suggested_action=(
-                                f"Review repository files to ensure the implementation for '{req.title}' is committed and clearly identifiable."
+                                f"Review repository files to ensure the implementation for '{clean_title}' is committed and clearly identifiable."
                             ),
                             evidence_references=[
                                 {
@@ -400,9 +413,9 @@ class DiagnosticService:
                             commit_sha=snapshot.commit_sha,
                             finding_type="code_organization",
                             severity="needs_attention",
-                            title=f"Multiple competing implementation files found for requirement ({req.title})",
+                            title=f"Multiple competing implementation files found for requirement ({clean_title})",
                             summary=(
-                                f"Multiple candidate implementation files were identified for '{req.title}'. "
+                                f"Multiple candidate implementation files were identified for '{clean_title}'. "
                                 "It is not clear which file represents the active implementation."
                             ),
                             why_it_matters=(
@@ -410,7 +423,7 @@ class DiagnosticService:
                                 "during evaluation and can suggest incomplete refactoring."
                             ),
                             suggested_action=(
-                                f"Consolidate the implementation into a single primary file or remove outdated candidate files for '{req.title}'."
+                                f"Consolidate the implementation into a single primary file or remove outdated candidate files for '{clean_title}'."
                             ),
                             evidence_references=[
                                 {
@@ -447,17 +460,17 @@ class DiagnosticService:
                             commit_sha=snapshot.commit_sha,
                             finding_type="testing_gap",
                             severity="improvement",
-                            title=f"Candidate implementation code found without associated tests ({req.title})",
+                            title=f"Implementation code lacks associated tests ({clean_title})",
                             summary=(
-                                f"Candidate implementation code was located for '{req.title}', but associated test evidence "
-                                "was not located in the repository according to traceability analysis."
+                                f"Implementation code was located for '{clean_title}', but associated test evidence "
+                                "was not located in the repository."
                             ),
                             why_it_matters=(
                                 "Why this matters for evaluation: Evaluators frequently ask how features were verified. "
                                 "Automated tests provide reproducible evidence of correctness."
                             ),
                             suggested_action=(
-                                f"Add an automated test suite or unit test verifying '{req.title}'."
+                                f"Add an automated test suite or unit test verifying '{clean_title}'."
                             ),
                             evidence_references=[
                                 {
@@ -494,16 +507,16 @@ class DiagnosticService:
                             commit_sha=snapshot.commit_sha,
                             finding_type="strength",
                             severity="strength",
-                            title=f"Implementation accompanied by candidate test evidence ({req.title})",
+                            title=f"Implementation accompanied by candidate test evidence ({clean_title})",
                             summary=(
-                                f"Located candidate implementation code and potentially related test evidence for '{req.title}'."
+                                f"Located candidate implementation code and potentially related test evidence for '{clean_title}'."
                             ),
                             why_it_matters=(
                                 "Why this matters for evaluation: Demonstrating automated tests alongside feature code "
                                 "shows strong engineering discipline to evaluators."
                             ),
                             suggested_action=(
-                                f"Ensure test coverage for '{req.title}' is actively executed in automated workflows or CI."
+                                f"Ensure test coverage for '{clean_title}' is actively executed in automated workflows or CI."
                             ),
                             evidence_references=[
                                 {
@@ -542,6 +555,13 @@ class DiagnosticService:
                 f_hash = hashlib.sha256(
                     f"{project_id}:{snapshot.id}:RULE_04_SECURITY:{sf.file_path}".encode("utf-8")
                 ).hexdigest()
+                
+                is_sample = any(sf.file_path.endswith(ext) for ext in [".example", ".sample", ".template", "-example"])
+                if is_sample:
+                    suggested_action = f"Verify '{sf.file_path}' contains dummy values, not real secrets. Sample files should be committed, but must never contain real credentials."
+                else:
+                    suggested_action = f"Ensure '{sf.file_path}' contains no secrets. If it contains real credentials, remove it from git history, add it to .gitignore, and provide a safe sample file (like .env.example) instead."
+
                 candidate_findings.append(
                     Finding(
                         project_id=project_id,
@@ -549,18 +569,16 @@ class DiagnosticService:
                         commit_sha=snapshot.commit_sha,
                         finding_type="security_risk",
                         severity="critical",
-                        title="Potentially sensitive configuration file detected in repository",
+                        title=f"Potential configuration risk: '{sf.file_path}'",
                         summary=(
-                            f"A potentially sensitive configuration file was detected in the repository ('{sf.file_path}'). "
-                            "In accordance with security practices, its contents were omitted from ingestion."
+                            f"Because '{sf.file_path}' is often used for configuration, its contents were omitted from ingestion as a precaution. "
+                            "This is a potential risk—we cannot confirm if actual secrets were exposed."
                         ),
                         why_it_matters=(
-                            "Why this matters for evaluation: Committing environment or credential files can inadvertently "
+                            "Why this matters for evaluation: Committing real environment or credential files can inadvertently "
                             "expose private configuration to repository viewers and evaluators."
                         ),
-                        suggested_action=(
-                            f"Ensure '{sf.file_path}' contains no secrets, add it to .gitignore, and provide sample configuration via .env.example instead."
-                        ),
+                        suggested_action=suggested_action,
                         evidence_references=[
                             {
                                 "target_type": "repository_file",
@@ -727,6 +745,7 @@ class DiagnosticService:
         # PROJECT-LEVEL SPECIFICATION RULES (RULE-06)
         # -------------------------------------------------------------
         for req in requirements:
+            clean_title = get_clean_req_title(req)
             if req.is_ambiguous or (req.conflict_summary is not None and req.conflict_summary.strip() != ""):
                 f_hash = hashlib.sha256(
                     f"{project_id}:project:RULE_06_AMBIGUITY:{req.id}".encode("utf-8")
@@ -738,9 +757,9 @@ class DiagnosticService:
                         commit_sha=None,
                         finding_type="specification_gap",
                         severity="needs_attention",
-                        title=f"Specification conflict or ambiguity detected in project documentation ({req.title})",
+                        title=f"Specification conflict or ambiguity detected in project documentation ({clean_title})",
                         summary=(
-                            f"Requirement '{req.title}' contains internal ambiguity or conflicting specifications across project documentation: "
+                            f"Requirement '{clean_title}' contains internal ambiguity or conflicting specifications across project documentation: "
                             f"'{req.conflict_summary or 'Inconsistent requirement statements detected'}'."
                         ),
                         why_it_matters=(
@@ -748,7 +767,7 @@ class DiagnosticService:
                             "for evaluators to determine whether the project meets its stated objectives."
                         ),
                         suggested_action=(
-                            f"Clarify the specification for '{req.title}' in your project documentation."
+                            f"Clarify the specification for '{clean_title}' in your project documentation."
                         ),
                         evidence_references=[
                             {

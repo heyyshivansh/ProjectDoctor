@@ -11,8 +11,18 @@ import {
   ChevronDown,
   Sparkles,
   Layers,
+  X
 } from "lucide-react";
 import { FindingSummary, FindingDetail, FindingSeverity } from "@/types/diagnosis";
+import {
+  MorphingDialog,
+  MorphingDialogTrigger,
+  MorphingDialogContainer,
+  MorphingDialogContent,
+  MorphingDialogClose,
+  MorphingDialogTitle,
+  MorphingDialogDescription,
+} from "@/components/motion-primitives/morphing-dialog";
 import { cn } from "@/lib/utils";
 
 interface KeyFindingPagerProps {
@@ -20,7 +30,7 @@ interface KeyFindingPagerProps {
   activeIndex: number;
   onSelectFinding: (index: number) => void;
   findingDetail: FindingDetail | null;
-  onOpenEvidence: () => void;
+  
 }
 
 const severityConfig: Record<
@@ -59,14 +69,13 @@ export const KeyFindingPager: React.FC<KeyFindingPagerProps> = ({
   activeIndex,
   onSelectFinding,
   findingDetail,
-  onOpenEvidence,
 }) => {
   const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
 
   const total = findings.length;
   const activeFinding = findings[activeIndex] || null;
-  const prevFinding = activeIndex > 0 ? findings[activeIndex - 1] : null;
-  const nextFinding = activeIndex < total - 1 ? findings[activeIndex + 1] : null;
+  
+  
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -97,6 +106,54 @@ export const KeyFindingPager: React.FC<KeyFindingPagerProps> = ({
     setShowTechnicalDetails(false);
   }, [activeIndex]);
 
+    const renderEvidence = () => {
+    if (!findingDetail?.hydrated_evidence || findingDetail.hydrated_evidence.length === 0) {
+      return (
+        <div className="p-8 bg-[var(--pd-surface)] rounded-xl text-center border border-[var(--pd-border)]">
+          <FileSearch className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+          <p className="text-sm text-[var(--pd-text-muted)]">No source evidence is linked yet.</p>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="space-y-4 mt-4 max-h-[50vh] overflow-y-auto pr-2 text-left">
+        {findingDetail.hydrated_evidence.map((ev: any, i: number) => (
+          <div key={i} className="p-4 bg-[var(--pd-surface)] rounded-xl border border-[var(--pd-border)] text-left">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full">
+                {(ev.evidence_type || ev.role || "").replace(/_/g, " ")}
+              </span>
+              <span className="text-xs font-medium text-[var(--pd-text-muted)] capitalize">
+                {(ev.target_type || "").replace(/_/g, " ")}
+              </span>
+            </div>
+            {ev.title && <p className="text-sm font-semibold mb-2">{ev.title}</p>}
+            {ev.snippet ? (
+              <pre className="p-3 bg-white rounded-lg text-xs font-mono text-gray-800 overflow-x-auto border border-gray-100 whitespace-pre-wrap">
+                {ev.snippet}
+              </pre>
+            ) : null}
+            <div className="text-sm text-[var(--pd-text-body)] space-y-2 mt-2 bg-white p-3 rounded-lg border border-gray-100">
+              {ev.file_path && <p><strong className="text-gray-900">Path:</strong> {ev.file_path}</p>}
+              {ev.section_title && <p><strong className="text-gray-900">Section:</strong> {ev.section_title}</p>}
+              {ev.page_number && <p><strong className="text-gray-900">Page:</strong> {ev.page_number}</p>}
+              {ev.content_status === "security_omitted" && (
+                <p className="text-amber-700 bg-amber-50 p-2 rounded flex items-center gap-2 text-xs font-medium">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  Content intentionally omitted for security reasons.
+                </p>
+              )}
+              {ev.line_start && ev.line_end && (
+                <p><strong className="text-gray-900">Lines:</strong> {ev.line_start} - {ev.line_end}</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   if (!activeFinding) return null;
 
   const config =
@@ -115,7 +172,7 @@ export const KeyFindingPager: React.FC<KeyFindingPagerProps> = ({
     <section
       role="region"
       aria-label="Key Findings Investigation"
-      className="space-y-3"
+      className="space-y-3 pb-32"
     >
       {/* Investigation Track Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
@@ -129,44 +186,24 @@ export const KeyFindingPager: React.FC<KeyFindingPagerProps> = ({
           </span>
         </div>
 
-        {/* Prev / Next Buttons */}
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={() => onSelectFinding(activeIndex - 1)}
-            disabled={activeIndex === 0}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-mono transition-colors",
-              activeIndex === 0
-                ? "border-[var(--pd-border)] text-[var(--pd-text-faint)] cursor-not-allowed bg-transparent"
-                : "border-[var(--pd-border)] text-[var(--pd-text-body)] hover:text-[var(--pd-text-primary)] hover:bg-[var(--pd-surface-raised)] hover:border-[var(--pd-border-hover)]"
-            )}
-            title={prevFinding ? `Previous: ${prevFinding.title}` : undefined}
-            aria-label="Previous finding"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-            <span>Prev</span>
-          </button>
-
-          <button
-            onClick={() => onSelectFinding(activeIndex + 1)}
-            disabled={activeIndex === total - 1}
-            className={cn(
-              "flex items-center gap-1.5 px-3 py-1 rounded-lg border text-xs font-mono transition-colors",
-              activeIndex === total - 1
-                ? "border-[var(--pd-border)] text-[var(--pd-text-faint)] cursor-not-allowed bg-transparent"
-                : "border-[var(--pd-border)] text-[var(--pd-text-body)] hover:text-[var(--pd-text-primary)] hover:bg-[var(--pd-surface-raised)] hover:border-[var(--pd-border-hover)]"
-            )}
-            title={nextFinding ? `Next: ${nextFinding.title}` : undefined}
-            aria-label="Next finding"
-          >
-            <span>Next</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        
       </div>
 
       {/* Dominant Finding Surface (Viewport-budgeted) */}
-      <AnimatePresence mode="wait">
+      
+      <div className="flex flex-col sm:flex-row items-center gap-4">
+        {/* Previous Button - Left on desktop, Top/Bottom on mobile? Actually let's use order for mobile to put them together at bottom */}
+        <button
+          onClick={() => onSelectFinding(activeIndex - 1)}
+          disabled={activeIndex === 0}
+          aria-label="Previous finding"
+          className="hidden sm:flex shrink-0 items-center justify-center w-10 h-10 rounded-full bg-[var(--pd-surface)] border border-[var(--pd-border)] text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] hover:border-[var(--pd-ai)] hover:bg-[var(--pd-surface-raised)] disabled:opacity-30 disabled:pointer-events-none transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-ai)]"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+
+        <div className="flex-1 w-full min-w-0">
+          <AnimatePresence mode="wait">
         <motion.div
           key={activeFinding.id || activeIndex}
           initial={{ opacity: 0, x: 16 }}
@@ -176,7 +213,7 @@ export const KeyFindingPager: React.FC<KeyFindingPagerProps> = ({
           className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 sm:p-8 shadow-pd-card space-y-5"
         >
           {/* LEVEL 1: WHAT IS WRONG? + HOW SERIOUS IS IT? */}
-          <div className="space-y-3">
+          <div className="space-y-3 pb-32">
             <div className="flex flex-wrap items-center gap-2">
               <span
                 className={cn(
@@ -245,16 +282,31 @@ export const KeyFindingPager: React.FC<KeyFindingPagerProps> = ({
               </span>
             </button>
 
-            <button
-              onClick={onOpenEvidence}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--pd-ai)] hover:bg-[var(--pd-ai-hover)] text-white text-xs font-mono font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--pd-ai)] shrink-0"
-            >
-              <FileSearch className="w-3.5 h-3.5" />
-              <span>
-                Inspect Source Evidence{" "}
-                {evidenceCount > 0 ? `(${evidenceCount} refs)` : ""} &rarr;
-              </span>
-            </button>
+            <MorphingDialog transition={{ type: 'spring', bounce: 0, duration: 0.3 }}>
+              <MorphingDialogTrigger className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--pd-ai)] hover:bg-[var(--pd-ai-hover)] text-white text-xs font-mono font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--pd-ai)] shrink-0">
+                  <FileSearch className="w-3.5 h-3.5" />
+                  <span>
+                    Inspect Source Evidence{" "}
+                    {evidenceCount > 0 ? `(${evidenceCount} refs)` : ""} &rarr;
+                  </span>
+                </MorphingDialogTrigger>
+              <MorphingDialogContainer>
+                <MorphingDialogContent className="pointer-events-auto w-full max-w-2xl rounded-2xl bg-[var(--pd-surface)] p-6 shadow-2xl border border-[var(--pd-border)] flex flex-col">
+                  <div className="flex justify-between items-start mb-2">
+                    <MorphingDialogTitle className="text-lg font-semibold text-[var(--pd-text-primary)] pr-8">
+                      {activeFinding.title}
+                    </MorphingDialogTitle>
+                    <MorphingDialogClose className="text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] bg-[var(--pd-surface-raised)] hover:bg-[var(--pd-border-hover)] rounded-full p-2 transition-colors shrink-0">
+                      <X className="w-4 h-4" />
+                    </MorphingDialogClose>
+                  </div>
+                  <MorphingDialogDescription className="text-sm text-[var(--pd-text-muted)] mb-4">
+                    Inspect the source evidence for this finding.
+                  </MorphingDialogDescription>
+                  {renderEvidence()}
+                </MorphingDialogContent>
+              </MorphingDialogContainer>
+            </MorphingDialog>
           </div>
 
           {/* LEVEL 6: COLLAPSIBLE TECHNICAL DRAWER */}
@@ -289,6 +341,41 @@ export const KeyFindingPager: React.FC<KeyFindingPagerProps> = ({
           )}
         </motion.div>
       </AnimatePresence>
+        </div>
+
+        {/* Next Button - Right on desktop */}
+        <button
+          onClick={() => onSelectFinding(activeIndex + 1)}
+          disabled={activeIndex === total - 1}
+          aria-label="Next finding"
+          className="hidden sm:flex shrink-0 items-center justify-center w-10 h-10 rounded-full bg-[var(--pd-surface)] border border-[var(--pd-border)] text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] hover:border-[var(--pd-ai)] hover:bg-[var(--pd-surface-raised)] disabled:opacity-30 disabled:pointer-events-none transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--pd-ai)]"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
+      
+      {/* Mobile-only prev/next row (below the card) */}
+      <div className="flex sm:hidden items-center justify-between gap-4 mt-2 px-2">
+        <button
+          onClick={() => onSelectFinding(activeIndex - 1)}
+          disabled={activeIndex === 0}
+          aria-label="Previous finding"
+          className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-[var(--pd-surface)] border border-[var(--pd-border)] text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] disabled:opacity-30 disabled:pointer-events-none transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--pd-ai)]"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          <span className="text-sm font-medium">Previous</span>
+        </button>
+        <button
+          onClick={() => onSelectFinding(activeIndex + 1)}
+          disabled={activeIndex === total - 1}
+          aria-label="Next finding"
+          className="flex-1 flex items-center justify-center gap-2 py-2 rounded-xl bg-[var(--pd-surface)] border border-[var(--pd-border)] text-[var(--pd-text-muted)] hover:text-[var(--pd-text-primary)] disabled:opacity-30 disabled:pointer-events-none transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--pd-ai)]"
+        >
+          <span className="text-sm font-medium">Next</span>
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
 
       {/* Position Navigation Track */}
       <div className="flex items-center justify-center gap-2 pt-1" aria-label="Finding pagination">

@@ -20,6 +20,11 @@ import { cn } from "@/lib/utils";
 import { AnalysisStatusResponse } from "@/types/analysis";
 import { ProjectUnderstandingSummaryCard } from "./ProjectUnderstandingSummaryCard";
 import { Spotlight } from "@/components/core/spotlight";
+import {
+  MorphingPopover,
+  MorphingPopoverTrigger,
+  MorphingPopoverContent,
+} from "@/components/motion-primitives/morphing-popover";
 
 interface ProjectOverviewViewProps {
   project: ProjectDetail;
@@ -83,19 +88,58 @@ export const ProjectOverviewView: React.FC<ProjectOverviewViewProps> = ({
               <span>Project Identity</span>
             </span>
 
-            {hasDiagnosis && diagnosis && (
-              <span
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono border",
-                  diagnosis.status === "looks_solid"
-                    ? "bg-[var(--pd-mint-wash)] text-[var(--pd-mint)] border-[var(--pd-mint)]/30"
-                    : "bg-[var(--pd-amber-wash)] text-[var(--pd-amber)] border-[var(--pd-amber)]/30"
-                )}
-              >
-                <Stethoscope className="w-3.5 h-3.5" />
-                <span>{diagnosis.status_label}</span>
-              </span>
-            )}
+            {/* Health Badge with Popover */}
+            <MorphingPopover>
+              <MorphingPopoverTrigger asChild>
+                <button
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono border focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                    diagnosis?.status === "looks_solid"
+                      ? "bg-[var(--pd-mint-wash)] text-[var(--pd-mint)] border-[var(--pd-mint)]/30 focus-visible:ring-[var(--pd-mint)]"
+                      : diagnosis?.status === "significant_concern"
+                      ? "bg-[var(--pd-coral-wash)] text-[var(--pd-coral)] border-[var(--pd-coral)]/30 focus-visible:ring-[var(--pd-coral)]"
+                      : diagnosis?.status === "needs_attention"
+                      ? "bg-[var(--pd-amber-wash)] text-[var(--pd-amber)] border-[var(--pd-amber)]/30 focus-visible:ring-[var(--pd-amber)]"
+                      : "bg-[var(--pd-surface-raised)] text-[var(--pd-text-muted)] border-[var(--pd-border)] focus-visible:ring-[var(--pd-border-focus)]"
+                  )}
+                >
+                  <Stethoscope className="w-3.5 h-3.5" />
+                  <span>
+                    {!diagnosis || diagnosis.status === "not_analyzed"
+                      ? "Not assessed"
+                      : diagnosis.status === "not_enough_evidence_yet"
+                      ? "Needs more evidence"
+                      : diagnosis.status_label || "Not assessed"}
+                  </span>
+                </button>
+              </MorphingPopoverTrigger>
+              <MorphingPopoverContent className="w-64 p-4 rounded-xl bg-[var(--pd-surface)] border-[var(--pd-border)] text-[var(--pd-text-body)] shadow-pd-elevated z-50">
+                <div className="space-y-2 text-sm font-sans">
+                  <p className="font-semibold text-[var(--pd-text-primary)]">
+                    {!diagnosis || diagnosis.status === "not_analyzed"
+                      ? "Not assessed"
+                      : diagnosis.status === "looks_solid"
+                      ? "Looks Solid"
+                      : diagnosis.status === "significant_concern"
+                      ? "Significant Concern"
+                      : diagnosis.status === "needs_attention"
+                      ? "Needs Attention"
+                      : "Needs more evidence"}
+                  </p>
+                  <p className="text-xs">
+                    {!diagnosis || diagnosis.status === "not_analyzed"
+                      ? "The project has not been analyzed yet. Run an analysis to determine its health."
+                      : diagnosis.status === "looks_solid"
+                      ? "The project capabilities are well-supported by codebase evidence."
+                      : diagnosis.status === "significant_concern"
+                      ? "Critical gaps or misalignments were found between stated claims and codebase implementation."
+                      : diagnosis.status === "needs_attention"
+                      ? "Several areas require attention or additional evidence to fully support your claims."
+                      : "The repository doesn't have enough evidence yet to form a conclusive diagnosis."}
+                  </p>
+                </div>
+              </MorphingPopoverContent>
+            </MorphingPopover>
           </div>
 
           <div className="flex items-center gap-3 text-xs font-mono text-[var(--pd-text-muted)]">

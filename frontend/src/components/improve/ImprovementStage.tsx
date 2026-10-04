@@ -87,7 +87,7 @@ export const ImprovementStage: React.FC<ImprovementStageProps> = ({ projectId, o
 
   if (!plan) return null;
 
-  if (plan.analysis_id === null) {
+  if (plan.latest_verification_run_id === null) {
     return (
       <div className="space-y-4 animate-in fade-in duration-200">
         <div>

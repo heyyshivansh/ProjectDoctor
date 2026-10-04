@@ -16,6 +16,7 @@ from app.models.traceability import (
 )
 from app.models.finding import Finding
 from app.models.ai_analysis import AIAnalysis
+from app.models.analysis_run import AnalysisRun
 from app.models.improvement import ImprovementItem
 
 __all__ = [
@@ -33,6 +34,7 @@ __all__ = [
     "RequirementTraceabilityLink",
     "Finding",
     "AIAnalysis",
+    "AnalysisRun",
     "ImprovementItem",
 ]
 

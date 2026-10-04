@@ -333,7 +333,7 @@ def test_deterministic_finding_generation_all_rules(db_session: Session, project
     f_r1 = finding_hashes[r1_hash]
     assert f_r1.severity == "major"
     assert f_r1.finding_type == "requirement_gap"
-    assert "Requirement without clear implementation evidence" in f_r1.title
+    assert "Implementation not yet linked to requirement" in f_r1.title
     assert "Why this matters for evaluation" in f_r1.why_it_matters
     assert req_unmatched.title in f_r1.summary
 
@@ -351,7 +351,7 @@ def test_deterministic_finding_generation_all_rules(db_session: Session, project
     f_r3 = finding_hashes[r3_hash]
     assert f_r3.severity == "improvement"
     assert f_r3.finding_type == "testing_gap"
-    assert "Candidate implementation code found without associated tests" in f_r3.title
+    assert "Implementation code lacks associated tests" in f_r3.title
 
     # Verify RULE-04 (Sensitive file security_omitted)
     r4_hash = hashlib.sha256(f"{project.id}:{snapshot.id}:RULE_04_SECURITY:.env".encode("utf-8")).hexdigest()
@@ -359,7 +359,7 @@ def test_deterministic_finding_generation_all_rules(db_session: Session, project
     f_r4 = finding_hashes[r4_hash]
     assert f_r4.severity == "critical"
     assert f_r4.finding_type == "security_risk"
-    assert "Potentially sensitive configuration file" in f_r4.title
+    assert "Potential configuration risk" in f_r4.title
     # Verify no secret content is leaked
     assert "contents were omitted from ingestion" in f_r4.summary
 
@@ -644,7 +644,7 @@ def test_exact_rule_contract_mapping_and_severities(db_session: Session, project
     f1 = rules_by_code["RULE_01_UNMATCHED_REQUIREMENT"]
     assert f1.severity == "major"
     assert f1.finding_type == "requirement_gap"
-    assert "Requirement without clear implementation evidence" in f1.title
+    assert "Implementation not yet linked to requirement" in f1.title
     assert "Why this matters for evaluation:" in f1.why_it_matters
     assert f1.suggested_action is not None and len(f1.suggested_action) > 0
 
@@ -663,7 +663,7 @@ def test_exact_rule_contract_mapping_and_severities(db_session: Session, project
     f3 = rules_by_code["RULE_03_IMPL_WITHOUT_TESTS"]
     assert f3.severity == "improvement"
     assert f3.finding_type == "testing_gap"
-    assert "Candidate implementation code found without associated tests" in f3.title
+    assert "Implementation code lacks associated tests" in f3.title
     assert "Why this matters for evaluation:" in f3.why_it_matters
 
     # RULE-04: Potentially sensitive file detected
@@ -672,8 +672,8 @@ def test_exact_rule_contract_mapping_and_severities(db_session: Session, project
     f4 = rules_by_code["RULE_04_SECURITY_OMITTED"]
     assert f4.severity == "critical"
     assert f4.finding_type == "security_risk"
-    assert f4.title == "Potentially sensitive configuration file detected in repository"
-    assert f4.summary.startswith("A potentially sensitive configuration file was detected in the repository")
+    assert f4.title == "Potential configuration risk: '.env'"
+    assert "Because '.env' is often used" in f4.summary
     assert "Why this matters for evaluation:" in f4.why_it_matters
     # Confirm secret content is never present in any field
     assert "password" not in f4.summary.lower()

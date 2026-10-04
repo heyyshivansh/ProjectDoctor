@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Github, Loader2, AlertCircle, CheckCircle2, ChevronRight, Check, X, ShieldAlert, Sparkles } from 'lucide-react';
+import { FileText, Github, Loader2, AlertCircle, CheckCircle2, ChevronRight, Check, X, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProjectDetail } from '@/types/project';
 import { RepositoryConnection } from '@/types/repository';

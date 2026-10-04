@@ -11,6 +11,11 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.models.ai_analysis import AIAnalysis
+
+import hashlib
+from app.models.analysis_run import AnalysisRun
+from app.services.improvement.improvement_service import ImprovementService
+
 from app.models.artifact import Artifact
 from app.models.document_extraction import DocumentExtraction
 from app.models.finding import Finding
@@ -505,6 +510,22 @@ class ProjectAnalysisOrchestrator:
             message="Evaluation started.",
         )
 
+
+    @classmethod
+    def _compute_input_fingerprint(cls, db, project_id, snapshot_id):
+        from app.models.requirement import Requirement
+        from app.models.traceability import RequirementSnapshotTraceability
+        reqs = db.scalars(sa.select(Requirement).where(Requirement.project_id == project_id)).all()
+        # sort by id to be stable
+        reqs = sorted(reqs, key=lambda x: str(x.id))
+        hash_str = f"{snapshot_id}|" + "|".join(f"{r.id}:{r.requirement_id}:{r.title}:{r.is_ambiguous}:{r.description}:{r.category}:{r.status}:{r.content_hash}" for r in reqs)
+        
+        traces = db.scalars(sa.select(RequirementSnapshotTraceability).where(RequirementSnapshotTraceability.snapshot_id == snapshot_id)).all()
+        traces = sorted(traces, key=lambda x: str(x.id))
+        hash_str += "|TRACES|" + "|".join(f"{t.requirement_id}:{t.status}:{t.implementation_count}:{t.test_count}" for t in traces)
+        
+        return hashlib.sha256(hash_str.encode()).hexdigest()
+
     @classmethod
     def _execute_pipeline_task(cls, project_id: uuid.UUID, force: bool = False):
         """Worker task executing inside FastAPI BackgroundTasks with a fresh database session."""
@@ -832,6 +853,37 @@ class ProjectAnalysisOrchestrator:
         cls._update_stage_progress(
             project_id, STAGE_DIAGNOSIS, stage6_detail, STAGE_AI_REVIEW
         )
+        
+        # --- Create AnalysisRun and Reconcile ---
+        fingerprint = cls._compute_input_fingerprint(db, project_id, snapshot.id if snapshot else None)
+        # Only create if it doesn't already exist for this fingerprint
+        analysis_run = db.scalars(
+            sa.select(AnalysisRun)
+            .where(AnalysisRun.project_id == project_id, AnalysisRun.input_fingerprint == fingerprint, AnalysisRun.deterministic_status == "completed")
+            .order_by(AnalysisRun.created_at.desc())
+            .limit(1)
+        ).first()
+
+        if not analysis_run or force_downstream:
+            analysis_run = AnalysisRun(
+                project_id=project_id,
+                snapshot_id=snapshot.id if snapshot else None,
+                input_fingerprint=fingerprint,
+                deterministic_status="completed",
+                ai_status="running",
+                completed_at=datetime.now(timezone.utc)
+            )
+            db.add(analysis_run)
+            db.commit()
+            db.refresh(analysis_run)
+
+        # Always run reconciliation to ensure everything is correct for this run
+        try:
+            ImprovementService.reconcile_improvements(db, project_id, analysis_run.id)
+        except Exception as e:
+            logger.error(f"Reconciliation failed for project {project_id}, continuing: {e}")
+            # db.rollback() is already done inside reconcile_improvements
+
 
         # ---------------------------------------------------------------------
         # STAGE 7: AI EVALUATION REVIEW (STAGE_AI_REVIEW)
@@ -903,6 +955,9 @@ class ProjectAnalysisOrchestrator:
         # ---------------------------------------------------------------------
         # COMPLETION & PERSISTENCE
         # ---------------------------------------------------------------------
+        if analysis_run:
+            analysis_run.ai_status = ai_status
+            
         project = db.get(Project, project_id)
         if project:
             project.status = "analyzed"

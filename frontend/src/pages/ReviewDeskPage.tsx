@@ -42,7 +42,7 @@ import { ProjectUnderstanding } from "@/types/understanding";
 import { AnalysisStatusResponse } from "@/types/analysis";
 import { AnalysisWorkspaceModal } from "@/components/analysis/AnalysisWorkspaceModal";
 
-import { Loader2, AlertCircle, CheckCircle2, FileText, Github, Sparkles, LayoutDashboard, BrainCircuit, Activity, Stethoscope, TrendingUp, Shield, CheckCircle } from "lucide-react";
+import { Loader2, AlertCircle, LayoutDashboard, BrainCircuit, Activity, Stethoscope, TrendingUp, Shield, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dock, DockIcon, DockItem, DockLabel } from "@/components/core/dock";
 import { cn } from "@/lib/utils";

@@ -3,7 +3,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://projectdoctor-api-heyyshivansh.vercel.app/api/:path*"
+      "destination": "https://projectdoctor-api-heyyshivansh.onrender.com/api/:path*"
     },
     {
       "source": "/(.*)",

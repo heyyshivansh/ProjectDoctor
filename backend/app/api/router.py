@@ -11,6 +11,7 @@ from app.api.routes import (
     ai_analysis,
     analysis,
     improvement,
+    defend,
 )
 
 api_router = APIRouter(prefix="/api")
@@ -25,6 +26,7 @@ api_router.include_router(diagnosis.router, tags=["diagnosis"])
 api_router.include_router(ai_analysis.router, tags=["ai_analysis"])
 api_router.include_router(analysis.router, tags=["analysis"])
 api_router.include_router(improvement.router, prefix="/projects", tags=["improvement"])
+api_router.include_router(defend.router, prefix="/projects", tags=["defend"])
 
 
 

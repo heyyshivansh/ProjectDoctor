@@ -26,6 +26,7 @@ import { ProjectOverviewView } from "@/components/overview/ProjectOverviewView";
 import { ProjectUnderstandView } from "@/components/understanding/ProjectUnderstandView";
 import { ExtractedTextViewerModal } from "@/components/documents/ExtractedTextViewerModal";
 import { ImprovementStage } from "@/components/improve/ImprovementStage";
+import { DefendStage } from "@/components/defend/DefendStage";
 
 import { getRepository } from "@/services/repository";
 import {
@@ -418,19 +419,12 @@ export const ReviewDeskPage: React.FC = () => {
         )}
 
         {/* VIEW 6: DEFEND */}
-        {activeSection === 'defend' && (
-          <div className="space-y-4 animate-in fade-in duration-200">
-            <div>
-              <h2 className="text-2xl font-semibold text-[var(--pd-text-primary)]">Defend</h2>
-              <p className="text-sm text-[var(--pd-text-body)] mt-1">Prepare to explain your work with evidence.</p>
-            </div>
-            <div className="p-10 rounded-2xl bg-[var(--pd-surface)] border border-[var(--pd-border)] text-center space-y-3">
-              <p className="text-base font-semibold text-[var(--pd-text-primary)]">Defend is not available yet.</p>
-              <p className="text-sm text-[var(--pd-text-muted)]">
-                Defend will help you practice explaining your project capabilities with supporting repository evidence. It requires analysis to be completed first.
-              </p>
-            </div>
-          </div>
+        {activeSection === 'defend' && projectId && (
+          <DefendStage
+            projectId={projectId}
+            analysisStatus={analysisStatus}
+            onAnalyze={() => handleStartAnalysis(false)}
+          />
         )}
 
         {/* VIEW 7: READINESS */}

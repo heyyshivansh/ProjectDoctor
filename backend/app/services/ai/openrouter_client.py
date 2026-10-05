@@ -58,13 +58,13 @@ STRICT EVIDENCE CITATION INVARIANTS:
 
 STRICT OUTPUT SIZE & CONCISENESS LIMITS:
 To prevent response truncation and ensure razor-sharp focus on evidence:
-- observations: Maximum 2-3 high-signal items. Keep statements and technical rationales to 2-3 sentences each.
-- cross_artifact_correlations: Maximum 1-2 items (or [] if evidence is insufficient).
-- contradictions: Maximum 1-2 items (or [] if no contradictions exist).
-- evidence_gaps: Maximum 2 items. Use specific areas ('frontend', 'backend') before generic 'implementation' when the gap relates specifically to client-side UI or server API/data layers.
-- diagnostic_interpretations: Include only for findings present in the evidence package.
-- uncertainty_notes: Maximum 1-2 concise bullet points.
-Total JSON output must be compact (under 1,500 tokens). Never write long essays or filler.
+- observations: Maximum 1-2 high-signal items. Keep statements and technical rationales to 1-2 sentences each.
+- cross_artifact_correlations: Maximum 1 item (or [] if evidence is insufficient).
+- contradictions: Maximum 1 item (or [] if no contradictions exist).
+- evidence_gaps: Maximum 1 item. Use specific areas ('frontend', 'backend') before generic 'implementation' when the gap relates specifically to client-side UI or server API/data layers.
+- diagnostic_interpretations: Include only for 1-2 critical findings present in the evidence package.
+- uncertainty_notes: Maximum 1 concise bullet point.
+Total JSON output must be compact (under 1,000 tokens). Never write long essays or filler.
 
 REQUIRED JSON OUTPUT FORMAT (return ONLY a single valid JSON object, no markdown fences):
 {
@@ -80,7 +80,7 @@ REQUIRED JSON OUTPUT FORMAT (return ONLY a single valid JSON object, no markdown
   "observations": [
     {
       "observation_type": "fact"|"interpretation"|"inference"|"uncertainty",
-      "category": "architecture"|"implementation"|"verification"|"specification"|"security",
+      "category": "architecture"|"implementation"|"verification"|"specification"|"security"|"traceability",
       "title": "<Concise descriptive title>",
       "statement": "<Detailed observation statement>",
       "technical_rationale": "<Why this observation matters from an engineering/evaluation perspective>",
@@ -567,3 +567,58 @@ class OpenRouterProvider(BaseAIProvider):
             raise AIAnalysisGenerationError(
                 f"AI reasoning response failed schema validation or contained malformed JSON: {str(e)}"
             ) from e
+
+    def evaluate_defend_attempt(self, evidence_context: dict, question: str, student_answer: str) -> dict:
+        import json
+        import httpx
+        
+        prompt_text = self.build_defend_prompt(evidence_context, question, student_answer)
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key.strip()}",
+            "HTTP-Referer": "https://github.com/project-doctor",
+            "X-Title": "Project Doctor",
+            "Content-Type": "application/json",
+        }
+        
+        payload = {
+            "model": self.model_name,
+            "messages": [{"role": "user", "content": prompt_text}],
+            "response_format": {"type": "json_object"},
+        }
+        
+        try:
+            with httpx.Client(timeout=30.0) as client:
+                resp = client.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
+                resp.raise_for_status()
+                data = resp.json()
+                raw_text = data["choices"][0]["message"]["content"]
+                parsed = json.loads(raw_text)
+                return {"feedback": self.format_defend_feedback(parsed, evidence_context)}
+        except Exception as e:
+            logger.error(f"OpenRouter error generating defend feedback: {e}")
+            raise
+
+    def generate_defend_questions(self, evidence_package: dict) -> list[dict]:
+        import json
+        import httpx
+        from app.core.config import settings
+        prompt_text = self.build_defend_questions_prompt(evidence_package)
+        headers = {
+            "Authorization": f"Bearer {self.api_key.strip()}",
+            "HTTP-Referer": settings.SITE_URL,
+            "X-Title": settings.SITE_NAME,
+        }
+        resp = httpx.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers=headers,
+            json={
+                "model": self.model_name,
+                "messages": [{"role": "user", "content": prompt_text}],
+                "response_format": {"type": "json_object"}
+            },
+            timeout=120.0
+        )
+        resp.raise_for_status()
+        parsed = json.loads(resp.json()["choices"][0]["message"]["content"])
+        return self.parse_and_validate_defend_questions(parsed, evidence_package)

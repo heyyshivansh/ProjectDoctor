@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 ObservationType = Literal["fact", "interpretation", "inference", "uncertainty"]
 ObservationCategory = Literal[
-    "architecture", "implementation", "verification", "specification", "security"
+    "architecture", "implementation", "verification", "specification", "security", "traceability"
 ]
 ConfidenceLevel = Literal["high", "medium", "low"]
 CorrelationStatus = Literal[

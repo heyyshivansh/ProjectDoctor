@@ -363,3 +363,129 @@ class GroqProvider(BaseAIProvider):
             raise AIAnalysisGenerationError(
                 f"AI reasoning response failed schema validation or contained malformed JSON{truncation_notice}: {str(e)}"
             ) from e
+
+    def evaluate_defend_attempt(self, evidence_context: dict, question: str, student_answer: str) -> dict:
+        import json
+        import httpx
+        
+        prompt_text = self.build_defend_prompt(evidence_context, question, student_answer)
+        headers = {
+            "Authorization": f"Bearer {self.api_key.strip()}",
+            "Content-Type": "application/json"
+        }
+        
+        client_cm = (
+            self.http_client
+            if self.http_client is not None
+            else httpx.Client(timeout=self.timeout_seconds)
+        )
+        
+        try:
+            resp = client_cm.post(
+                GROQ_API_URL,
+                headers=headers,
+                json={
+                    "model": self.model_name,
+                    "messages": [{"role": "user", "content": prompt_text}],
+                    "response_format": {"type": "json_object"}
+                }
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            raw_text = data["choices"][0]["message"]["content"]
+            parsed = json.loads(raw_text)
+            return {"feedback": self.format_defend_feedback(parsed, evidence_context)}
+        except Exception as e:
+            logger.error(f"Groq error generating defend feedback: {e}")
+            raise
+        finally:
+            if self.http_client is None:
+                client_cm.close()
+
+    def generate_defend_questions(self, evidence_package: dict) -> list[dict]:
+        import json
+        import httpx
+        
+        prompt_text = self.build_defend_questions_prompt(evidence_package)
+        headers = {
+            "Authorization": f"Bearer {self.api_key.strip()}",
+            "Content-Type": "application/json"
+        }
+        
+        client_cm = (
+            self.http_client
+            if self.http_client is not None
+            else httpx.Client(timeout=self.timeout_seconds)
+        )
+        
+        try:
+            resp = client_cm.post(
+                GROQ_API_URL,
+                headers=headers,
+                json={
+                    "model": self.model_name,
+                    "messages": [{"role": "user", "content": prompt_text}],
+                    "response_format": {"type": "json_object"}
+                }
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            raw_text = data["choices"][0]["message"]["content"]
+            parsed = json.loads(raw_text)
+            return self.parse_and_validate_defend_questions(parsed, evidence_package)
+        except Exception as e:
+            logger.error(f"Groq error generating defend questions: {e}")
+            raise
+        finally:
+            if self.http_client is None:
+                client_cm.close()
+
+    def generate_session_recap(self, answered_data: list[dict]) -> dict:
+        import json
+        import httpx
+        
+        prompt_text = f"""You are an expert evaluator assessing a student's software project defense.
+Review the following Q&A session. Summarize the student's overall performance.
+Include qualitative observations across project understanding, flow explanation, technical clarity, use of relevant details, and evidence awareness. Summarize strengths and a few practical areas to work on next.
+If unanswered questions were skipped, do not imply they were completed.
+
+Session Data:
+{json.dumps(answered_data, indent=2)}
+
+Return ONLY a valid JSON object matching this exact schema:
+{{
+    "recap": "<your detailed summary recap>"
+}}
+"""
+        headers = {
+            "Authorization": f"Bearer {self.api_key.strip()}",
+            "Content-Type": "application/json"
+        }
+        
+        client_cm = (
+            self.http_client
+            if self.http_client is not None
+            else httpx.Client(timeout=self.timeout_seconds)
+        )
+        
+        try:
+            resp = client_cm.post(
+                GROQ_API_URL,
+                headers=headers,
+                json={
+                    "model": self.model_name,
+                    "messages": [{"role": "user", "content": prompt_text}],
+                    "response_format": {"type": "json_object"}
+                }
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            raw_text = data["choices"][0]["message"]["content"]
+            parsed = json.loads(raw_text)
+            return {"recap": parsed.get("recap", "No recap generated.")}
+        except Exception as e:
+            logger.error(f"Groq error generating session recap: {e}")
+            raise
+        finally:
+            if self.http_client is None:
+                client_cm.close()

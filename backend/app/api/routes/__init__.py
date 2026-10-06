@@ -3,3 +3,4 @@
 from app.api.routes import health
 
 __all__ = ["health"]
+from app.api.routes import defend

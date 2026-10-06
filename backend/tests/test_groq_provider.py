@@ -485,3 +485,126 @@ def test_groq_no_api_key_in_logs_or_exceptions(minimal_evidence, caplog):
     assert secret_key not in all_logs
     assert "abcdef0123456789" not in all_logs
     assert "supersecretvalue" not in all_logs
+
+def test_groq_finish_reason_length_raises_error(minimal_evidence):
+    mock_http_client = MagicMock(spec=httpx.Client)
+    
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "choices": [
+            {
+                "message": {"content": "{\"partial\": \"json\""},
+                "finish_reason": "length"
+            }
+        ]
+    }
+    mock_http_client.post.return_value = mock_resp
+
+    provider = GroqProvider(
+        api_key="test-key",
+        http_client=mock_http_client,
+        max_output_tokens=2500,
+    )
+    with pytest.raises(AIAnalysisGenerationError) as exc_info:
+        provider.analyze_project(minimal_evidence)
+        
+    err_str = str(exc_info.value)
+    assert "finish_reason='length'" in err_str
+    assert "2500" in err_str
+    assert mock_http_client.post.call_count == 1
+
+def test_groq_schema_valid_traceability_category(minimal_evidence):
+    mock_http_client = MagicMock(spec=httpx.Client)
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    
+    valid_payload = {
+        "analysis_summary": "Summary",
+        "project_understanding": {
+            "summary": "Purpose",
+            "primary_purpose": "Primary",
+            "target_users_identified": [],
+            "key_capabilities_claimed": [],
+            "evidence_basis": "Evidence",
+            "confidence": "high"
+        },
+        "observations": [
+            {
+                "observation_type": "fact",
+                "category": "traceability",
+                "title": "Traceability Fact",
+                "statement": "Statement",
+                "technical_rationale": "Rationale",
+                "evidence_citations": [],
+                "confidence": "high"
+            }
+        ],
+        "cross_artifact_correlations": [],
+        "contradictions": [],
+        "evidence_gaps": [],
+        "diagnostic_interpretations": [],
+        "uncertainty_notes": []
+    }
+    
+    mock_resp.json.return_value = {
+        "choices": [{"message": {"content": json.dumps(valid_payload)}, "finish_reason": "stop"}]
+    }
+    mock_http_client.post.return_value = mock_resp
+
+    provider = GroqProvider(
+        api_key="test-key",
+        http_client=mock_http_client,
+    )
+    
+    # Should not raise any validation error
+    result = provider.analyze_project(minimal_evidence)
+    assert result.observations[0].category == "traceability"
+
+
+def test_groq_schema_invalid_category_raises_generation_error(minimal_evidence):
+    mock_http_client = MagicMock(spec=httpx.Client)
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    
+    invalid_payload = {
+        "analysis_summary": "Summary",
+        "project_understanding": {
+            "summary": "Purpose",
+            "primary_purpose": "Primary",
+            "target_users_identified": [],
+            "key_capabilities_claimed": [],
+            "evidence_basis": "Evidence",
+            "confidence": "high"
+        },
+        "observations": [
+            {
+                "observation_type": "fact",
+                "category": "unsupported_cat",
+                "title": "Invalid Fact",
+                "statement": "Statement",
+                "technical_rationale": "Rationale",
+                "evidence_citations": [],
+                "confidence": "high"
+            }
+        ],
+        "cross_artifact_correlations": [],
+        "contradictions": [],
+        "evidence_gaps": [],
+        "diagnostic_interpretations": [],
+        "uncertainty_notes": []
+    }
+    
+    mock_resp.json.return_value = {
+        "choices": [{"message": {"content": json.dumps(invalid_payload)}, "finish_reason": "stop"}]
+    }
+    mock_http_client.post.return_value = mock_resp
+
+    provider = GroqProvider(
+        api_key="test-key",
+        http_client=mock_http_client,
+    )
+    
+    with pytest.raises(AIAnalysisGenerationError) as exc_info:
+        provider.analyze_project(minimal_evidence)
+    assert "schema validation" in str(exc_info.value).lower()

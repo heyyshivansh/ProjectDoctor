@@ -335,3 +335,40 @@ class GeminiProvider(BaseAIProvider):
             raise AIAnalysisGenerationError(
                 f"AI reasoning response failed schema validation or contained malformed JSON: {str(e)}"
             ) from e
+
+    def evaluate_defend_attempt(self, evidence_context: dict, question: str, student_answer: str) -> dict:
+        import json
+        from google import genai
+        from google.genai import types
+        
+        prompt_text = self.build_defend_prompt(evidence_context, question, student_answer)
+        
+        client = genai.Client(api_key=self.api_key.strip())
+        
+        try:
+            resp = client.models.generate_content(
+                model=self.model_name,
+                contents=prompt_text,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                )
+            )
+            parsed = json.loads(resp.text)
+            return {"feedback": self.format_defend_feedback(parsed, evidence_context)}
+        except Exception as e:
+            logger.error(f"Gemini error generating defend feedback: {e}")
+            raise
+
+    def generate_defend_questions(self, evidence_package: dict) -> list[dict]:
+        import json
+        from google import genai
+        from google.genai import types
+        prompt_text = self.build_defend_questions_prompt(evidence_package)
+        client = genai.Client(api_key=self.api_key.strip())
+        resp = client.models.generate_content(
+            model=self.model_name,
+            contents=prompt_text,
+            config=types.GenerateContentConfig(response_mime_type="application/json")
+        )
+        parsed = json.loads(resp.text)
+        return self.parse_and_validate_defend_questions(parsed, evidence_package)

@@ -58,3 +58,19 @@ __all__ = [
     "DiagnosisGenerationResponse",
 ]
 
+
+from app.schemas.defend import (
+    DefendSessionResponse,
+    DefendQuestionResponse,
+    DefendAttemptResponse,
+    DefendAttemptCreate,
+    DefendSessionCreateResponse,
+)
+
+__all__.extend([
+    "DefendSessionResponse",
+    "DefendQuestionResponse",
+    "DefendAttemptResponse",
+    "DefendAttemptCreate",
+    "DefendSessionCreateResponse",
+])

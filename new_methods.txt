@@ -1,0 +1,99 @@
+    @abstractmethod
+    def generate_defend_questions(self, evidence_package: dict) -> list[dict]:
+        """Draft a set of practice questions from the provided evidence package."""
+        pass
+
+    @staticmethod
+    def build_defend_questions_prompt(evidence_package: dict) -> str:
+        import json
+        return f"""You are an expert evaluator assessing a student's software project.
+Based on the following project evidence, generate a list of focused practice questions for the student to defend their work.
+
+Guidelines:
+1. Each question must focus on ONE clear task or capability. Do not combine multiple distinct capabilities into one question.
+2. Ensure wording is strictly neutral. Do not presume a feature works, was implemented, or passed tests merely because candidate evidence exists. Avoid phrases like 'The analysis observed'. Ask what the evidence shows or what remains uncertain.
+3. Keep questions short and free of evaluator jargon.
+4. Limit your output to a compact practice session (at most 5 questions). Do not repeat question intents.
+5. Provide the exact source evidence IDs (finding IDs, traceability IDs, or link IDs) that motivated the question in the `cited_ids` array.
+6. The `evidence_id` must perfectly match the ID of the finding or requirement_trace object you are questioning.
+
+Return ONLY a valid JSON object matching this schema exactly:
+{{
+    "questions": [
+        {{
+            "question_text": "...",
+            "evidence_type": "finding",
+            "evidence_id": "id_of_the_finding_or_trace",
+            "cited_ids": ["id1", "id2"]
+        }}
+    ]
+}}
+Note: evidence_type must be either "finding" or "requirement_trace".
+
+Evidence Package:
+{json.dumps(evidence_package, indent=2)}
+"""
+
+    @staticmethod
+    def parse_and_validate_defend_questions(parsed_resp: dict, evidence_package: dict) -> list[dict]:
+        from pydantic import BaseModel, ConfigDict, ValidationError
+        from typing import Literal
+
+        class DraftedQuestion(BaseModel):
+            model_config = ConfigDict(extra="forbid", strict=True)
+            question_text: str
+            evidence_type: Literal["finding", "requirement_trace"]
+            evidence_id: str
+            cited_ids: list[str]
+
+        class DraftedQuestionsOutput(BaseModel):
+            model_config = ConfigDict(extra="forbid", strict=True)
+            questions: list[DraftedQuestion]
+
+        try:
+            validated = DraftedQuestionsOutput.model_validate(parsed_resp)
+        except ValidationError as e:
+            raise ValueError(f"Malformed AI questions schema: {e}")
+
+        if not validated.questions:
+            raise ValueError("AI returned empty questions list.")
+
+        finding_allowlist = {}
+        for f in evidence_package.get("findings", []):
+            allowed = {str(f.get("id"))}
+            for ref in f.get("evidence_references", []):
+                if isinstance(ref, dict) and "target_id" in ref:
+                    allowed.add(str(ref["target_id"]))
+            finding_allowlist[str(f.get("id"))] = allowed
+
+        trace_allowlist = {}
+        for t in evidence_package.get("traces", []):
+            allowed = {str(t.get("id"))}
+            for link in t.get("links", []):
+                if "id" in link:
+                    allowed.add(str(link["id"]))
+            trace_allowlist[str(t.get("id"))] = allowed
+
+        seen_questions = set()
+        for q in validated.questions:
+            if q.question_text in seen_questions:
+                raise ValueError(f"Duplicate question generated: {q.question_text}")
+            seen_questions.add(q.question_text)
+
+            if q.evidence_type == "finding":
+                if q.evidence_id not in finding_allowlist:
+                    raise ValueError(f"Invalid finding evidence_id cited: {q.evidence_id}")
+                for cid in q.cited_ids:
+                    if str(cid) not in finding_allowlist[q.evidence_id]:
+                        raise ValueError(f"Invalid cited_id {cid} for finding {q.evidence_id}")
+            else:
+                if q.evidence_id not in trace_allowlist:
+                    raise ValueError(f"Invalid trace evidence_id cited: {q.evidence_id}")
+                for cid in q.cited_ids:
+                    if str(cid) not in trace_allowlist[q.evidence_id]:
+                        raise ValueError(f"Invalid cited_id {cid} for trace {q.evidence_id}")
+
+        return [q.model_dump() for q in validated.questions]
+
+    @staticmethod
+    def format_defend_feedback

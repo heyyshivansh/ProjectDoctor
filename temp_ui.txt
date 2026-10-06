@@ -1,0 +1,80 @@
+1:       </div>
+2: 
+3:       <div className="bg-[var(--pd-surface)] border border-[var(--pd-border)] rounded-2xl p-6 sm:p-8 space-y-6">
+4:         <div className="space-y-2">
+5:           <p className="text-sm font-semibold text-[var(--pd-text-muted)] tracking-wide uppercase">Question</p>
+6:           <p className="text-lg text-[var(--pd-text-primary)] font-medium leading-relaxed">
+7:             {question?.question_text}
+8:           </p>
+9:         </div>
+10:         
+11:         {question?.evidence_context && (
+12:           <div className="p-4 bg-[var(--pd-surface-raised)] border border-[var(--pd-border)] rounded-xl space-y-1">
+13:             <p className="text-xs font-mono text-[var(--pd-text-muted)] mb-2">Relevant Evidence</p>
+14:             {(() => {
+15:               try {
+16:                 const ctx = JSON.parse(question.evidence_context);
+17:                 
+18:                 if (ctx.type === 'finding') {
+19:                   return (
+20:                     <div className="space-y-2 mt-2">
+21:                       <p className="text-sm font-medium text-[var(--pd-text-primary)]">{ctx.title || 'Unknown Finding'}</p>
+22:                       <p className="text-sm text-[var(--pd-text-body)]">{ctx.summary || 'No summary available.'}</p>
+23:                       {ctx.evidence_references && ctx.evidence_references.length > 0 ? (
+24:                         <div className="mt-2">
+25:                           <p className="text-xs font-semibold text-[var(--pd-text-muted)] uppercase tracking-wider mb-1">References</p>
+26:                           <ul className="list-disc pl-4 space-y-1">
+27:                             {ctx.evidence_references.map((ref: any, i: number) => (
+28:                               <li key={i} className="text-xs text-[var(--pd-text-body)]">
+29:                                 {ref.file || ref.target_type || 'Evidence item'}
+30:                               </li>
+31:                             ))}
+32:                           </ul>
+33:                         </div>
+34:                       ) : (
+35:                         <p className="text-xs text-[var(--pd-text-muted)] italic mt-2">No linked evidence details available.</p>
+36:                       )}
+37:                     </div>
+38:                   );
+39:                 } else if (ctx.type === 'requirement_trace') {
+40:                   return (
+41:                     <div className="space-y-3 mt-2">
+42:                       <div>
+43:                         <p className="text-sm font-medium text-[var(--pd-text-primary)]">{ctx.requirement_title || 'Unknown Requirement'}</p>
+44:                         <p className="text-xs text-[var(--pd-text-muted)] mt-0.5">Status: {ctx.status || 'Unknown'}</p>
+45:                       </div>
+46:                       {ctx.links && ctx.links.length > 0 ? (
+47:                         <div className="space-y-2 mt-2">
+48:                           <p className="text-xs font-semibold text-[var(--pd-text-muted)] uppercase tracking-wider mb-1">Linked Traces</p>
+49:                           {ctx.links.map((link: any, i: number) => (
+50:                             <div key={i} className="text-xs border-l-2 border-[var(--pd-border)] pl-3 py-0.5 space-y-1">
+51:                               <p className="font-mono text-[var(--pd-ai)]">{link.file_path || 'Unknown file'}</p>
+52:                               {link.is_test_evidence && <p className="text-[var(--pd-emerald)] font-medium">✓ Test Evidence</p>}
+53:                               {link.match_rationale && <p className="text-[var(--pd-text-body)]"><span className="font-medium text-[var(--pd-text-muted)]">Rationale:</span> {link.match_rationale}</p>}
+54:                               {link.code_snippet && (
+55:                                 <pre className="bg-[var(--pd-surface)] p-2 rounded text-[10px] overflow-x-auto text-[var(--pd-text-body)] mt-1 border border-[var(--pd-border)]">
+56:                                   {link.code_snippet}
+57:                                 </pre>
+58:                               )}
+59:                             </div>
+60:                           ))}
+61:                         </div>
+62:                       ) : (
+63:                         <p className="text-xs text-[var(--pd-text-muted)] italic mt-2">No linked evidence details available.</p>
+64:                       )}
+65:                     </div>
+66:                   );
+67:                 }
+68:                 
+69:                 // Fallback for older formats
+70:                 return (
+71:                   <div>
+72:                     <p className="text-sm font-medium text-[var(--pd-text-primary)]">{ctx.title || ctx.requirement_title || 'Evidence'}</p>
+73:                     <p className="text-sm text-[var(--pd-text-body)] mt-1">{ctx.summary || ''}</p>
+74:                   </div>
+75:                 );
+76:               } catch (e) {
+77:                 return <p className="text-sm text-[var(--pd-text-body)]">{question.evidence_context}</p>;
+78:               }
+79:             })()}
+80:           </div>

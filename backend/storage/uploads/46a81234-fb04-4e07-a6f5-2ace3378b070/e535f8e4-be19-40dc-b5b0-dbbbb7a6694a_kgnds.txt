@@ -1,0 +1,9 @@
+Project overview explaining the multi-cloud file management platform
+Feature list covering aggregation, dashboards, transfers, and CLI capabilities
+Repository structure showing the frontend, backend, CLI, and asset organization
+Tech stack breakdown for frontend (React, Vite, Tailwind), backend (Node.js, Express, PostgreSQL), and CLI tools
+Getting started guide with setup steps for all three components
+Environment configuration details for the backend
+Available scripts for running dev servers, builds, and migrations
+Project status note indicating active development
+Contributing guidelines and acknowledgements

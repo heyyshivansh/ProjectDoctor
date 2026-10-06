@@ -18,6 +18,7 @@ from app.models.finding import Finding
 from app.models.ai_analysis import AIAnalysis
 from app.models.analysis_run import AnalysisRun
 from app.models.improvement import ImprovementItem
+from app.models.defend import DefendSession, DefendQuestion, DefendAttempt
 
 __all__ = [
     "Project",
@@ -36,6 +37,9 @@ __all__ = [
     "AIAnalysis",
     "AnalysisRun",
     "ImprovementItem",
+    "DefendSession",
+    "DefendQuestion",
+    "DefendAttempt",
 ]
 
 

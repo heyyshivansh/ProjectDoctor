@@ -1,3 +1,4 @@
+import logging
 import uuid
 from typing import Dict, List, Optional, Set, Tuple
 from app.schemas.ai_analysis import (
@@ -6,6 +7,8 @@ from app.schemas.ai_analysis import (
     TargetType,
 )
 from app.schemas.ai_evidence import AIEvidencePackage
+
+logger = logging.getLogger(__name__)
 
 
 class CitationIntegrityError(Exception):
@@ -157,6 +160,19 @@ class CitationValidator:
                             "reason": f"Repository file path '{ident}' not found in indexed repository files",
                         }
                     )
+                elif ident in file_by_path:
+                    # The exact indexed path is authoritative. Models can pair a
+                    # valid path with another file's UUID, so canonicalize the ID
+                    # from the path before persisting the citation.
+                    canonical_id = file_by_path[ident]
+                    if t_id and t_id != canonical_id:
+                        logger.warning(
+                            "Correcting mismatched repository citation UUID %s for path %s to %s",
+                            t_id,
+                            ident,
+                            canonical_id,
+                        )
+                    citation.target_id = canonical_id
                 elif t_id and t_id in file_by_id and file_by_id[t_id] != ident:
                     invalid_citations.append(
                         {
@@ -167,9 +183,6 @@ class CitationValidator:
                             "reason": f"RepositoryFile UUID '{t_id}' points to '{file_by_id[t_id]}', not '{ident}'",
                         }
                     )
-                elif not t_id and ident in file_by_path:
-                    # Auto-populate target_id from canonical path if known
-                    citation.target_id = file_by_path[ident]
 
             elif t_type == "finding":
                 # Rule: identifier or target_id must match an active finding
